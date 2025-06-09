@@ -1,0 +1,19 @@
+syntax = "proto3";
+package auth;
+import "google/protobuf/empty.proto";
+
+message GetEmployeeRequest {
+  int32 id = 1;
+}
+
+message GetEmployeeResponse {
+  int32 id = 1;
+  string name = 2;
+  int32 role_id = 3;
+  string email = 4;
+}
+
+
+service EmployeeService {
+    rpc GetEmployee (GetEmployeeRequest) returns (GetEmployeeResponse);
+}

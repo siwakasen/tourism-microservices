@@ -10,32 +10,32 @@
   "monorepo": true,
   "root": "./apps",
   "projects": {
-    "tour-package-service": {
+    "travel-packages-service": {
       "type": "application",
-      "root": "apps/tour-package-service/src",
+      "root": "apps/travel-packages-service/src",
       "entryFile": "main",
-      "sourceRoot": "apps/tour-package-service/src",
+      "sourceRoot": "apps/travel-packages-service/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/tour-package-service/tsconfig.app.json",
+        "tsConfigPath": "apps/travel-packages-service/tsconfig.app.json",
         "assets": [
           {
             "include": "common/envs/*.env",
-            "outDir": "dist/apps/tour-package-service/src/common/helper"
+            "outDir": "dist/apps/travel-packages-service/src/common/helper"
           }
         ]
       }
     },
-    "auth-service": {
+    "employees-service": {
       "type": "application",
-      "root": "apps/auth-service/src",
+      "root": "apps/employees-service/src",
       "entryFile": "main",
-      "sourceRoot": "apps/auth-service/src",
+      "sourceRoot": "apps/employees-service/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/auth-service/tsconfig.app.json",
+        "tsConfigPath": "apps/employees-service/tsconfig.app.json",
         "assets": [
           {
             "include": "common/envs/*.env",
-            "outDir": "dist/apps/auth-service/src/common/helper"
+            "outDir": "dist/apps/employees-service/src/common/helper"
           }
         ]
       }

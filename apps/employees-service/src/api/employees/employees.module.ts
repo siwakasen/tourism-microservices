@@ -1,19 +1,23 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Cars } from 'libs/entities';
-import { CarsController } from './cars.controller';
-import { CarsService } from './cars.service';
+import { EmployeeService } from './employees.service';
+import { EmployeeController } from './employees.controller';
+import { Employee } from 'libs/entities/employees/employee.entity';
+import { EmployeeToken } from 'libs/entities/employees/employee.token.entity';
+import { AuthRedisService } from './redis.service';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config/dist/config.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-
-import { AuthHelper } from '@app/helpers/auth/user/auth.helper';
 import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
+import { AuthHelper } from '@app/helpers/auth/user/auth.helper';
+import { MailModule } from '@app/helpers/mail/mail.module';
+import { MailService } from '@app/helpers/mail/mail.service';
+import { Role } from 'libs/entities/role/role.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Cars]),
+    TypeOrmModule.forFeature([Employee, EmployeeToken, Role]),
     PassportModule.register({ defaultStrategy: 'user', property: 'user' }),
     JwtModule.registerAsync({
       inject: [ConfigService],
@@ -36,8 +40,22 @@ import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
         }),
       },
     ]),
+    MailModule,
   ],
-  controllers: [CarsController],
-  providers: [CarsService, AuthHelper, JwtStrategy],
+  controllers: [EmployeeController],
+  providers: [
+    EmployeeService,
+    AuthRedisService,
+    MailService,
+    JwtStrategy,
+    AuthHelper,
+  ],
+  exports: [
+    EmployeeService,
+    AuthHelper,
+    MailService,
+    JwtStrategy,
+    AuthRedisService,
+  ], // Export as needed
 })
-export class CarsModule {}
+export class AuthModule {}

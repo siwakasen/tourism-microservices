@@ -1,20 +1,21 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Cars } from 'libs/entities';
-import { CarsController } from './cars.controller';
-import { CarsService } from './cars.service';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { GrpcService } from './grpc.service';
+import { GrpcController } from './grpc.controller';
+import { EmployeeService } from '../employees/employees.service';
+import { AuthRedisService } from '../employees/redis.service';
+import { AuthModule } from '../employees/employees.module';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-
-import { AuthHelper } from '@app/helpers/auth/user/auth.helper';
-import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
+import { Employee, EmployeeToken } from 'libs/entities';
+import { Role } from 'libs/entities/role/role.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Cars]),
     PassportModule.register({ defaultStrategy: 'user', property: 'user' }),
+    AuthModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
@@ -22,6 +23,8 @@ import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
         signOptions: { expiresIn: config.get('JWT_EXPIRES') },
       }),
     }),
+    TypeOrmModule.forFeature([Employee, EmployeeToken, Role]),
+
     ClientsModule.registerAsync([
       {
         inject: [ConfigService],
@@ -37,7 +40,7 @@ import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
       },
     ]),
   ],
-  controllers: [CarsController],
-  providers: [CarsService, AuthHelper, JwtStrategy],
+  controllers: [GrpcController], // Only the controller
+  providers: [GrpcService, EmployeeService, AuthRedisService],
 })
-export class CarsModule {}
+export class GrpcModule {}

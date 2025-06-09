@@ -1,4 +1,4 @@
-import {
+  import {
   Body,
   Controller,
   Get,
@@ -32,7 +32,9 @@ import {
 } from './cars.dto';
 import { CarsService } from './cars.service';
 import { AuthGuard } from '@nestjs/passport';
-
+import { JwtAuthGuard } from '@app/helpers/auth/user/auth.guard';
+import { Roles, UserType } from '@app/helpers/auth/decorators/auth.decorator';
+  
 @ApiBearerAuth()
 @ApiTags('Cars')
 @Controller('/cars')
@@ -62,7 +64,8 @@ export class CarsController {
     status: 200,
     description: 'Successfuly create data cars',
   })
-  @UseGuards(AuthGuard('admin'))
+  @UseGuards(JwtAuthGuard)
+ @Roles(UserType.ADMIN)
   @Post('admin')
   public async createCars(@Body() body: CreateUpdateCarsDto) {
     return await this.carsService.createCar(body);
@@ -102,7 +105,8 @@ export class CarsController {
       },
     }),
   )
-  @UseGuards(AuthGuard('admin'))
+  @UseGuards(JwtAuthGuard)
+ @Roles(UserType.ADMIN)
   @Post('admin/upload-image/:id')
   @ApiBody({
     type: UploadImageDto,
@@ -125,7 +129,8 @@ export class CarsController {
     status: 200,
     description: 'Successfully update data cars',
   })
-  @UseGuards(AuthGuard('admin'))
+  @UseGuards(JwtAuthGuard)
+ @Roles(UserType.ADMIN)
   @Put('admin/:id')
   public async updateCars(
     @Param('id') id: string,
@@ -138,7 +143,8 @@ export class CarsController {
     status: 200,
     description: 'Successfully delete data cars',
   })
-  @UseGuards(AuthGuard('admin'))
+  @UseGuards(JwtAuthGuard)
+ @Roles(UserType.ADMIN)
   @Delete('admin/:id')
   public async deleteCars(@Param('id') id: string) {
     return await this.carsService.deleteCar(id);
@@ -148,7 +154,8 @@ export class CarsController {
     status: 200,
     description: 'Successfully update status data cars',
   })
-  @UseGuards(AuthGuard('admin'))
+  @UseGuards(JwtAuthGuard)
+ @Roles(UserType.ADMIN)
   @Patch('admin/status/:id')
   public async updateStatusCars(
     @Param('id') id: string,

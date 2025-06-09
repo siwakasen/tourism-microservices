@@ -1,0 +1,63 @@
+import { Injectable, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { AuthGuard as Guard, IAuthGuard } from '@nestjs/passport';
+import { Employee } from 'libs/entities';
+import { Reflector } from '@nestjs/core';
+import { ROLES_KEY, UserType } from '../decorators/auth.decorator';
+import { Customer } from 'libs/entities/customer/customer.entity';
+
+@Injectable()
+export class JwtAuthGuard extends Guard('user') implements IAuthGuard {
+  constructor(private reflector: Reflector) {
+    super();
+  }
+
+  public handleRequest(err: unknown, user: Employee | Customer): any {
+    if (err || !user) {
+      throw new UnauthorizedException('Invalid token or user not found');
+    }
+    return user;
+  }
+
+  public async canActivate(context: ExecutionContext): Promise<boolean> {
+    await super.canActivate(context);
+
+    const requiredRoles = this.reflector.getAllAndOverride<UserType[]>(ROLES_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+
+    if (!requiredRoles) {
+      return true; // No roles required, allow access
+    }
+
+    const request = context.switchToHttp().getRequest();
+    const user = request.user;
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    // Handle customer type
+    if (requiredRoles.includes(UserType.CUSTOMER)) {
+      if(user && !user.roleId) {
+        return true;
+      }
+      return false;
+    }
+
+    // Handle employee types (owner and admin)
+    if (user && user.roleId) {
+      
+      if (requiredRoles.includes(UserType.OWNER) && user.roleId === 1) {
+        console.log('owner');
+        return true;
+      }
+      if (requiredRoles.includes(UserType.ADMIN) && user.roleId === 2) {
+        console.log('admin');
+        return true;
+      }
+    }
+
+    return false;
+  }
+}

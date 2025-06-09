@@ -1,20 +1,24 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Cars } from 'libs/entities';
-import { CarsController } from './cars.controller';
-import { CarsService } from './cars.service';
+import { TourPackage } from 'libs/entities';
+import { TourPackageController } from './tour-package.controller';
+import { TourPackageService } from './tour-package.service';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { ClientsModule, Transport } from '@nestjs/microservices';
-
 import { AuthHelper } from '@app/helpers/auth/user/auth.helper';
 import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Cars]),
+    // typeorm module
+    TypeOrmModule.forFeature([TourPackage]),
+
+    // authentication module
     PassportModule.register({ defaultStrategy: 'user', property: 'user' }),
+    
+    // jwt module
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
@@ -22,6 +26,9 @@ import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
         signOptions: { expiresIn: config.get('JWT_EXPIRES') },
       }),
     }),
+
+
+    // grpc module
     ClientsModule.registerAsync([
       {
         inject: [ConfigService],
@@ -37,7 +44,7 @@ import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
       },
     ]),
   ],
-  controllers: [CarsController],
-  providers: [CarsService, AuthHelper, JwtStrategy],
+  controllers: [TourPackageController],
+  providers: [TourPackageService, AuthHelper, JwtStrategy],
 })
-export class CarsModule {}
+export class TourPackageModule {}

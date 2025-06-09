@@ -1,0 +1,26 @@
+syntax = "proto3";
+package auth;
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+// Request message for getting a customer by ID
+message GetCustomerRequest {
+  int32 id = 1;
+}
+
+// Response message containing customer details
+message GetCustomerResponse {
+  int32 id = 1;
+  string name = 2;
+  string phone_number = 3;
+  string country_origin = 4;
+  string email = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+
+// Service definition for customer operations
+service CustomerService {
+  rpc GetCustomer (GetCustomerRequest) returns (GetCustomerResponse);
+} 
