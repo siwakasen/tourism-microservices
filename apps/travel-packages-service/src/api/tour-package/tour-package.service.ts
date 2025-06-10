@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { TourPackage } from 'libs/entities';
+import { TravelPackages } from 'libs/entities';
 import { Repository, DataSource } from 'typeorm';
 import {
   PaginationDto,
@@ -13,8 +13,8 @@ import * as path from 'path';
 @Injectable()
 export class TourPackageService {
   constructor(private readonly dataSource: DataSource) {}
-  @InjectRepository(TourPackage)
-  private readonly repository: Repository<TourPackage>;
+  @InjectRepository(TravelPackages)
+  private readonly repository: Repository<TravelPackages>;
   getHello(): string {
     return 'Hello World!';
   }
@@ -71,16 +71,16 @@ export class TourPackageService {
     }
   }
 
-  public async getTourPackageById(id: string) {
+  public async getTourPackageById(id: number) {
     try {
-      const tourPackage: TourPackage = await this.repository.findOneBy({ id });
+    const travelPackage: TravelPackages = await this.repository.findOneBy({ id });
 
-      if (!tourPackage) {
+      if (!travelPackage) {
         throw new Error('Tour package not found');
       }
 
       return {
-        data: tourPackage,
+        data: travelPackage,
         message: 'Successfully get data tour package by id',
       };
     } catch (error) {
@@ -111,15 +111,15 @@ export class TourPackageService {
     await queryRunner.startTransaction();
 
     try {
-      const tourPackage: TourPackage = this.repository.create({
+      const travelPackage: TravelPackages = this.repository.create({
         ...payload,
       });
 
-      await queryRunner.manager.save(tourPackage);
+      await queryRunner.manager.save(travelPackage);
       await queryRunner.commitTransaction();
 
       return {
-        data: tourPackage,
+        data: travelPackage,
         message: 'Tour package created successfully',
       };
     } catch (error) {
@@ -148,29 +148,29 @@ export class TourPackageService {
     }
   }
 
-  public async uploadImages(id: string, files: Express.Multer.File[]) {
+  public async uploadImages(id: number, files: Express.Multer.File[]) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const tourPackage: TourPackage = await this.repository.findOneBy({ id });
-      if (!tourPackage) {
+      const travelPackage: TravelPackages = await this.repository.findOneBy({ id });
+      if (!travelPackage) {
         throw new Error('Tour package not found');
       }
       const images = [];
       const imagesUploaded = files.map((file) => file.filename);
       images.push(...imagesUploaded);
 
-      if (tourPackage.images) {
-        tourPackage.images.push(...images);
+      if (travelPackage.images) {
+        travelPackage.images.push(...images);
       } else {
-        tourPackage.images = images;
+        travelPackage.images = images;
       }
-      await queryRunner.manager.save(tourPackage);
+      await queryRunner.manager.save(travelPackage);
 
       await queryRunner.commitTransaction();
       return {
-        data: tourPackage,
+        data: travelPackage,
         message: 'Images uploaded successfully',
       };
     } catch (error) {
@@ -199,32 +199,32 @@ export class TourPackageService {
     }
   }
 
-  public async updateThumbnail(id: string, file: Express.Multer.File) {
+  public async updateThumbnail(id: number, file: Express.Multer.File) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const tourPackage: TourPackage = await this.repository.findOneBy({ id });
+      const travelPackage: TravelPackages = await this.repository.findOneBy({ id });
 
-      if (!tourPackage) {
+      if (!travelPackage) {
         throw new Error('Tour package not found');
       }
       const distPath = path.join(
         './dist/apps/tour-package-service/public/tour-images',
-        tourPackage.images[0],
+        travelPackage.images[0],
       );
       if (fs.existsSync(distPath)) {
         fs.unlinkSync(distPath);
         console.log(`Deleted public image: ${distPath}`);
       }
-      tourPackage.images[0] = file.filename;
+      travelPackage.images[0] = file.filename;
 
-      await queryRunner.manager.save(tourPackage);
+      await queryRunner.manager.save(travelPackage);
 
       await queryRunner.commitTransaction();
       return {
-        data: tourPackage,
+        data: travelPackage,
         message: 'Thumbnail updated successfully',
       };
     } catch (error) {
@@ -254,18 +254,18 @@ export class TourPackageService {
     }
   }
 
-  public async deleteImage(id: string, imagePath: string) {
+  public async deleteImage(id: number, imagePath: string) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const tourPackage: TourPackage = await this.repository.findOneBy({ id });
+      const travelPackage: TravelPackages = await this.repository.findOneBy({ id });
 
-      if (!tourPackage) {
+      if (!travelPackage) {
         throw new Error('Tour package not found');
       }
 
-      const image = tourPackage.images.find((img) => img === imagePath);
+      const image = travelPackage.images.find((img) => img === imagePath);
       if (!image) {
         throw new Error('Image not found');
       }
@@ -285,13 +285,13 @@ export class TourPackageService {
         fs.unlinkSync(distPath);
         console.log(`Deleted public image: ${distPath}`);
       }
-      tourPackage.images = tourPackage.images.filter((img) => img !== image);
+      travelPackage.images = travelPackage.images.filter((img) => img !== image);
 
-      await queryRunner.manager.save(tourPackage);
+      await queryRunner.manager.save(travelPackage);
 
       await queryRunner.commitTransaction();
       return {
-        data: tourPackage,
+        data: travelPackage,
         message: 'Image deleted successfully',
       };
     } catch (error) {
@@ -332,7 +332,7 @@ export class TourPackageService {
   }
 
   public async updateTourPackage(
-    id: string,
+    id: number,
     payload: CreateUpdateTourPackageDto,
   ) {
     const queryRunner = this.dataSource.createQueryRunner();
@@ -340,18 +340,18 @@ export class TourPackageService {
     await queryRunner.startTransaction();
 
     try {
-      const tourPackage: TourPackage = await this.repository.findOneBy({ id });
+      const travelPackage: TravelPackages = await this.repository.findOneBy({ id });
 
-      if (!tourPackage) {
+      if (!travelPackage) {
         throw new Error('Tour package not found');
       }
 
-      this.repository.merge(tourPackage, payload);
-      await queryRunner.manager.save(tourPackage);
+      this.repository.merge(travelPackage, payload);
+      await queryRunner.manager.save(travelPackage);
       await queryRunner.commitTransaction();
 
       return {
-        data: tourPackage,
+        data: travelPackage,
         message: 'Tour package updated successfully',
       };
     } catch (error) {
@@ -389,23 +389,23 @@ export class TourPackageService {
     }
   }
 
-  public async deleteTourPackage(id: string) {
+  public async deleteTourPackage(id: number) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const tourPackage: TourPackage = await this.repository.findOneBy({ id });
+      const travelPackage: TravelPackages = await this.repository.findOneBy({ id });
 
-      if (!tourPackage) {
+      if (!travelPackage) {
         throw new Error('Tour package not found');
       }
 
-      await queryRunner.manager.softDelete(TourPackage, id);
+      await queryRunner.manager.softDelete(TravelPackages, id);
       await queryRunner.commitTransaction();
 
       return {
-        data: tourPackage,
+        data: travelPackage,
         message: 'Tour package deleted successfully',
       };
     } catch (error) {
@@ -433,24 +433,23 @@ export class TourPackageService {
     }
   }
 
-  public async updateTourPackageStatus(id: string, payload: updateStatusDto) {
+  public async updateTourPackageStatus(id: number, payload: updateStatusDto) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const tourPackage: TourPackage = await this.repository.findOneBy({ id });
+      const travelPackage: TravelPackages = await this.repository.findOneBy({ id });
 
-      if (!tourPackage) {
+      if (!travelPackage) {
         throw new Error('Tour package not found');
       }
 
-      tourPackage.status = payload.status;
-      await queryRunner.manager.save(tourPackage);
+      await queryRunner.manager.save(travelPackage);
       await queryRunner.commitTransaction();
 
       return {
-        data: tourPackage,
+        data: travelPackage,
         message: 'Tour package status updated successfully',
       };
     } catch (error) {

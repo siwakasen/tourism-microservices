@@ -5,7 +5,7 @@
   "compilerOptions": {
     "deleteOutDir": false,
     "webpack": true,
-    "tsConfigPath": "apps/tourweb_be/tsconfig.app.json"
+    "tsConfigPath": "tsconfig.app.json"
   },
   "monorepo": true,
   "root": "./apps",

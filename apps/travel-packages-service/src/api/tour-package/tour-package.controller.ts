@@ -55,7 +55,7 @@ export class TourPackageController {
     description: 'Successfuly get data tour package by id',
   })
   @Get('/:id')
-  public async getTourPackageById(@Param('id') id: string) {
+  public async getTourPackageById(@Param('id') id: number) {
     return await this.tourApiService.getTourPackageById(id);
   }
 
@@ -111,7 +111,7 @@ export class TourPackageController {
     type: UploadImagesDto,
   })
   public async uploadFiles(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @UploadedFiles() files: Express.Multer.File[],
   ) {
     if (files.length < 1) {
@@ -135,7 +135,7 @@ export class TourPackageController {
  @Roles(UserType.ADMIN)
   @Delete('delete-images/:id')
   public async deleteImage(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() body: DeleteImagesDto,
   ) {
     return await this.tourApiService.deleteImage(id, body.imagePath);
@@ -149,7 +149,7 @@ export class TourPackageController {
  @Roles(UserType.ADMIN)
   @Put('/:id')
   public async updateTourPackage(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() body: CreateUpdateTourPackageDto,
   ) {
     return await this.tourApiService.updateTourPackage(id, body);
@@ -162,7 +162,7 @@ export class TourPackageController {
  @Roles(UserType.ADMIN)
   @Patch('/status/:id')
   public async updateTourPackageStatus(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() body: updateStatusDto,
   ) {
     return await this.tourApiService.updateTourPackageStatus(id, body);
@@ -175,7 +175,7 @@ export class TourPackageController {
   @UseGuards(JwtAuthGuard)
  @Roles(UserType.ADMIN)
   @Delete('/:id')
-  public async deleteTourPackage(@Param('id') id: string) {
+  public async deleteTourPackage(@Param('id') id: number) {
     return await this.tourApiService.deleteTourPackage(id);
   }
 }

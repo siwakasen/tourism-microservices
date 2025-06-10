@@ -49,11 +49,9 @@ export class JwtAuthGuard extends Guard('user') implements IAuthGuard {
     if (user && user.roleId) {
       
       if (requiredRoles.includes(UserType.OWNER) && user.roleId === 1) {
-        console.log('owner');
         return true;
       }
       if (requiredRoles.includes(UserType.ADMIN) && user.roleId === 2) {
-        console.log('admin');
         return true;
       }
     }

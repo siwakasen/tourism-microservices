@@ -7,7 +7,7 @@ import { TourPackageModule } from './api/tour-package/tour-package.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { ContactModule } from './api/contact/contact.module';
-import { LoggerMiddleware } from './common/middleware/logger.midleware';
+import { LoggerMiddleware } from '../../../libs/helpers/middleware/logger.midleware';
 
 const envFilePath: string = getEnvPath(`${__dirname}/common/helper`);
 console.log('envFilePath:', getEnvPath(`${__dirname}`));

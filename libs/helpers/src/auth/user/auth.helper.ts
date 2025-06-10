@@ -7,8 +7,7 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { promisify } from 'util';
-import { randomBytes, scrypt } from 'crypto';
+import * as bcrypt from 'bcrypt';
 import { Employee } from 'libs/entities/employees';
 import { Customer } from 'libs/entities/customer/customer.entity';
 import { AuthServiceClient } from 'libs/entities/grpc-interfaces/auth-grpc.interface';
@@ -26,7 +25,6 @@ export class AuthHelper implements OnModuleInit {
   }
 
   private readonly jwt: JwtService;
-  private readonly scryptAsync = promisify(scrypt);
 
   constructor(
     jwt: JwtService,
@@ -88,55 +86,13 @@ export class AuthHelper implements OnModuleInit {
     storedPassword: string,
     suppliedPassword: string,
   ): Promise<boolean> {
-    const [hashedPassword, salt] = storedPassword.split('.');
-    const buf = await this.scryptAsync(suppliedPassword, salt, 64);
-
-    return buf.toString() === hashedPassword;
+    return bcrypt.compare(suppliedPassword, storedPassword);
   }
 
   // Encode User's password
-  public async encodePassword(password: string): Promise<string> {
-    const salt = randomBytes(8).toString('hex');
-    const buf = await this.scryptAsync(password, salt, 64);
-
-    return `${buf.toString()}.${salt}`;
+  public async hashingPassword(password: string): Promise<string> {
+    const saltRounds = 14; 
+    return bcrypt.hash(password, saltRounds);
   }
 
-  // Generate OTP
-  //unused
-  public generateOTP(): string {
-    switch (process.env.NODE_ENV) {
-      case 'test':
-        return '0000';
-      case 'development':
-        return '0000';
-      default:
-        return `${this.randomNumber()}${this.randomNumber()}${this.randomNumber()}${this.randomNumber()}`;
-    }
-  }
-
-  private randomNumber(): number {
-    return Math.floor(Math.random() * 10);
-  }
-
-  // Validate JWT Token, throw forbidden error if JWT Token is invalid
-  public async validateToken(token: string): Promise<boolean> {
-    try{
-      const decoded: unknown = this.jwt.verify(token);
-      if (!decoded) {
-        throw new UnauthorizedException();
-      }
-  
-      const user = await this.validateUser(decoded);
-      // const customer = await this.validateCustomer(decoded);
-      
-      if (!user) {
-        throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
-      }
-
-      return true;
-    } catch(e) {
-      return false;
-    }
-  }
 }

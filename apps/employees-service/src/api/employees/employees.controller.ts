@@ -1,8 +1,15 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  Patch,
   Post,
+  Put,
+  Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -15,7 +22,10 @@ import {
 import {
   LoginReqDto,
   LoginResponseDto,
-  RegisterDto,
+  PaginationEmployeeDto,
+  RegisterOwnerDto,
+  CreateEmployeeDto,
+  UpdateEmployeeDto,
   requestResetPasswordDto,
   ResetPasswordDto,
   TokenDto,
@@ -32,16 +42,9 @@ export class EmployeeController {
 
   @ApiResponse({ status: 200, description: 'Token valid' })
   @ApiBadRequestResponse({ description: 'Token Invalid' })
-  @Post('verify-token')
-  private async verifyToken(@Body() body: TokenDto): Promise<boolean> {
-    return await this.service.verifyToken(body.token);
-  }
-
-  @ApiResponse({ status: 200, description: 'Token valid' })
-  @ApiBadRequestResponse({ description: 'Token Invalid' })
-  @Post('register')
-  private async register(@Body() body: RegisterDto) {
-    return await this.service.register(body);
+  @Post('register-owner')
+  private async registerOwner(@Body() body: RegisterOwnerDto) {
+    return await this.service.registerOwner(body);
   }
 
   @ApiResponse({ status: 201, description: 'Success change Password' })
@@ -64,23 +67,50 @@ export class EmployeeController {
     return response;
   }
 
-  @Get('test')
-  @Roles(UserType.OWNER, UserType.ADMIN)
-  @UseGuards(JwtAuthGuard)
-  private async test(@Request() req: any): Promise<void> {
-    console.log("test: ", req.user);
-  }
-
-  @Get('test2')
-  @Roles(UserType.ADMIN)
-  @UseGuards(JwtAuthGuard)
-  private async test2(@Request() req: any): Promise<void> {
-    console.log("test2: ", req.user);
-  }
-
+  
   @Post('request-reset-password')
   async requestResetPasswords(@Body() body: requestResetPasswordDto) {
     await this.service.requestResetPassword(body);
     return { message: 'Email sent successfully!' };
+  }
+
+
+  @Get('get-all-employees')
+  @Roles(UserType.OWNER)
+  @UseGuards(JwtAuthGuard)
+  public async getAllEmployees(@Query() query: PaginationEmployeeDto) {
+    console.log(query);
+    return await this.service.getAllEmployees(query);
+  }
+
+  @Get('get-employee-by-id/:id')
+  @Roles(UserType.OWNER)
+  @UseGuards(JwtAuthGuard)
+  public async getEmployeeById(@Param('id') id: number) {
+    return await this.service.getEmployeeById(id);
+  }
+
+  @Post('create-employee')
+  @Roles(UserType.OWNER)
+  @UseGuards(JwtAuthGuard)
+  public async createEmployee(@Body() body: CreateEmployeeDto) {
+    return await this.service.createEmployee(body);
+  }
+
+  @Patch('update-employee/:id')
+  @Roles(UserType.OWNER)
+  @UseGuards(JwtAuthGuard)
+  public async updateEmployee(@Param('id') id: number, @Body() body: UpdateEmployeeDto) {
+    if (Object.keys(body).length === 0) {
+      throw new HttpException('Request body cannot be empty', HttpStatus.BAD_REQUEST);
+    }
+    return await this.service.updateEmployee(id, body);
+  }
+
+  @Delete('delete-employee/:id')
+  @Roles(UserType.OWNER)
+  @UseGuards(JwtAuthGuard)
+  public async deleteEmployee(@Param('id') id: number) {
+    return await this.service.deleteEmployee(id);
   }
 }

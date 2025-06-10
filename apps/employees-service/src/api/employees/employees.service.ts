@@ -7,10 +7,14 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Employee } from 'libs/entities/employees/employee.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import {
+  CreateEmployeeDto,
+  UpdateEmployeeDto,
   LoginReqDto,
-  RegisterDto,
+  PaginationEmployeeDto,
+  RegisterOwnerDto,
+  RegisterOwnerResponseDto,
   requestResetPasswordDto,
   ResetPasswordDto,
 } from './employees.dto';
@@ -27,6 +31,7 @@ export class EmployeeService {
   constructor(
     private readonly redisService: AuthRedisService,
     private readonly mailService: MailService,
+    private readonly dataSource: DataSource,
   ) {}
   @InjectRepository(Role)
   private readonly roleRepository: Repository<Role>;
@@ -37,39 +42,35 @@ export class EmployeeService {
   @InjectRepository(EmployeeToken)
   private readonly EmployeeTokenRepo: Repository<EmployeeToken>;
 
-  public async register(body: RegisterDto): Promise<void | never> {
-    const { email, password, name, role_id }: RegisterDto = body;
+  public async registerOwner(body: RegisterOwnerDto): Promise<RegisterOwnerResponseDto> {
+    const { email, password, name, role_id }: RegisterOwnerDto = body;
     const user: Employee = await this.repository.findOne({
-      where: { email },
+      where: { role: { id: 1 } },
     });
 
     if (user) {
-      throw new HttpException('Email already exist', HttpStatus.CONFLICT);
+      throw new HttpException('Owner already exist', HttpStatus.CONFLICT);
     }
 
     const role = await this.roleRepository.findOne({ where: { id: role_id } });
 
-    const hashedPassword = await this.helper.encodePassword(password);
-    const newUser = new Employee();
-    newUser.email = email;
-    newUser.name = name;
-    newUser.role = role;
-    newUser.password = hashedPassword;
-    newUser.createdAt = new Date();
+    const hashedPassword = await this.helper.hashingPassword(password);
+    const owner = new Employee();
+    owner.email = email;
+    owner.name = name;
+    owner.role = role;
+    owner.password = hashedPassword;
 
-    await this.repository.save(newUser);
+    await this.repository.save(owner);
+
+    return{
+      success: true,
+      message: 'Owner registered successfully',
+    }
   }
 
   public login = async (body: LoginReqDto) => {
     const { email, password }: LoginReqDto = body;
-    const attempsCount = await this.redisService.getValue(email);
-
-    if (+attempsCount > 5) {
-      throw new HttpException(
-        `Account Blocked, Please Contact Administrator`,
-        HttpStatus.FORBIDDEN,
-      );
-    }
     const user = await this.repository.findOne({
       where: {
         email: email,
@@ -89,10 +90,8 @@ export class EmployeeService {
     );
 
     if (!passwordMatched) {
-      const newCount = attempsCount ? +attempsCount + 1 : 1;
-      await this.redisService.setValue(email, newCount.toString(), 600);
       throw new HttpException(
-        `Invalid Password, Count = ${newCount.toString()} `,
+        `Invalid Credentials`,
         HttpStatus.UNAUTHORIZED,
       );
     }
@@ -132,10 +131,6 @@ export class EmployeeService {
     });
   }
 
-  public async verifyToken(token: string): Promise<boolean> {
-    const isVerifiedToken: boolean = await this.helper.validateToken(token);
-    return isVerifiedToken;
-  }
 
   public async changePassword(payload: ResetPasswordDto) {
     const { token, password }: ResetPasswordDto = payload;
@@ -152,10 +147,10 @@ export class EmployeeService {
       if (!user) {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
       }
-      const hashedPassword = await this.helper.encodePassword(password);
+      const hashedPassword = await this.helper.hashingPassword(password);
       user.password = hashedPassword;
 
-      user.lastUpdatePassword = new Date();
+      user.last_update_password = new Date();
       user.save();
       return {
         user: user,
@@ -171,6 +166,251 @@ export class EmployeeService {
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
+    }
+  }
+
+  public async getAllEmployees(paginationDto: PaginationEmployeeDto) {
+    try {
+      const { page = 1, limit = 10, search = '' } = paginationDto;
+      const queryBuilder = this.repository
+        .createQueryBuilder('employees')
+        .leftJoinAndSelect('employees.role', 'role')
+        .select([
+          'employees.id',
+          'employees.name', 
+          'employees.email',
+          'employees.salary',
+          'employees.last_update_password',
+          'employees.created_at',
+          'employees.updated_at',
+          'employees.deleted_at',
+          'role.id',
+          'role.role_name'
+        ])
+        .orderBy('employees.created_at', 'DESC');
+
+      const conditions: string[] = [];
+
+      const parameters: Record<string, any> = {};
+      if (search) {
+        conditions.push(`employees.name ILIKE :search`);
+        conditions.push(`employees.email ILIKE :search`);
+        conditions.push(`role.role_name ILIKE :search`);
+        conditions.push(`CAST(employees.salary AS TEXT) ILIKE :search`);
+        parameters['search'] = `%${search}%`;
+      }
+
+      if (conditions.length) {
+        queryBuilder.where(conditions.join(' OR '), parameters);
+      }
+
+      const [result, total] = await queryBuilder
+        .skip((page - 1) * limit)
+        .take(limit)
+        .getManyAndCount();
+
+      const totalPages = Math.ceil(total / limit);
+      const hasNextPage = page < totalPages;
+
+      return {
+        data: result,
+        meta: {
+          totalItems: total,
+          currentPage: page,
+          totalPages,
+          limit,
+          hasNextPage,
+          hasPrevPage: page > 1,
+        }
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          message: [error.message || 'Failed to fetch employees'],
+          error: error.message || 'Internal server error',
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  public async getEmployeeById(id: number) {
+    try {
+      const queryBuilder = this.repository.createQueryBuilder('employees');
+
+      const employee = await queryBuilder.where('employees.id = :id', { id })
+      .leftJoinAndSelect('employees.role', 'role')
+      .select([
+        'employees.id',
+        'employees.name',
+        'employees.email',
+        'employees.salary',
+        'employees.last_update_password',
+        'employees.created_at',
+        'employees.updated_at',
+        'employees.deleted_at',
+        'role.id',
+        'role.role_name'
+      ]).getOne();
+
+      if (!employee) {
+        throw new Error('Not Found');
+      }
+      return{
+        data: employee,
+        message: 'Successfully get data employee by id',
+      };
+    } catch (error) {
+      if (error.message === 'Not Found') {
+        throw new HttpException(
+          {
+            message: ['Employee not found'],
+            error: 'Employee not found',
+            statusCode: HttpStatus.NOT_FOUND,
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      throw new HttpException(
+        {
+          message: [error.message || 'Failed to fetch employee'],
+          error: error.message || 'Internal server error',
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  public async createEmployee(payload: CreateEmployeeDto) {
+    console.log(payload);
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      if(payload.role_id == 1) {
+        throw new HttpException('New Owner cannot be created', HttpStatus.BAD_REQUEST);
+      }
+      const role = await this.roleRepository.findOne({ where: { id: payload.role_id } });
+      const hashedPassword = await this.helper.hashingPassword(payload.password);
+
+      const employee: Employee = this.repository.create({
+        ...payload,
+        role: role,
+        password: hashedPassword
+      });
+
+      const user = await this.repository.findOne({
+        where: { email: payload.email },
+      });
+
+      if (user) {
+        throw new HttpException(
+          `Email already registered`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      await queryRunner.manager.save(employee);
+      await queryRunner.commitTransaction();
+
+      return {
+        success: true,
+        message: 'Successfully create employee',
+      };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(
+        {
+          message: [error.message || 'Failed to create employee'],
+          error: error.message || 'Internal server error',
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    } finally {
+      await queryRunner.release();
+    }
+
+  }
+  public async updateEmployee(id: number, payload: UpdateEmployeeDto) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      if(payload.role_id == 1) {
+        throw new HttpException('Cannot change admin into owner', HttpStatus.BAD_REQUEST);
+      }
+      const newRole = await this.roleRepository.findOne({ where: { id: payload.role_id } });
+      if(!newRole) {
+        throw new HttpException('Role not found', HttpStatus.NOT_FOUND);
+      }
+
+      const employee = await this.repository.findOne({ where: { id }, relations: ['role'] });
+      if (!employee) {
+        throw new HttpException('Employee not found', HttpStatus.NOT_FOUND);
+      }
+
+      
+      this.repository.merge(employee, payload);
+      if(payload.role_id) {
+        const role = await this.roleRepository.findOne({ where: { id: payload.role_id } });
+        employee.role = role;
+      }
+      await queryRunner.manager.save(employee);
+      await queryRunner.commitTransaction();
+      return {
+        success: true,
+        message: 'Successfully update employee',
+      };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(
+        {
+          message: [error.message || 'Failed to update employee'],
+          error: error.message || 'Internal server error',
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  public async deleteEmployee(id: number) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const employee = await this.repository.findOne({ where: { id }, relations: ['role'] });
+
+      if(!employee) {
+        throw new HttpException('Employee not found', HttpStatus.NOT_FOUND);
+      }
+      if(employee.role.id == 1) {
+        throw new HttpException('Cannot delete owner', HttpStatus.BAD_REQUEST);
+      }
+      await queryRunner.manager.softDelete(Employee, id);
+      await queryRunner.commitTransaction();
+      return {
+        success: true,
+        message: 'Successfully delete employee',
+      };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(
+        {
+          message: [error.message || 'Failed to delete employee'],
+          error: error.message || 'Internal server error',
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    } finally {
+      await queryRunner.release();
     }
   }
 }

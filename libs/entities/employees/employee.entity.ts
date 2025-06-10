@@ -1,8 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
-import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { Role } from '../role/role.entity';
-
 @Entity('employees')
 class Employee extends BaseEntity {
   @ApiProperty()
@@ -23,8 +22,8 @@ class Employee extends BaseEntity {
   public role: Role;
   
   @ApiProperty()
-  @Column({ type: 'text', nullable: false, default: '' })
-  public email!: string;
+  @Column({ type: 'text', nullable: false, unique: true })
+  public email: string;
 
   @ApiProperty()
   @Exclude()
@@ -38,20 +37,29 @@ class Employee extends BaseEntity {
 
   @ApiProperty()
   @Column({ type: 'timestamp', nullable: true })
-  public lastUpdatePassword: Date;
-  
-  @ApiProperty()
-  @Column({ type: 'timestamp', nullable: false, default: new Date() })
-  public createdAt: Date;
+  public last_update_password: Date;
 
-  @ApiProperty()
-  @Column({ type: 'timestamp', nullable: false, default: new Date() })
-  public updatedAt: Date;
+  @ApiProperty({
+    description: 'The timestamp when the tour package was created',
+    example: '2024-11-18T12:00:00.000Z',
+  })
+  @CreateDateColumn()
+  created_at: Date;
 
-  @ApiProperty()
-  @Column({ type: 'timestamp', nullable: false, default: new Date() })
-  public deletedAt: Date;
+  @ApiProperty({
+    description: 'The timestamp when the tour package was last updated',
+    example: '2024-11-19T12:00:00.000Z',
+  })
+  @UpdateDateColumn()
+  updated_at: Date;
 
+  @ApiProperty({
+    description: 'The timestamp when the tour package was soft-deleted',
+    example: '2024-11-20T12:00:00.000Z',
+    nullable: true,
+  })
+  @DeleteDateColumn()
+  deleted_at: Date; 
 
 }
 

@@ -14,6 +14,7 @@ async function bootstrap() {
     origin: [
       'https://client-web-app.vulpbox.com',
       'https://admin-web-app.vulpbox.com',
+      'http://localhost:3000',
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],

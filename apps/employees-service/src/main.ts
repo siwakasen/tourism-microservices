@@ -30,8 +30,8 @@ async function bootstrap() {
   );
 
   const configSwagger = new DocumentBuilder()
-    .setTitle('Admin Api Service')
-    .setDescription('API for Admin data CRUD')
+    .setTitle('Employees API Service')
+    .setDescription('API for Employees data CRUD')
     .setVersion('1.0')
     .addBearerAuth()
     .addServer(`http://localhost:${port}`)

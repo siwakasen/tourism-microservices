@@ -60,15 +60,7 @@ export class TravelPackages {
     example: 10,
   })
   @Column({ type: 'int' })
-  max_group_size: number;
-
-  @ApiProperty({
-    description: 'The discounted price for children (if applicable)',
-    example: 500,
-    nullable: true,
-  })
-  @Column({ type: 'int', nullable: true })
-  children_price: number;
+  max_persons: number;
 
   @ApiProperty({
     description: 'The detailed itineraries for the tour package',
@@ -85,27 +77,6 @@ export class TravelPackages {
   @Column({ type: 'json', nullable: true })
   includes: string[];
 
-  @ApiProperty({
-    description: 'The areas where pickup is available',
-    example: '["Denpasar", "Ubud", "Kuta"]',
-  })
-  @Column({ type: 'json', nullable: true })
-  pickup_areas: string[];
-
-  @ApiProperty({
-    description: 'Terms and conditions for the tour package',
-    example:
-      '{"cancellation_policy": "Non-refundable", "payment": "Full payment required"}',
-  })
-  @Column({ type: 'json', nullable: true })
-  terms_conditions: string[];
-
-  @ApiProperty({
-    description: 'Status of the tour package (active/inactive)',
-    example: true,
-  })
-  @Column({ type: 'boolean', default: true })
-  status: boolean;
 
   @ApiProperty({
     description: 'The timestamp when the tour package was created',

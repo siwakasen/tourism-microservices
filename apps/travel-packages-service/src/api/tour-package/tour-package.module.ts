@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { TourPackage } from 'libs/entities';
+import { TravelPackages } from 'libs/entities';
 import { TourPackageController } from './tour-package.controller';
 import { TourPackageService } from './tour-package.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
@@ -13,7 +13,7 @@ import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
 @Module({
   imports: [
     // typeorm module
-    TypeOrmModule.forFeature([TourPackage]),
+    TypeOrmModule.forFeature([TravelPackages]),
 
     // authentication module
     PassportModule.register({ defaultStrategy: 'user', property: 'user' }),
