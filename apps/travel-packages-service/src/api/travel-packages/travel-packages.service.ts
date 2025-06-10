@@ -4,40 +4,42 @@ import { TravelPackages } from 'libs/entities';
 import { Repository, DataSource } from 'typeorm';
 import {
   PaginationDto,
-  CreateUpdateTourPackageDto,
-  updateStatusDto,
-} from './tour-package.dto';
+  CreateUpdateTravelPackageDto
+} from './travel-packages.dto';
 import * as fs from 'fs';
 import * as path from 'path';
 
 @Injectable()
-export class TourPackageService {
-  constructor(private readonly dataSource: DataSource) {}
-  @InjectRepository(TravelPackages)
-  private readonly repository: Repository<TravelPackages>;
-  getHello(): string {
-    return 'Hello World!';
-  }
+export class TravelPackagesService {
+  constructor(
+    @InjectRepository(TravelPackages)
+    private readonly repository: Repository<TravelPackages>,
+    private readonly dataSource: DataSource,
+  ) {}
 
-  public async getAllTourPackage(paginationDto: PaginationDto) {
+  public async getAllTravelPackages(paginationDto: PaginationDto) {
     try {
       const { page = 1, limit = 10, search = '' } = paginationDto;
       const queryBuilder = this.repository
-        .createQueryBuilder('tour_packages')
-        .orderBy('tour_packages.created_at', 'DESC');
+        .createQueryBuilder('travel_packages')
+        .orderBy('travel_packages.created_at', 'DESC');
 
       // Mengelompokkan kondisi pencarian
       const conditions = [];
       const parameters: Record<string, any> = {};
 
       if (search) {
-        conditions.push('tour_packages.package_name ILIKE :search');
+        conditions.push('travel_packages.package_name ILIKE :search');
+        conditions.push('travel_packages.description ILIKE :search');
+        conditions.push('CAST(travel_packages.package_price AS TEXT) ILIKE :search');
+        conditions.push('CAST(travel_packages.duration AS TEXT) ILIKE :search');
+        conditions.push('CAST(travel_packages.max_persons AS TEXT) ILIKE :search');
         parameters['search'] = `%${search}%`;
       }
 
       // Menggabungkan semua kondisi jika ada
       if (conditions.length) {
-        queryBuilder.where(conditions.join(' AND '), parameters);
+        queryBuilder.where(conditions.join(' OR '), parameters);
       }
 
       const [result, total] = await queryBuilder
@@ -71,23 +73,23 @@ export class TourPackageService {
     }
   }
 
-  public async getTourPackageById(id: number) {
+  public async getTravelPackageById(id: number) {
     try {
     const travelPackage: TravelPackages = await this.repository.findOneBy({ id });
 
       if (!travelPackage) {
-        throw new Error('Tour package not found');
+        throw new Error('Travel Package not found');
       }
 
       return {
         data: travelPackage,
-        message: 'Successfully get data tour package by id',
+        message: 'Successfully get data travel package by id',
       };
     } catch (error) {
-      if (error.message === 'Tour package not found') {
+      if (error.message === 'Travel Package not found') {
         throw new HttpException(
           {
-            message: ['Tour package not found'],
+            message: ['Travel Package not found'],
             error: 'Not Found',
             statusCode: HttpStatus.NOT_FOUND,
           },
@@ -105,7 +107,7 @@ export class TourPackageService {
     }
   }
 
-  public async createTourPackage(payload: CreateUpdateTourPackageDto) {
+  public async createTravelPackage(payload: CreateUpdateTravelPackageDto) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -115,25 +117,15 @@ export class TourPackageService {
         ...payload,
       });
 
-      await queryRunner.manager.save(travelPackage);
+      await queryRunner.manager.save(travelPackage); 
       await queryRunner.commitTransaction();
 
       return {
         data: travelPackage,
-        message: 'Tour package created successfully',
+        message: 'Travel Package created successfully',
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      if (error.detail.includes('package_name')) {
-        throw new HttpException(
-          {
-            message: ['Tour package name already exists'],
-            error: 'Conflict',
-            statusCode: HttpStatus.CONFLICT,
-          },
-          HttpStatus.CONFLICT,
-        );
-      }
 
       throw new HttpException(
         {
@@ -155,7 +147,7 @@ export class TourPackageService {
     try {
       const travelPackage: TravelPackages = await this.repository.findOneBy({ id });
       if (!travelPackage) {
-        throw new Error('Tour package not found');
+        throw new Error('Travel Package not found');
       }
       const images = [];
       const imagesUploaded = files.map((file) => file.filename);
@@ -176,10 +168,10 @@ export class TourPackageService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
 
-      if (error.message === 'Tour package not found') {
+      if (error.message === 'Travel Package not found') {
         throw new HttpException(
           {
-            message: ['Tour package not found'],
+            message: ['Travel Package not found'],
             error: 'Not Found',
             statusCode: HttpStatus.NOT_FOUND,
           },
@@ -208,10 +200,10 @@ export class TourPackageService {
       const travelPackage: TravelPackages = await this.repository.findOneBy({ id });
 
       if (!travelPackage) {
-        throw new Error('Tour package not found');
+        throw new Error('Travel Package not found');
       }
       const distPath = path.join(
-        './dist/apps/tour-package-service/public/tour-images',
+        './dist/apps/travel-packages-service/public/travel-images',
         travelPackage.images[0],
       );
       if (fs.existsSync(distPath)) {
@@ -230,10 +222,10 @@ export class TourPackageService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
 
-      if (error.message === 'Tour package not found') {
+      if (error.message === 'Travel Package not found') {
         throw new HttpException(
           {
-            message: ['Tour package not found'],
+            message: ['Travel Package not found'],
             error: 'Not Found',
             statusCode: HttpStatus.NOT_FOUND,
           },
@@ -262,7 +254,7 @@ export class TourPackageService {
       const travelPackage: TravelPackages = await this.repository.findOneBy({ id });
 
       if (!travelPackage) {
-        throw new Error('Tour package not found');
+        throw new Error('Travel Package not found');
       }
 
       const image = travelPackage.images.find((img) => img === imagePath);
@@ -270,11 +262,11 @@ export class TourPackageService {
         throw new Error('Image not found');
       }
       const filePath = path.join(
-        './apps/tour-package-service/public/tour-images',
+        './apps/travel-packages-service/public/travel-images',
         image,
       );
       const distPath = path.join(
-        './dist/apps/tour-package-service/public/tour-images',
+        './dist/apps/travel-packages-service/public/travel-images',
         image,
       );
       if (fs.existsSync(filePath)) {
@@ -297,10 +289,10 @@ export class TourPackageService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
 
-      if (error.message === 'Tour package not found') {
+      if (error.message === 'Travel Package not found') {
         throw new HttpException(
           {
-            message: ['Tour package not found'],
+            message: ['Travel Package not found'],
             error: 'Not Found',
             statusCode: HttpStatus.NOT_FOUND,
           },
@@ -331,9 +323,9 @@ export class TourPackageService {
     }
   }
 
-  public async updateTourPackage(
+  public async updateTravelPackage(
     id: number,
-    payload: CreateUpdateTourPackageDto,
+    payload: CreateUpdateTravelPackageDto,
   ) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -343,7 +335,7 @@ export class TourPackageService {
       const travelPackage: TravelPackages = await this.repository.findOneBy({ id });
 
       if (!travelPackage) {
-        throw new Error('Tour package not found');
+        throw new Error('Travel Package not found');
       }
 
       this.repository.merge(travelPackage, payload);
@@ -352,28 +344,18 @@ export class TourPackageService {
 
       return {
         data: travelPackage,
-        message: 'Tour package updated successfully',
+        message: 'Travel Package updated successfully',
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      if (error.message === 'Tour package not found') {
+      if (error.message === 'Travel Package not found') {
         throw new HttpException(
           {
-            message: ['Tour package not found'],
+            message: ['Travel Package not found'],
             error: 'Not Found',
             statusCode: HttpStatus.NOT_FOUND,
           },
           HttpStatus.NOT_FOUND,
-        );
-      }
-      if (error.detail.includes('package_name')) {
-        throw new HttpException(
-          {
-            message: ['Tour package name already exists'],
-            error: 'Conflict',
-            statusCode: HttpStatus.CONFLICT,
-          },
-          HttpStatus.CONFLICT,
         );
       }
       throw new HttpException(
@@ -389,7 +371,7 @@ export class TourPackageService {
     }
   }
 
-  public async deleteTourPackage(id: number) {
+  public async deleteTravelPackage(id: number) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -398,7 +380,7 @@ export class TourPackageService {
       const travelPackage: TravelPackages = await this.repository.findOneBy({ id });
 
       if (!travelPackage) {
-        throw new Error('Tour package not found');
+        throw new Error('Travel Package not found');
       }
 
       await queryRunner.manager.softDelete(TravelPackages, id);
@@ -406,58 +388,14 @@ export class TourPackageService {
 
       return {
         data: travelPackage,
-        message: 'Tour package deleted successfully',
+        message: 'Travel Package deleted successfully',
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      if (error.message === 'Tour package not found') {
+      if (error.message === 'Travel Package not found') {
         throw new HttpException(
           {
-            message: ['Tour package not found'],
-            error: 'Not Found',
-            statusCode: HttpStatus.NOT_FOUND,
-          },
-          HttpStatus.NOT_FOUND,
-        );
-      }
-      throw new HttpException(
-        {
-          message: [error.message || 'Internal Server Error'],
-          error: 'Internal Server Error',
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    } finally {
-      await queryRunner.release();
-    }
-  }
-
-  public async updateTourPackageStatus(id: number, payload: updateStatusDto) {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      const travelPackage: TravelPackages = await this.repository.findOneBy({ id });
-
-      if (!travelPackage) {
-        throw new Error('Tour package not found');
-      }
-
-      await queryRunner.manager.save(travelPackage);
-      await queryRunner.commitTransaction();
-
-      return {
-        data: travelPackage,
-        message: 'Tour package status updated successfully',
-      };
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      if (error.message === 'Tour package not found') {
-        throw new HttpException(
-          {
-            message: ['Tour package not found'],
+            message: ['Travel Package not found'],
             error: 'Not Found',
             statusCode: HttpStatus.NOT_FOUND,
           },

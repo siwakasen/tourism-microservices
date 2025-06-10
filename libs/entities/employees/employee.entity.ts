@@ -40,21 +40,21 @@ class Employee extends BaseEntity {
   public last_update_password: Date;
 
   @ApiProperty({
-    description: 'The timestamp when the tour package was created',
+    description: 'The timestamp when the employee was created',
     example: '2024-11-18T12:00:00.000Z',
   })
   @CreateDateColumn()
   created_at: Date;
 
   @ApiProperty({
-    description: 'The timestamp when the tour package was last updated',
+    description: 'The timestamp when the employee was last updated',
     example: '2024-11-19T12:00:00.000Z',
   })
   @UpdateDateColumn()
   updated_at: Date;
 
   @ApiProperty({
-    description: 'The timestamp when the tour package was soft-deleted',
+    description: 'The timestamp when the employee was soft-deleted',
     example: '2024-11-20T12:00:00.000Z',
     nullable: true,
   })

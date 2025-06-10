@@ -28,13 +28,13 @@ async function bootstrap() {
     .setVersion('1.0')
     .addBearerAuth()
     .addServer(`http://localhost:${port}`)
-    .addServer(`https://tour-package.vulpbox.com`)
+    .addServer(`https://travel-packages-service.vulpbox.com`)
     .build();
   const document = SwaggerModule.createDocument(app, configSwagger);
   SwaggerModule.setup('api-docs', app, document);
 
   await app.listen(port, () => {
-    console.log('[Tour Package Service]', `http://localhost:${port}`);
+    console.log('[Travel Package Service]', `http://localhost:${port}`);
   });
 }
 

@@ -69,28 +69,28 @@ export class Cars {
   includes: string[];
 
   @ApiProperty({
-    description: 'Status of the tour package (active/inactive)',
+    description: 'Status of the car (active/inactive)',
     example: true,
   })
   @Column({ type: 'boolean', default: true })
   status: boolean;
 
   @ApiProperty({
-    description: 'The timestamp when the tour package was created',
+    description: 'The timestamp when the car was created',
     example: '2024-11-18T12:00:00.000Z',
   })
   @CreateDateColumn()
   created_at: Date;
 
   @ApiProperty({
-    description: 'The timestamp when the tour package was last updated',
+    description: 'The timestamp when the car was last updated',
     example: '2024-11-19T12:00:00.000Z',
   })
   @UpdateDateColumn()
   updated_at: Date;
 
   @ApiProperty({
-    description: 'The timestamp when the tour package was soft-deleted',
+    description: 'The timestamp when the car was soft-deleted',
     example: '2024-11-20T12:00:00.000Z',
     nullable: true,
   })

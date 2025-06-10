@@ -8,7 +8,6 @@ import {
   IsBoolean,
 } from 'class-validator';
 
-//set up pagination + filter untuk fetch data staff
 export class PaginationDto {
   @ApiProperty({ default: 1 })
   @IsNumber()
@@ -52,50 +51,33 @@ export class DeleteImagesDto {
   @IsString()
   public readonly imagePath: string;
 }
-export class CreateUpdateTourPackageDto {
-  @ApiProperty()
+
+export class CreateUpdateTravelPackageDto {
+  @ApiProperty({description: 'The name of the travel package', example: 'Bali Island Adventure'})
   @IsString()
   public readonly package_name: string;
 
-  @ApiProperty()
+  @ApiProperty({description: 'The detailed description of the travel package', example: 'Experience the beauty of Bali with a 3-day adventure package.'})
   @IsString()
   public readonly description: string;
 
-  @ApiProperty()
+  @ApiProperty({description: 'The price of the travel package in USD', example: 1500})
   @IsNumber()
   public readonly package_price: number;
 
-  @ApiProperty()
+  @ApiProperty({description: 'The duration of the travel package in days', example: 3})
   @IsNumber()
   public readonly duration: number;
 
-  @ApiProperty()
+  @ApiProperty({description: 'The maximum number of persons for the travel package', example: 10})
   @IsNumber()
-  public readonly max_group_size: number;
+  public readonly max_persons: number;
 
-  @ApiProperty()
-  @IsNumber()
-  public readonly children_price: number;
-
-  @ApiProperty()
+  @ApiProperty({description: 'The detailed itineraries for the travel package', example: '[{"day": 1, "activity": "Visit Ubud Forest"}, {"day": 2, "activity": "Relax at Kuta Beach"}, {"day": 3, "activity": "Visit Bali Safari and Marine Park"}]'})
   @IsArray()
   public readonly itineraries: string[];
 
-  @ApiProperty()
+  @ApiProperty({description: 'The list of items included in the travel package', example: '["Tickets", "Bottle water", "Tour Guide"]'})
   @IsArray()
   public readonly includes: string[];
-
-  @ApiProperty()
-  @IsArray()
-  public readonly pickup_areas: string[];
-
-  @ApiProperty()
-  @IsArray()
-  public readonly terms_conditions: string[];
-}
-
-export class updateStatusDto {
-  @ApiProperty()
-  @IsBoolean()
-  public readonly status: boolean;
 }

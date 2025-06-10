@@ -16,7 +16,7 @@ import {
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { UploadedFiles } from '@nestjs/common';
 import { UseInterceptors } from '@nestjs/common';
-import { TourPackageService } from './tour-package.service';
+import { TravelPackagesService } from './travel-packages.service';
 import {
   ApiResponse,
   ApiTags,
@@ -26,59 +26,58 @@ import {
 } from '@nestjs/swagger';
 import {
   PaginationDto,
-  CreateUpdateTourPackageDto,
+  CreateUpdateTravelPackageDto,
   UploadImagesDto,
-  updateStatusDto,
   DeleteImagesDto,
-} from './tour-package.dto';
+} from './travel-packages.dto';
 import { diskStorage } from 'multer';
 import { JwtAuthGuard } from '@app/helpers/auth/user/auth.guard';
 import { Roles, UserType } from '@app/helpers/auth/decorators/auth.decorator';
 
 @ApiBearerAuth()
-@ApiTags('Tour Package')
-@Controller('/tour-package')
-export class TourPackageController {
-  @Inject(TourPackageService)
-  private readonly tourApiService: TourPackageService;
+@ApiTags('Travel Packages')
+@Controller('/travel-packages')
+export class TravelPackagesController {
+  @Inject(TravelPackagesService)
+  private readonly travelPackagesService: TravelPackagesService;
   @ApiResponse({
     status: 200,
-    description: 'Successfuly get data tour package',
+    description: 'Successfuly get data travel package',
   })
   @Get('')
-  public async getTourPackage(@Query() query: PaginationDto) {
-    return await this.tourApiService.getAllTourPackage(query);
+  public async getTravelPackages(@Query() query: PaginationDto) {
+    return await this.travelPackagesService.getAllTravelPackages(query);
   }
 
   @ApiResponse({
     status: 200,
-    description: 'Successfuly get data tour package by id',
+    description: 'Successfuly get data travel package by id',
   })
   @Get('/:id')
-  public async getTourPackageById(@Param('id') id: number) {
-    return await this.tourApiService.getTourPackageById(id);
+  public async getTravelPackageById(@Param('id') id: number) {
+    return await this.travelPackagesService.getTravelPackageById(id);
   }
 
   @ApiResponse({
-    status: 200,
-    description: 'Successfuly create data tour package',
+    status: 201,
+    description: 'Successfuly create data travel package',
   })
   @UseGuards(JwtAuthGuard)
   @Roles(UserType.ADMIN)
   @Post('')
-  public async createTourPackage(@Body() body: CreateUpdateTourPackageDto) {
-    return await this.tourApiService.createTourPackage(body);
+  public async createTravelPackage(@Body() body: CreateUpdateTravelPackageDto) {
+    return await this.travelPackagesService.createTravelPackage(body);
   }
 
   @ApiResponse({
     status: 200,
-    description: 'Successfully uploaded tour package images',
+    description: 'Successfully uploaded travel package images',
   })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
     FilesInterceptor('images', 20, {
       storage: diskStorage({
-        destination: './dist/apps/tour-package-service/public/tour-images',
+        destination: './dist/apps/travel-packages-service/public/travel-images',
         filename: (req, file, cb) => {
           const uniqueSuffix =
             Date.now() + '-' + Math.round(Math.random() * 1e9);
@@ -105,7 +104,7 @@ export class TourPackageController {
     }),
   )
   @UseGuards(JwtAuthGuard)
- @Roles(UserType.ADMIN)
+  @Roles(UserType.ADMIN)
   @Post('upload-images/:id')
   @ApiBody({
     type: UploadImagesDto,
@@ -121,12 +120,12 @@ export class TourPackageController {
         statusCode: HttpStatus.BAD_REQUEST,
       };
     }
-    return await this.tourApiService.uploadImages(id, files);
+    return await this.travelPackagesService.uploadImages(id, files);
   }
 
   @ApiResponse({
     status: 200,
-    description: 'Successfully deleted tour package images',
+    description: 'Successfully deleted travel package images',
   })
   @ApiBody({
     type: DeleteImagesDto,
@@ -138,44 +137,31 @@ export class TourPackageController {
     @Param('id') id: number,
     @Body() body: DeleteImagesDto,
   ) {
-    return await this.tourApiService.deleteImage(id, body.imagePath);
+    return await this.travelPackagesService.deleteImage(id, body.imagePath);
   }
 
   @ApiResponse({
     status: 200,
-    description: 'Successfuly update data tour package',
+    description: 'Successfuly update data travel package',
   })
   @UseGuards(JwtAuthGuard)
- @Roles(UserType.ADMIN)
+  @Roles(UserType.ADMIN)
   @Put('/:id')
   public async updateTourPackage(
     @Param('id') id: number,
-    @Body() body: CreateUpdateTourPackageDto,
+    @Body() body: CreateUpdateTravelPackageDto,
   ) {
-    return await this.tourApiService.updateTourPackage(id, body);
-  }
-  @ApiResponse({
-    status: 200,
-    description: 'Successfuly update data tour package status',
-  })
-  @UseGuards(JwtAuthGuard)
- @Roles(UserType.ADMIN)
-  @Patch('/status/:id')
-  public async updateTourPackageStatus(
-    @Param('id') id: number,
-    @Body() body: updateStatusDto,
-  ) {
-    return await this.tourApiService.updateTourPackageStatus(id, body);
+    return await this.travelPackagesService.updateTravelPackage(id, body);
   }
 
   @ApiResponse({
     status: 200,
-    description: 'Successfuly delete data tour package',
+    description: 'Successfuly delete data travel package',
   })
   @UseGuards(JwtAuthGuard)
- @Roles(UserType.ADMIN)
+  @Roles(UserType.ADMIN)
   @Delete('/:id')
-  public async deleteTourPackage(@Param('id') id: number) {
-    return await this.tourApiService.deleteTourPackage(id);
+  public async deleteTravelPackage(@Param('id') id: number) {
+    return await this.travelPackagesService.deleteTravelPackage(id);
   }
 }

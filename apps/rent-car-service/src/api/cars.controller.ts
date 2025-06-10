@@ -73,7 +73,7 @@ export class CarsController {
 
   @ApiResponse({
     status: 200,
-    description: 'Successfully uploaded tour package thumbnail',
+    description: 'Successfully uploaded travelpackage thumbnail',
   })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(

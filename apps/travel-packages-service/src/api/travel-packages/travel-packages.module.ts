@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TravelPackages } from 'libs/entities';
-import { TourPackageController } from './tour-package.controller';
-import { TourPackageService } from './tour-package.service';
+import { TravelPackagesController } from './travel-packages.controller';
+import { TravelPackagesService } from './travel-packages.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
@@ -44,7 +44,7 @@ import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
       },
     ]),
   ],
-  controllers: [TourPackageController],
-  providers: [TourPackageService, AuthHelper, JwtStrategy],
+  controllers: [TravelPackagesController],
+  providers: [TravelPackagesService, AuthHelper, JwtStrategy],
 })
-export class TourPackageModule {}
+export class TravelPackagesModule {}

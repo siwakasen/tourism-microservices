@@ -213,7 +213,7 @@ export class MailService {
             </div>
             <div class="content">
             <p>Hello,</p>
-            <p>A new package tour booking has just been made. Below are the details:</p>
+            <p>A new package travel booking has just been made. Below are the details:</p>
             <div class="table-container">
                 <table>
                 <tr>
@@ -278,11 +278,11 @@ export class MailService {
 
       this.mailerService.sendMail({
         to: 'ridebaliexplore@gmail.com',
-        subject: 'New Order Package Tour Just Received',
+        subject: 'New Order Package Travel Just Received',
         html: htmlTemplate,
       });
     } catch (error) {
-      console.error(`Error sending order package tour email to `, error);
+      console.error(`Error sending order package travel email to `, error);
       throw error;
     }
   }
@@ -380,7 +380,7 @@ export class MailService {
         html: htmlTemplate,
       });
     } catch (error) {
-      console.error(`Error sending order package tour email to `, error);
+      console.error(`Error sending order package travel email to `, error);
       throw error;
     }
   }
@@ -625,7 +625,7 @@ export class MailService {
         html: htmlTemplate,
       });
     } catch (error) {
-      console.error(`Error sending order package tour email to `, error);
+      console.error(`Error sending order package travel email to `, error);
       throw error;
     }
   }
@@ -740,7 +740,7 @@ export class MailService {
         html: htmlTemplate,
       });
     } catch (error) {
-      console.error(`Error sending order package tour email to `, error);
+      console.error(`Error sending order package travel email to `, error);
       throw error;
     }
   }

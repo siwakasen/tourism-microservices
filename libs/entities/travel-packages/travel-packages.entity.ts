@@ -12,29 +12,28 @@ import {
 @Entity('travel_packages')
 export class TravelPackages {
   @ApiProperty({
-    description: 'The unique identifier for the tour package',
+    description: 'The unique identifier for the travel package',
     example: '1',
   })
   @PrimaryGeneratedColumn()
   id: number;
 
   @ApiProperty({
-    description: 'The name of the tour package',
+    description: 'The name of the travel package',
     example: 'Bali Island Adventure',
   })
   @Column({ type: 'varchar', length: 255 })
-  @Unique('UQ_PACKAGE_NAME', ['package_name'])
   package_name: string;
 
   @ApiProperty({
-    description: 'The detailed description of the tour package',
+    description: 'The detailed description of the travel package',
     example: 'Experience the beauty of Bali with a 3-day adventure package.',
   })
   @Column({ type: 'text', nullable: true })
   description: string;
 
   @ApiProperty({
-    description: 'List of image URLs for the tour package',
+    description: 'List of image URLs for the travel package',
     example:
       '["https://example.com/image1.jpg", "https://example.com/image2.jpg"]',
   })
@@ -42,28 +41,28 @@ export class TravelPackages {
   images: string[];
 
   @ApiProperty({
-    description: 'The price of the tour package in USD',
+    description: 'The price of the travel package in USD',
     example: 1500,
   })
   @Column({ type: 'int' })
   package_price: number;
 
   @ApiProperty({
-    description: 'The duration of the tour package in days',
+    description: 'The duration of the travel package in days',
     example: 3,
   })
   @Column({ type: 'int' })
   duration: number;
 
   @ApiProperty({
-    description: 'The maximum group size for the tour package',
+    description: 'The maximum group size for the travel package',
     example: 10,
   })
   @Column({ type: 'int' })
   max_persons: number;
 
   @ApiProperty({
-    description: 'The detailed itineraries for the tour package',
+    description: 'The detailed itineraries for the travel package',
     example:
       '[{"day": 1, "activity": "Visit Ubud Forest"}, {"day": 2, "activity": "Relax at Kuta Beach"}]',
   })
@@ -71,7 +70,7 @@ export class TravelPackages {
   itineraries: string[];
 
   @ApiProperty({
-    description: 'The list of items included in the tour package',
+    description: 'The list of items included in the travel package',
     example: '["Hotel", "Meals", "Guided Tours"]',
   })
   @Column({ type: 'json', nullable: true })
@@ -79,21 +78,21 @@ export class TravelPackages {
 
 
   @ApiProperty({
-    description: 'The timestamp when the tour package was created',
+    description: 'The timestamp when the travel package was created',
     example: '2024-11-18T12:00:00.000Z',
   })
   @CreateDateColumn()
   created_at: Date;
 
   @ApiProperty({
-    description: 'The timestamp when the tour package was last updated',
+    description: 'The timestamp when the travel package was last updated',
     example: '2024-11-19T12:00:00.000Z',
   })
   @UpdateDateColumn()
   updated_at: Date;
 
   @ApiProperty({
-    description: 'The timestamp when the tour package was soft-deleted',
+    description: 'The timestamp when the travel package was soft-deleted',
     example: '2024-11-20T12:00:00.000Z',
     nullable: true,
   })

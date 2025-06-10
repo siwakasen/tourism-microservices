@@ -81,10 +81,10 @@ if u done using it:
 
 ```bash
 # development
- pnpm start:tour-package-service:dev
+ pnpm start:travel-packages-service:dev
 
 # watch mode
- pnpm start:tour-package-service:staging
+ pnpm start:travel-packages-service:staging
 
 # production mode
  pnpm run start:prod
@@ -107,7 +107,7 @@ if u done using it:
 
 ```bash
 # build dist
-pnpm build:tour-package-service
+pnpm build:travel-packages-service
 ```
 
 ## Deployment
@@ -154,16 +154,16 @@ Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
 
 ```
 apps/
-└── tour-package-service/
+└── travel-packages-service/
     ├── src/
     │   ├── api/
     │   │   ├── auth/
     │   │   ├── rental-car/
-    │   │   └── tour-package/
-    │   │       ├── tour-package.controller.ts
-    │   │       ├── tour-package.dto.ts
-    │   │       ├── tour-package.module.ts
-    │   │       └── tour-package.service.ts
+    │   │   └── travel-packages/
+    │   │       ├── travel-packages.controller.ts
+    │   │       ├── travel-packages.dto.ts
+    │   │       ├── travel-packages.module.ts
+    │   │       └── travel-packages.service.ts
     │   ├── weeding/
     │   ├── common/
     │   │   ├── envs/
@@ -179,7 +179,7 @@ apps/
 libs/
 └── entities/
     ├── tours/
-    │   ├── tour-package.entity.ts
+    │   ├── travel-packages.entity.ts
     │   ├── weeding.entity.ts
     │   └── index.ts
     └── helper/
