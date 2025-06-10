@@ -6,17 +6,24 @@ import { ApiModule } from './api.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 
-// import { FormatErrorInterceptor } from 'libs/helper/interceptors/exeption.interceptor';
-
 async function bootstrap() {
   const app: NestExpressApplication = await NestFactory.create(ApiModule);
   const config: ConfigService = app.get(ConfigService);
   const port: number = config.get<number>('PORT');
   const gRPCPort: number = config.get<number>('AUTH_GRPC_PORT');
   app.set('trust proxy', 1);
-  app.enableCors();
+  app.enableCors({
+    origin: [
+      'http://localhost:3000',
+      'https://client-web-app.vulpbox.com',
+      'https://admin-web-app.vulpbox.com',
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    maxAge: 600,
+  });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-  //   app.useGlobalInterceptors(new FormatErrorInterceptor());
   const appGRPC = await NestFactory.createMicroservice<MicroserviceOptions>(
     ApiModule,
     {
@@ -35,13 +42,13 @@ async function bootstrap() {
     .setVersion('1.0')
     .addBearerAuth()
     .addServer(`http://localhost:${port}`)
-    .addServer(`https://auth.vulpbox.com`)
+    .addServer(`https://employees.vulpbox.com`)
     .build();
   const document = SwaggerModule.createDocument(app, configSwagger);
   SwaggerModule.setup('api-docs', app, document);
 
   await app.listen(port, () => {
-    console.log('[Auth Service]', `http://localhost:${port}`);
+    console.log('[Employees Service]', `http://localhost:${port}`);
   });
 
   await appGRPC.listen();
