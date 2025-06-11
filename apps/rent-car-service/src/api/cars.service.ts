@@ -28,11 +28,16 @@ export class CarsService {
       const parameters: Record<string, any> = {};
       if (search) {
         conditions.push(`cars.car_name ILIKE :search`);
+        conditions.push(`cars.car_color ILIKE :search`);
+        conditions.push(`cars.police_number ILIKE :search`);
+        conditions.push(`CAST(cars.transmission AS TEXT) ILIKE :search`);
+        conditions.push(`CAST(cars.price_per_day AS TEXT) ILIKE :search`);
+        conditions.push(`CAST(cars.max_persons AS TEXT) ILIKE :search`);
         parameters['search'] = `%${search}%`;
       }
 
       if (conditions.length) {
-        queryBuilder.where(conditions.join(' AND '), parameters);
+        queryBuilder.where(conditions.join(' OR '), parameters);
       }
 
       const [result, total] = await queryBuilder

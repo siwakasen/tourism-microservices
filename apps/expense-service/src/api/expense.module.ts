@@ -7,6 +7,8 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { AuthHelper } from '@app/helpers/auth/user/auth.helper';
+import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
 
 @Module({
   imports: [
@@ -35,6 +37,6 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
     ]),
   ],
   controllers: [ExpenseController],
-  providers: [ExpenseService],
+  providers: [ExpenseService, AuthHelper, JwtStrategy],
 })
 export class ExpenseModule {}

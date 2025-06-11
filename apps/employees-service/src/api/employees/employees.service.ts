@@ -119,6 +119,7 @@ export class EmployeeService {
     }
 
     const hashedEmail = this.helper.generateResetPwToken(email);
+    
     const url = `${process.env.FRONTEND_URL}/reset-password/` + hashedEmail;
     this.mailService.requestResetPassword({
       email: email,
@@ -153,7 +154,6 @@ export class EmployeeService {
       user.last_update_password = new Date();
       user.save();
       return {
-        user: user,
         success: true,
         message: 'Success change password',
       };

@@ -24,7 +24,6 @@
     "start:rent-car-service:prod": "cross-env NODE_ENV=production nest start rent-car-service --watch",
     "start:expense-service:dev": "cross-env NODE_ENV=development nest start expense-service --watch",
     "start:expense-service:prod": "cross-env NODE_ENV=production nest start expense-service --watch",
-
     "build:employees-service": "nest build employees-service",
     "build:employees-service:prod": "cross-env NODE_ENV=production nest build employees-service",
     "build:travel-packages-service": "nest build travel-packages-service",

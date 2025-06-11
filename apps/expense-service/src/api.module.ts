@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { getEnvPath } from './common/helper/env.helper';
@@ -6,9 +6,15 @@ import { TypeOrmConfigService } from './shared/typeorm/typeorm.service';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { ExpenseModule } from './api/expense.module';
+import { LoggerMiddleware } from 'libs/helpers/middleware/logger.midleware';
 
 const envFilePath: string = getEnvPath(`${__dirname}/common/helper`);
 console.log('envFilePath:', getEnvPath(`${__dirname}`));
+
+const ExpenseLogger = new LoggerMiddleware({
+  fileName: 'expense.log',
+});
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -23,4 +29,10 @@ console.log('envFilePath:', getEnvPath(`${__dirname}`));
     ExpenseModule,
   ],
 })
-export class ApiModule {}
+export class ApiModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(ExpenseLogger.use.bind(ExpenseLogger))
+      .forRoutes('expense');
+  }
+}

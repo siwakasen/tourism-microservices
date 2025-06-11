@@ -1,7 +1,8 @@
-import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import {  Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 
-class Expense extends BaseEntity {
+@Entity('expense')
+class Expense {
   @PrimaryGeneratedColumn()
   public id!: number;
 
@@ -10,6 +11,9 @@ class Expense extends BaseEntity {
 
   @Column({ type: 'int', nullable: false })
   public expense_amount: number;
+
+  @Column({ type: 'date', nullable: false })
+  public expense_date: Date;
   
   @Column({ type: 'int', nullable: false })
   public created_by: number;
