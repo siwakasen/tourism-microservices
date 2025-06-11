@@ -28,10 +28,8 @@ import {
   PaginationDto,
   CreateUpdateCarsDto,
   UploadImageDto,
-  updateStatusDto,
 } from './cars.dto';
 import { CarsService } from './cars.service';
-import { AuthGuard } from '@nestjs/passport';
 import { JwtAuthGuard } from '@app/helpers/auth/user/auth.guard';
 import { Roles, UserType } from '@app/helpers/auth/decorators/auth.decorator';
   
@@ -56,7 +54,7 @@ export class CarsController {
     description: 'Successfuly get data cars by id',
   })
   @Get('/:id')
-  public async getCarsById(@Param('id') id: string) {
+  public async getCarsById(@Param('id') id: number) {
     return await this.carsService.getCarById(id);
   }
 
@@ -65,15 +63,15 @@ export class CarsController {
     description: 'Successfuly create data cars',
   })
   @UseGuards(JwtAuthGuard)
- @Roles(UserType.ADMIN)
-  @Post('admin')
+  @Roles(UserType.ADMIN)
+  @Post('')
   public async createCars(@Body() body: CreateUpdateCarsDto) {
     return await this.carsService.createCar(body);
   }
 
   @ApiResponse({
     status: 200,
-    description: 'Successfully uploaded travelpackage thumbnail',
+    description: 'Successfully uploaded car image',
   })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
@@ -106,13 +104,13 @@ export class CarsController {
     }),
   )
   @UseGuards(JwtAuthGuard)
- @Roles(UserType.ADMIN)
-  @Post('admin/upload-image/:id')
+  @Roles(UserType.ADMIN)
+  @Post('upload-image/:id')
   @ApiBody({
     type: UploadImageDto,
   })
   public async uploadImage(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @UploadedFile() file: Express.Multer.File,
   ) {
     if (!file) {
@@ -130,10 +128,10 @@ export class CarsController {
     description: 'Successfully update data cars',
   })
   @UseGuards(JwtAuthGuard)
- @Roles(UserType.ADMIN)
-  @Put('admin/:id')
+  @Roles(UserType.ADMIN)
+  @Put(':id')
   public async updateCars(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() body: CreateUpdateCarsDto,
   ) {
     return await this.carsService.updateCar(id, body);
@@ -144,23 +142,10 @@ export class CarsController {
     description: 'Successfully delete data cars',
   })
   @UseGuards(JwtAuthGuard)
- @Roles(UserType.ADMIN)
-  @Delete('admin/:id')
-  public async deleteCars(@Param('id') id: string) {
+  @Roles(UserType.ADMIN)
+  @Delete(':id')
+  public async deleteCars(@Param('id') id: number) {
     return await this.carsService.deleteCar(id);
   }
 
-  @ApiResponse({
-    status: 200,
-    description: 'Successfully update status data cars',
-  })
-  @UseGuards(JwtAuthGuard)
- @Roles(UserType.ADMIN)
-  @Patch('admin/status/:id')
-  public async updateStatusCars(
-    @Param('id') id: string,
-    @Body() body: updateStatusDto,
-  ) {
-    return await this.carsService.updateCarStatus(id, body);
-  }
 }

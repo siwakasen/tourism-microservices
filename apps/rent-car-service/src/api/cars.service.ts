@@ -4,8 +4,7 @@ import { Repository, DataSource } from 'typeorm';
 import { Cars } from 'libs/entities';
 import {
   PaginationDto,
-  CreateUpdateCarsDto,
-  updateStatusDto,
+  CreateUpdateCarsDto
 } from './cars.dto';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -67,7 +66,7 @@ export class CarsService {
     }
   }
 
-  public async getCarById(id: string) {
+  public async getCarById(id: number) {
     try {
       const queryBuilder = this.repository.createQueryBuilder('cars');
 
@@ -136,7 +135,7 @@ export class CarsService {
     }
   }
 
-  public async uploadImage(id: string, image: Express.Multer.File) {
+  public async uploadImage(id: number, image: Express.Multer.File) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -189,7 +188,7 @@ export class CarsService {
     }
   }
 
-  public async updateCar(id: string, payload: CreateUpdateCarsDto) {
+  public async updateCar(id: number, payload: CreateUpdateCarsDto) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -237,7 +236,7 @@ export class CarsService {
     }
   }
 
-  public async deleteCar(id: string) {
+  public async deleteCar(id: number) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -292,49 +291,4 @@ export class CarsService {
     }
   }
 
-  public async updateCarStatus(id: string, payload: updateStatusDto) {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      const car: Cars = await this.repository.findOneBy({ id });
-
-      if (!car) {
-        throw new Error('Car not found');
-      }
-
-      car.status = payload.status;
-
-      await queryRunner.manager.save(car);
-      await queryRunner.commitTransaction();
-
-      return {
-        data: car,
-        message: 'Car status updated successfully',
-      };
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      if (error.message === 'Car not found') {
-        throw new HttpException(
-          {
-            message: ['Car not found'],
-            error: 'Car not found',
-            statusCode: HttpStatus.NOT_FOUND,
-          },
-          HttpStatus.NOT_FOUND,
-        );
-      }
-      throw new HttpException(
-        {
-          message: [error.message || 'Failed to update car status'],
-          error: error.message || 'Internal server error',
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    } finally {
-      await queryRunner.release();
-    }
-  }
 }

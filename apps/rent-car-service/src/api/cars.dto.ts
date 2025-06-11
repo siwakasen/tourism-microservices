@@ -35,33 +35,61 @@ export class UploadImageDto {
 }
 
 export class CreateUpdateCarsDto {
-  @ApiProperty()
+  @ApiProperty({
+    description: 'The name of the car',
+    example: 'Toyota Corolla',
+  })
   @IsString()
   public readonly car_name: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    description: 'The color of the car',
+    example: 'Red',
+  })
+  @IsString()
+  public readonly car_color: string;
+
+  @ApiProperty({
+    description: 'The police number of the car',
+    example: 'AB1234KAE',
+  })  
+  @IsString()
+  public readonly police_number: string;
+
+  @ApiProperty({
+    description: 'The transmission of the car',
+    example: 'AUTO',
+  })
+  @IsString()
+  public readonly transmission: 'AUTO' | 'MANUAL';
+
+  @ApiProperty({
+    description: 'The description of the car',
+    example: 'The car is a Toyota Corolla',
+  })
   @IsString()
   public readonly description: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    description: 'The maximum number of persons the car can hold',
+    example: 4,
+  })
   @IsNumber()
-  public readonly min_person: number;
+  public readonly max_persons: number;
 
-  @ApiProperty()
+  @ApiProperty({
+    description: 'The price per day of the car',
+    example: 100000,
+  })
   @IsNumber()
-  public readonly max_person: number;
+  @Type(() => Number)
+  public readonly price_per_day: number;
 
-  @ApiProperty()
-  @IsNumber()
-  public readonly price: number;
-
-  @ApiProperty()
+  @ApiProperty({
+    description: 'The includes of the car',
+    example: ['Air Conditioner', 'Power Steering', 'Power Windows'],
+  })
   @IsArray()
   public readonly includes: string[];
 }
 
-export class updateStatusDto {
-  @ApiProperty()
-  @IsBoolean()
-  public readonly status: boolean;
-}

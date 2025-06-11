@@ -17,7 +17,7 @@ console.log('envFilePath:', getEnvPath(`${__dirname}`));
     ConfigModule.forRoot({ envFilePath, isGlobal: true }),
     TypeOrmModule.forRootAsync({ useClass: TypeOrmConfigService }),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'public'), // Adjusted for apps/travel-packages-service/public
+      rootPath: join(__dirname, '..', 'public'),
       serveRoot: '/public', // Optional: URL prefix for static files
     }),
     CarsModule,

@@ -29,7 +29,7 @@ export class TravelPackages {
     description: 'The detailed description of the travel package',
     example: 'Experience the beauty of Bali with a 3-day adventure package.',
   })
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: 'varchar', length: 1000, nullable: true })
   description: string;
 
   @ApiProperty({
