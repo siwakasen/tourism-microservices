@@ -13,11 +13,11 @@ import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
 import { AuthHelper } from '@app/helpers/auth/user/auth.helper';
 import { MailModule } from '@app/helpers/mail/mail.module';
 import { MailService } from '@app/helpers/mail/mail.service';
-import { Role } from 'libs/entities/role/role.entity';
+import { Roles } from 'libs/entities/roles/roles.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Employee, EmployeeToken, Role]),
+    TypeOrmModule.forFeature([Employee, EmployeeToken, Roles]),
     PassportModule.register({ defaultStrategy: 'user', property: 'user' }),
     JwtModule.registerAsync({
       inject: [ConfigService],

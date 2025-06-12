@@ -15,12 +15,23 @@ message GetCustomerResponse {
   string phone_number = 3;
   string country_origin = 4;
   string email = 5;
-  google.protobuf.Timestamp created_at = 6;
-  google.protobuf.Timestamp updated_at = 7;
+}
+
+message RegisterCustomerRequest{
+  string email = 1;
+  string password = 2;
+  string name = 3;
+  string phoneNumber = 4;
+  string countryOrigin = 5;
+}
+
+message RegisterCustomerResponse{
+  int32 id = 1;
 }
 
 
 // Service definition for customer operations
 service CustomerGrpcService {
   rpc GetCustomer (GetCustomerRequest) returns (GetCustomerResponse);
+  rpc RegisterCustomer (RegisterCustomerRequest) returns (RegisterCustomerResponse);
 } 

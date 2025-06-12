@@ -10,10 +10,11 @@ import { ClientGrpc, ClientsModule, Transport } from '@nestjs/microservices';
 import { MailModule } from '@app/helpers/mail/mail.module';
 import { AuthHelper } from '@app/helpers/auth/user/auth.helper';
 import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
+import { CustomerToken } from 'libs/entities/customer/customer.token.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Customer]),
+    TypeOrmModule.forFeature([Customer, CustomerToken]),
     PassportModule.register({ defaultStrategy: 'user', property: 'user' }),
     JwtModule.registerAsync({
       inject: [ConfigService],
@@ -34,10 +35,6 @@ import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
             url: config.get<string>('CUS_AUTH_SERVICE'),
             loader: {
               keepCase: true,
-              longs: String,
-              enums: String,
-              defaults: true,
-              oneofs: true,
             },
           },
         }),

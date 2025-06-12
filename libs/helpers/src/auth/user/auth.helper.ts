@@ -19,11 +19,9 @@ export class AuthHelper implements OnModuleInit {
   onModuleInit() {
     if (this.clientEmp) {
       this.employeeService = this.clientEmp.getService<AuthServiceClient>('EmployeeGrpcService');
-      console.log('[AuthHelper] Employee service initialized');
     }
     if (this.clientCus) {
       this.customerService = this.clientCus.getService<AuthServiceClient>('CustomerGrpcService');
-      console.log('[AuthHelper] Customer service initialized');
     }
   }
 
@@ -63,7 +61,7 @@ export class AuthHelper implements OnModuleInit {
     return this.jwt.sign(
       { email },
       {
-        expiresIn: '1d',
+        expiresIn: 2000,
       },
     );
   };
@@ -91,7 +89,7 @@ export class AuthHelper implements OnModuleInit {
 
   // Encode User's password
   public async hashingPassword(password: string): Promise<string> {
-    const saltRounds = 14; 
+    const saltRounds = 12; 
     return bcrypt.hash(password, saltRounds);
   }
 }

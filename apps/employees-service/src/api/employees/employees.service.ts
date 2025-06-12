@@ -23,7 +23,7 @@ import { AuthHelper } from '@app/helpers/auth/user/auth.helper';
 import { EmployeeToken } from 'libs/entities';
 import { MailService } from '@app/helpers/mail/mail.service';
 import { FormatErrorInterceptor } from 'libs/helpers/interceptors/exeption.interceptor';
-import { Role } from 'libs/entities/role/role.entity';
+import { Roles } from 'libs/entities/roles/roles.entity';
 
 @Injectable()
 @UseInterceptors(FormatErrorInterceptor)
@@ -33,8 +33,8 @@ export class EmployeeService {
     private readonly mailService: MailService,
     private readonly dataSource: DataSource,
   ) {}
-  @InjectRepository(Role)
-  private readonly roleRepository: Repository<Role>;
+  @InjectRepository(Roles)
+  private readonly roleRepository: Repository<Roles>;
   @InjectRepository(Employee)
   private readonly repository: Repository<Employee>;
   @Inject(AuthHelper)
@@ -96,7 +96,7 @@ export class EmployeeService {
       );
     }
 
-    delete user.password;
+    // delete user.password;
     return {
       success: true,
       data: { message: 'Login success', token: await this.helper.generateToken(user) },
@@ -105,7 +105,7 @@ export class EmployeeService {
 
   public async requestResetPassword(
     payload: requestResetPasswordDto,
-  ): Promise<void> {
+  ) {
     const { email } = payload;
 
     const user = await this.repository.findOne({
@@ -130,6 +130,11 @@ export class EmployeeService {
       token: hashedEmail,
       expiredAt: currentDate,
     });
+
+    return {
+      success: true,
+      message: 'Link to reset password has been sent to your email',
+    };
   }
 
 
@@ -284,7 +289,6 @@ export class EmployeeService {
   }
 
   public async createEmployee(payload: CreateEmployeeDto) {
-    console.log(payload);
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -295,23 +299,23 @@ export class EmployeeService {
       const role = await this.roleRepository.findOne({ where: { id: payload.role_id } });
       const hashedPassword = await this.helper.hashingPassword(payload.password);
 
-      const employee: Employee = this.repository.create({
-        ...payload,
-        role: role,
-        password: hashedPassword
-      });
-
+      
       const user = await this.repository.findOne({
         where: { email: payload.email },
       });
-
+      
       if (user) {
         throw new HttpException(
           `Email already registered`,
           HttpStatus.BAD_REQUEST,
         );
       }
-
+      
+      const employee: Employee = this.repository.create({
+        ...payload,
+        role: role,
+        password: hashedPassword
+      });
       await queryRunner.manager.save(employee);
       await queryRunner.commitTransaction();
 

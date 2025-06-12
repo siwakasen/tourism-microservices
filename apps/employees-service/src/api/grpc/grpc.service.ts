@@ -7,7 +7,6 @@ import { Repository } from 'typeorm';
 
 @Injectable()
 export class GrpcService {
-  constructor(private readonly redisService: AuthRedisService) {}
 
   @InjectRepository(Employee)
   private readonly repository: Repository<Employee>;

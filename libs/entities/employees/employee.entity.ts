@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { Role } from '../role/role.entity';
+import {  Roles } from '../roles/roles.entity';
 @Entity('employees')
 class Employee extends BaseEntity {
   @ApiProperty()
@@ -14,12 +14,12 @@ class Employee extends BaseEntity {
 
 
   @ApiProperty()
-  @ManyToOne(() => Role, (role) => role.id,{
+  @ManyToOne(() => Roles, (role) => role.id,{
     cascade: true,
     nullable: false,
   })
   @JoinColumn({ name: 'role_id' })
-  public role: Role;
+  public role: Roles;
   
   @ApiProperty()
   @Column({ type: 'text', nullable: false, unique: true })

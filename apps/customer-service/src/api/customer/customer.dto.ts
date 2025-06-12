@@ -50,3 +50,9 @@ export class LoginReqDto {
     @IsString()
     password: string;
   }
+
+export class requestResetPasswordDto {
+  @ApiProperty({ default: 'test@gmail.com' })
+  @IsEmail()
+  public readonly email: string;
+}

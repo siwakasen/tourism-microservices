@@ -1,46 +1,19 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { PassportModule } from '@nestjs/passport';
-import { JwtModule } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import { GrpcService } from './grpc.service';
 import { GrpcController } from './grpc.controller';
-import { EmployeeService } from '../employees/employees.service';
 import { AuthRedisService } from '../employees/redis.service';
 import {  EmployeeModule } from '../employees/employees.module';
-import { ClientsModule, Transport } from '@nestjs/microservices';
 import { Employee, EmployeeToken } from 'libs/entities';
-import { Role } from 'libs/entities/role/role.entity';
+import { Roles } from 'libs/entities/roles/roles.entity';
 
 @Module({
   imports: [
-    PassportModule.register({ defaultStrategy: 'user', property: 'user' }),
     EmployeeModule,
-    JwtModule.registerAsync({
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        secret: config.get('JWT_KEY'),
-        signOptions: { expiresIn: config.get('JWT_EXPIRES') },
-      }),
-    }),
-    TypeOrmModule.forFeature([Employee, EmployeeToken, Role]),
+    TypeOrmModule.forFeature([Employee, EmployeeToken, Roles]),
 
-    ClientsModule.registerAsync([
-      {
-        inject: [ConfigService],
-        name: 'EMP_PACKAGE',
-        useFactory: (config: ConfigService) => ({
-          transport: Transport.GRPC,
-          options: {
-            package: 'auth',
-            protoPath: 'contract/auth-employee-api.proto', 
-            url: config.get<string>('AUTH_SERVICE'),
-          },
-        }),
-      },
-    ]),
   ],
   controllers: [GrpcController],
-  providers: [GrpcService, EmployeeService, AuthRedisService],
+  providers: [GrpcService, AuthRedisService],
 })
 export class GrpcModule {}
