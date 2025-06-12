@@ -59,9 +59,14 @@ export class AuthHelper implements OnModuleInit {
 
   public generateResetPwToken = (email: string) => {
     return this.jwt.sign(
-      { email },
+      { 
+        sub: email,
+        iat: Math.floor(Date.now() / 1000)
+       },
       {
-        expiresIn: 2000,
+        algorithm: 'HS256',
+        secret: process.env.JWT_KEY,
+        expiresIn: '1d',
       },
     );
   };
@@ -76,6 +81,10 @@ export class AuthHelper implements OnModuleInit {
       sub: user.id.toString(), // subject claim for user ID
       jti: crypto.randomUUID(), // unique token ID
       iat: Math.floor(Date.now() / 1000), // issued at timestamp
+    },{
+      algorithm: 'HS256',
+      secret: process.env.JWT_KEY,
+      expiresIn: '1d',
     });
   }
 

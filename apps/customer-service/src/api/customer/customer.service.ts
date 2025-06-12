@@ -150,6 +150,20 @@ export class CustomerService implements OnModuleInit {
       if (!tokenData) {
         throw new HttpException('Token Invalid', HttpStatus.BAD_REQUEST);
       }
+      
+      if(tokenData['exp'] < Math.floor(Date.now() / 1000)) {
+        throw new HttpException('Token Expired', HttpStatus.BAD_REQUEST);
+      }
+      
+      const checkToken = await this.CustomerTokenRepo.findOne({ where: { token } });
+      if (!checkToken) {
+        throw new HttpException('Token Invalid', HttpStatus.BAD_REQUEST);
+      }
+      if(checkToken.used) {
+        throw new HttpException('Token already used', HttpStatus.BAD_REQUEST);
+      }
+
+      
 
       const user = await this.repository.findOne({ where: { email: tokenData['email'] } });
       if (!user) {
@@ -158,6 +172,10 @@ export class CustomerService implements OnModuleInit {
       const hashedPassword = await this.helper.hashingPassword(password);
       user.password = hashedPassword;
       await this.repository.save(user);
+
+      checkToken.used = true;
+      await this.CustomerTokenRepo.save(checkToken);
+
       return {
         success: true,
         message: 'Password changed successfully',

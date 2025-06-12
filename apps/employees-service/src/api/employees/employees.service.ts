@@ -147,6 +147,18 @@ export class EmployeeService {
         throw new HttpException('Token Invalid', HttpStatus.BAD_REQUEST);
       }
 
+      if(tokenData['exp'] < Math.floor(Date.now() / 1000)) {
+        throw new HttpException('Token Expired', HttpStatus.BAD_REQUEST);
+      }
+
+      const checkToken = await this.EmployeeTokenRepo.findOne({ where: { token } });
+      if (!checkToken) {
+        throw new HttpException('Token Invalid', HttpStatus.BAD_REQUEST);
+      }
+      if(checkToken.used) {
+        throw new HttpException('Token already used', HttpStatus.BAD_REQUEST);
+      }
+
       const user = await this.repository.findOne({
         where: { email: tokenData['email'] },
       });
@@ -158,6 +170,10 @@ export class EmployeeService {
 
       user.last_update_password = new Date();
       user.save();
+
+      checkToken.used = true;
+      await this.EmployeeTokenRepo.save(checkToken);
+
       return {
         success: true,
         message: 'Success change password',
