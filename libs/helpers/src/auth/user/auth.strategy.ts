@@ -20,17 +20,13 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'user') {
   }
 
   public async validate(payload: any): Promise<Employee | Customer> {
+    
+
     const user = await this.helper.validateUser(payload);
     if (user) {
       return user;
     }
     
-    // If not found as Admin, try to find as Customer
-    const customer = await this.helper.validateCustomer(payload);
-    if (customer) {
-      return customer;
-    }
-
     return null;
   }
 }

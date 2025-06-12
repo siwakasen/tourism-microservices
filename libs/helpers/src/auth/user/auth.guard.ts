@@ -11,7 +11,7 @@ export class JwtAuthGuard extends Guard('user') implements IAuthGuard {
     super();
   }
 
-  public handleRequest(err: unknown, user: Employee | Customer): any {
+  public handleRequest(err: unknown, user: Employee | Customer): any { 
     if (err || !user) {
       throw new UnauthorizedException('Invalid token or user not found');
     }

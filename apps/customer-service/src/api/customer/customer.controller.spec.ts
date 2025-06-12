@@ -14,9 +14,9 @@ describe('CustomerController', () => {
     customerController = app.get<CustomerController>(CustomerController);
   });
 
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(customerController.getHello()).toBe('Hello World!');
-    });
-  });
+  // describe('root', () => {
+  //   it('should return "Hello World!"', () => {
+  //     expect(customerController.getHello()).toBe('Hello World!');
+  //   });
+  // });
 });

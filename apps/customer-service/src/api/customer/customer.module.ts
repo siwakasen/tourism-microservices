@@ -32,6 +32,13 @@ import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
             package: 'auth',
             protoPath: 'contract/auth-customer-api.proto',
             url: config.get<string>('CUS_AUTH_SERVICE'),
+            loader: {
+              keepCase: true,
+              longs: String,
+              enums: String,
+              defaults: true,
+              oneofs: true,
+            },
           },
         }),
       },
@@ -42,6 +49,7 @@ import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
   providers: [CustomerService, JwtStrategy, {
     provide: AuthHelper,
     useFactory: (jwt: JwtService, clientCus: ClientGrpc) => {
+      console.log('[CustomerModule] Initializing AuthHelper with customer GRPC client');
       return new AuthHelper(jwt, undefined, clientCus);
     },
     inject: [JwtService, 'CUS_PACKAGE'],

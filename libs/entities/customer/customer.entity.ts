@@ -1,45 +1,43 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
-@Entity('customers')
-class Customer extends BaseEntity {
+export @Entity('customers')
+ class Customer extends BaseEntity {
   @ApiProperty()
   @PrimaryGeneratedColumn()
   public id!: number;
 
-@ApiProperty()
-  @Column({ type: 'text', nullable: false })
+  @ApiProperty()
+  @Column({ type: 'varchar', nullable: false })
   public name: string;
 
   @ApiProperty()
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   public phone_number?: string;
 
   @ApiProperty()
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   public country_origin?: string;
 
   @ApiProperty()
-  @Column({ type: 'text', nullable: false, unique: true })
+  @Column({ type: 'varchar', nullable: false, unique: true })
   public email: string;
 
   @ApiProperty()
   @Exclude()
-  @Column({ type: 'text', nullable: false })
+  @Column({ type: 'varchar', nullable: false })
   public password: string;
 
   @ApiProperty()
-  @Column({ type: 'timestamp', nullable: false, default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn()
   public created_at!: Date;
 
   @ApiProperty()
-  @Column({ type: 'timestamp', nullable: false, default: () => 'CURRENT_TIMESTAMP' })
+  @UpdateDateColumn()
   public updated_at!: Date;
 
   @ApiProperty()
-  @Column({ type: 'timestamp', nullable: true })
+  @DeleteDateColumn()
   public deleted_at?: Date;
 }
-
-export { Customer };

@@ -19,9 +19,11 @@ export class AuthHelper implements OnModuleInit {
   onModuleInit() {
     if (this.clientEmp) {
       this.employeeService = this.clientEmp.getService<AuthServiceClient>('EmployeeGrpcService');
+      console.log('[AuthHelper] Employee service initialized');
     }
     if (this.clientCus) {
       this.customerService = this.clientCus.getService<AuthServiceClient>('CustomerGrpcService');
+      console.log('[AuthHelper] Customer service initialized');
     }
   }
 
@@ -37,35 +39,25 @@ export class AuthHelper implements OnModuleInit {
 
   // Decoding the JWT Token
   public async decode(token: string): Promise<unknown> {
+    console.log('token', token);
     return this.jwt.decode(token, null);
   }
 
   // Get User by User ID we get from decode()
-  public async validateUser(decoded: any): Promise<Employee> {
-    if (!this.employeeService) {
-      throw new Error('Employee service is not available in this context');
-    }
+  public async validateUser(decoded: any): Promise<Employee | Customer> {
     try {
-      const employee = await this.employeeService.getEmployee({ id: decoded.sub }).toPromise();
-      return employee;
+      if (this.employeeService) {
+        const employee = await this.employeeService.getEmployee({ id: decoded.sub }).toPromise();
+        return employee;
+      }else{
+        const customer = await this.customerService.getCustomer({ id: decoded.sub }).toPromise();
+        return customer;
+      }
     } catch (error) {
-      console.error(error);
       return null;
     }
   }
 
-  // Get Customer by Customer ID we get from decode()
-  public async validateCustomer(decoded: any): Promise<Customer> {
-    if (!this.customerService) {
-      throw new Error('Customer service is not available in this context');
-    }
-    try {
-      return await this.customerService.getCustomer({ id: decoded.sub }).toPromise();
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
-  }
 
   public generateResetPwToken = (email: string) => {
     return this.jwt.sign(

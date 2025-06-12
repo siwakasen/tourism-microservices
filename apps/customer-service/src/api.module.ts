@@ -1,12 +1,11 @@
-import { getEnvPath } from "apps/employees-service/src/common/helper/env.helper";
+import { getEnvPath } from "./common/helper/env.helper";
 import { LoggerMiddleware } from "libs/helpers/middleware/logger.midleware";
 import { CustomerModule } from "./api/customer/customer.module";
 import { GrpcCustomerModule } from "./api/grpc-customer/grpc-customer.module";
-import { MiddlewareConsumer, Module,NestModule } from "@nestjs/common";
+import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { TypeOrmConfigService } from "apps/employees-service/src/shared/typeorm/typeorm.service";
-
+import { TypeOrmConfigService } from "./shared/typeorm/typeorm.service";
 
 const envFilePath: string = getEnvPath(`${__dirname}/common/helper`);
 console.log('envFilePath:', getEnvPath(`${__dirname}`));
