@@ -26,10 +26,10 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'user') {
     }
     
     // If not found as Admin, try to find as Customer
-    // const customer = await this.helper.validateCustomer(payload);
-    // if (customer) {
-    //   return customer;
-    // }
+    const customer = await this.helper.validateCustomer(payload);
+    if (customer) {
+      return customer;
+    }
 
     return null;
   }

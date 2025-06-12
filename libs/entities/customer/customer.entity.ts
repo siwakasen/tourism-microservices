@@ -8,9 +8,9 @@ class Customer extends BaseEntity {
   @PrimaryGeneratedColumn()
   public id!: number;
 
-  @ApiProperty()
+@ApiProperty()
   @Column({ type: 'text', nullable: false })
-  public name!: string;
+  public name: string;
 
   @ApiProperty()
   @Column({ type: 'text', nullable: true })
@@ -21,13 +21,13 @@ class Customer extends BaseEntity {
   public country_origin?: string;
 
   @ApiProperty()
-  @Column({ type: 'text', nullable: false })
-  public email!: string;
+  @Column({ type: 'text', nullable: false, unique: true })
+  public email: string;
 
   @ApiProperty()
   @Exclude()
   @Column({ type: 'text', nullable: false })
-  public password!: string;
+  public password: string;
 
   @ApiProperty()
   @Column({ type: 'timestamp', nullable: false, default: () => 'CURRENT_TIMESTAMP' })

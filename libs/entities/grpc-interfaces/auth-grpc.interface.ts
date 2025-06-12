@@ -3,7 +3,7 @@ import { Employee } from '../employees/employee.entity';
 import { Customer } from '../customer/customer.entity';
 
 export interface AuthServiceClient {
-  getEmployee: (body: { id: string }) => Observable<Employee>;
+  getEmployee: (body: { id: number }) => Observable<Employee>;
 
   getCustomer: (body: { id: number }) => Observable<Customer>;
 }

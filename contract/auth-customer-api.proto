@@ -21,6 +21,6 @@ message GetCustomerResponse {
 
 
 // Service definition for customer operations
-service CustomerService {
+service CustomerGrpcService {
   rpc GetCustomer (GetCustomerRequest) returns (GetCustomerResponse);
 } 

@@ -8,7 +8,7 @@ export class GrpcController {
   @Inject(GrpcService)
   private readonly grpcService: GrpcService;
 
-  @GrpcMethod('EmployeeService', 'GetEmployee')
+  @GrpcMethod('EmployeeGrpcService', 'GetEmployee')
   async getEmployee(body: { id: number }) {
     const user = await this.grpcService.getEmployeeGrpc(body.id);
     return user;

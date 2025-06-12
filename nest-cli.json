@@ -64,28 +64,61 @@
         ]
       }
     },
-    "expense-service": {
+    "expenses-service": {
       "type": "application",
-      "root": "apps/expense-service/src",
+      "root": "apps/expenses-service/src",
       "entryFile": "main",
-      "sourceRoot": "apps/expense-service/src",
+      "sourceRoot": "apps/expenses-service/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/expense-service/tsconfig.app.json",
+        "tsConfigPath": "apps/expenses-service/tsconfig.app.json",
         "assets": [
           {
             "include": "common/envs/*.env",
-            "outDir": "dist/apps/expense-service/src/common/helper"
+            "outDir": "dist/apps/expenses-service/src/common/helper"
           }
         ]
       }
     },
     "customer-service": {
       "type": "application",
-      "root": "apps/customer-service",
+      "root": "apps/customer-service/src",
       "entryFile": "main",
       "sourceRoot": "apps/customer-service/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/customer-service/tsconfig.app.json"
+        "tsConfigPath": "apps/customer-service/tsconfig.app.json",
+        "assets": [
+          {
+            "include": "common/envs/*.env",
+            "outDir": "dist/apps/customer-service/src/common/helper"
+          }
+        ]
+      }
+    },
+    "report-service": {
+      "type": "application",
+      "root": "apps/report-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/report-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/report-service/tsconfig.app.json"
+      }
+    },
+    "live-chat-service": {
+      "type": "application",
+      "root": "apps/live-chat-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/live-chat-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/live-chat-service/tsconfig.app.json"
+      }
+    },
+    "transaction-service": {
+      "type": "application",
+      "root": "apps/transaction-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/transaction-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/transaction-service/tsconfig.app.json"
       }
     }
   }

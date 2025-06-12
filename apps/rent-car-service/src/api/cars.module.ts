@@ -4,9 +4,9 @@ import { Cars } from 'libs/entities';
 import { CarsController } from './cars.controller';
 import { CarsService } from './cars.service';
 import { PassportModule } from '@nestjs/passport';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ClientGrpc, ClientsModule, Transport } from '@nestjs/microservices';
 
 import { AuthHelper } from '@app/helpers/auth/user/auth.helper';
 import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
@@ -25,7 +25,7 @@ import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
     ClientsModule.registerAsync([
       {
         inject: [ConfigService],
-        name: 'AUTH_PACKAGE',
+        name: 'EMP_PACKAGE',
         useFactory: (config: ConfigService) => ({
           transport: Transport.GRPC,
           options: {
@@ -38,6 +38,12 @@ import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
     ]),
   ],
   controllers: [CarsController],
-  providers: [CarsService, AuthHelper, JwtStrategy],
+  providers: [CarsService, JwtStrategy, {
+    provide: AuthHelper,
+    useFactory: (jwt: JwtService, clientEmp: ClientGrpc) => {
+      return new AuthHelper(jwt, clientEmp);
+    },
+    inject: [JwtService, 'EMP_PACKAGE'],
+  }],
 })
 export class CarsModule {}

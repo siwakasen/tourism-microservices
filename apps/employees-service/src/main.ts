@@ -24,6 +24,8 @@ async function bootstrap() {
     maxAge: 600,
   });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+
+  // GRPC
   const appGRPC = await NestFactory.createMicroservice<MicroserviceOptions>(
     ApiModule,
     {

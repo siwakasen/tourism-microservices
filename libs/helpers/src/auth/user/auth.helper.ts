@@ -1,8 +1,5 @@
 import {
   Injectable,
-  HttpException,
-  HttpStatus,
-  UnauthorizedException,
   Inject,
   OnModuleInit,
 } from '@nestjs/common';
@@ -16,19 +13,24 @@ import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthHelper implements OnModuleInit {
-  private employeeService: AuthServiceClient;
-  private customerService: AuthServiceClient;
+  private employeeService?: AuthServiceClient;
+  private customerService?: AuthServiceClient;
 
   onModuleInit() {
-    this.employeeService = this.client.getService<AuthServiceClient>('EmployeeService');
-    // this.customerService = this.client.getService<AuthServiceClient>('CustomerService');
+    if (this.clientEmp) {
+      this.employeeService = this.clientEmp.getService<AuthServiceClient>('EmployeeGrpcService');
+    }
+    if (this.clientCus) {
+      this.customerService = this.clientCus.getService<AuthServiceClient>('CustomerGrpcService');
+    }
   }
 
   private readonly jwt: JwtService;
 
   constructor(
     jwt: JwtService,
-    @Inject('AUTH_PACKAGE') private client: ClientGrpc,
+    @Inject('EMP_PACKAGE') private clientEmp?: ClientGrpc,
+    @Inject('CUS_PACKAGE') private clientCus?: ClientGrpc,
   ) {
     this.jwt = jwt;
   }
@@ -40,6 +42,9 @@ export class AuthHelper implements OnModuleInit {
 
   // Get User by User ID we get from decode()
   public async validateUser(decoded: any): Promise<Employee> {
+    if (!this.employeeService) {
+      throw new Error('Employee service is not available in this context');
+    }
     try {
       const employee = await this.employeeService.getEmployee({ id: decoded.sub }).toPromise();
       return employee;
@@ -50,14 +55,17 @@ export class AuthHelper implements OnModuleInit {
   }
 
   // Get Customer by Customer ID we get from decode()
-  // public async validateCustomer(decoded: any): Promise<Customer> {
-  //   try {
-  //     return await this.customerService.getCustomer({ id: decoded.id }).toPromise();
-  //   } catch (error) {
-  //     console.error(error);
-  //     return null;
-  //   }
-  // }
+  public async validateCustomer(decoded: any): Promise<Customer> {
+    if (!this.customerService) {
+      throw new Error('Customer service is not available in this context');
+    }
+    try {
+      return await this.customerService.getCustomer({ id: decoded.sub }).toPromise();
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  }
 
   public generateResetPwToken = (email: string) => {
     return this.jwt.sign(
@@ -73,7 +81,7 @@ export class AuthHelper implements OnModuleInit {
   };
 
   // Generate JWT Token
-  public async generateToken( user: Employee | Customer): Promise<string> {
+  public async generateToken(user: Employee | Customer): Promise<string> {
     return this.jwt.signAsync({
       sub: user.id.toString(), // subject claim for user ID
       jti: crypto.randomUUID(), // unique token ID
@@ -94,5 +102,4 @@ export class AuthHelper implements OnModuleInit {
     const saltRounds = 14; 
     return bcrypt.hash(password, saltRounds);
   }
-
 }

@@ -6,9 +6,9 @@ import { Employee } from 'libs/entities/employees/employee.entity';
 import { EmployeeToken } from 'libs/entities/employees/employee.token.entity';
 import { AuthRedisService } from './redis.service';
 import { PassportModule } from '@nestjs/passport';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config/dist/config.service';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ClientGrpc, ClientsModule, Transport } from '@nestjs/microservices';
 import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
 import { AuthHelper } from '@app/helpers/auth/user/auth.helper';
 import { MailModule } from '@app/helpers/mail/mail.module';
@@ -29,7 +29,7 @@ import { Role } from 'libs/entities/role/role.entity';
     ClientsModule.registerAsync([
       {
         inject: [ConfigService],
-        name: 'AUTH_PACKAGE',
+        name: 'EMP_PACKAGE',
         useFactory: (config: ConfigService) => ({
           transport: Transport.GRPC,
           options: {
@@ -48,7 +48,13 @@ import { Role } from 'libs/entities/role/role.entity';
     AuthRedisService,
     MailService,
     JwtStrategy,
-    AuthHelper,
+    {
+      provide: AuthHelper,
+      useFactory: (jwt: JwtService, clientEmp: ClientGrpc) => {
+        return new AuthHelper(jwt, clientEmp);
+      },
+      inject: [JwtService, 'EMP_PACKAGE'],
+    }
   ],
   exports: [
     EmployeeService,
@@ -58,4 +64,4 @@ import { Role } from 'libs/entities/role/role.entity';
     AuthRedisService,
   ], // Export as needed
 })
-export class AuthModule {}
+export class EmployeeModule {}

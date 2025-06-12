@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { getEnvPath } from './common/helper/env.helper';
 import { TypeOrmConfigService } from './shared/typeorm/typeorm.service';
-import { AuthModule } from './api/employees/employees.module';
+import { EmployeeModule } from './api/employees/employees.module';
 import { GrpcModule } from './api/grpc/grpc.module';
 import { LoggerMiddleware } from 'libs/helpers/middleware/logger.midleware';
 
@@ -18,7 +18,7 @@ const EmployeesLogger = new LoggerMiddleware({
   imports: [
     ConfigModule.forRoot({ envFilePath, isGlobal: true }),
     TypeOrmModule.forRootAsync({ useClass: TypeOrmConfigService }),
-    AuthModule,
+    EmployeeModule,
     GrpcModule,
   ],
 })

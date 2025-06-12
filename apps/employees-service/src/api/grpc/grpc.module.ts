@@ -7,7 +7,7 @@ import { GrpcService } from './grpc.service';
 import { GrpcController } from './grpc.controller';
 import { EmployeeService } from '../employees/employees.service';
 import { AuthRedisService } from '../employees/redis.service';
-import { AuthModule } from '../employees/employees.module';
+import {  EmployeeModule } from '../employees/employees.module';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { Employee, EmployeeToken } from 'libs/entities';
 import { Role } from 'libs/entities/role/role.entity';
@@ -15,7 +15,7 @@ import { Role } from 'libs/entities/role/role.entity';
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'user', property: 'user' }),
-    AuthModule,
+    EmployeeModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
@@ -28,19 +28,19 @@ import { Role } from 'libs/entities/role/role.entity';
     ClientsModule.registerAsync([
       {
         inject: [ConfigService],
-        name: 'AUTH_PACKAGE',
+        name: 'EMP_PACKAGE',
         useFactory: (config: ConfigService) => ({
           transport: Transport.GRPC,
           options: {
             package: 'auth',
-            protoPath: 'contract/auth-employee-api.proto', // Ensure this path is correct
+            protoPath: 'contract/auth-employee-api.proto', 
             url: config.get<string>('AUTH_SERVICE'),
           },
         }),
       },
     ]),
   ],
-  controllers: [GrpcController], // Only the controller
+  controllers: [GrpcController],
   providers: [GrpcService, EmployeeService, AuthRedisService],
 })
 export class GrpcModule {}

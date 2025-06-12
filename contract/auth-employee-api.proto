@@ -14,6 +14,6 @@ message GetEmployeeResponse {
 }
 
 
-service EmployeeService {
+service EmployeeGrpcService {
     rpc GetEmployee (GetEmployeeRequest) returns (GetEmployeeResponse);
 }

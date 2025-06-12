@@ -3,9 +3,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TravelPackages } from 'libs/entities';
 import { TravelPackagesController } from './travel-packages.controller';
 import { TravelPackagesService } from './travel-packages.service';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ClientsModule, Transport, ClientGrpc } from '@nestjs/microservices';
 import { PassportModule } from '@nestjs/passport';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { AuthHelper } from '@app/helpers/auth/user/auth.helper';
 import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
@@ -27,17 +27,16 @@ import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
       }),
     }),
 
-
     // grpc module
     ClientsModule.registerAsync([
       {
         inject: [ConfigService],
-        name: 'AUTH_PACKAGE',
+        name: 'EMP_PACKAGE',
         useFactory: (config: ConfigService) => ({
           transport: Transport.GRPC,
           options: {
             package: 'auth',
-            protoPath: 'contract/auth-employee-api.proto', // Ensure this path is correct
+            protoPath: 'contract/auth-employee-api.proto',
             url: config.get<string>('AUTH_SERVICE'),
           },
         }),
@@ -45,6 +44,17 @@ import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
     ]),
   ],
   controllers: [TravelPackagesController],
-  providers: [TravelPackagesService, AuthHelper, JwtStrategy],
+  providers: [
+    TravelPackagesService,
+    JwtStrategy,
+    {
+      provide: AuthHelper,
+      useFactory: (jwt: JwtService, clientEmp: ClientGrpc) => {
+        // Only pass the employee client, customer client is not needed
+        return new AuthHelper(jwt, clientEmp, undefined);
+      },
+      inject: [JwtService, 'EMP_PACKAGE'],
+    }
+  ],
 })
 export class TravelPackagesModule {}
