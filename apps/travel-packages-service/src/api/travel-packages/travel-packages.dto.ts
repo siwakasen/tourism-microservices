@@ -36,15 +36,6 @@ export class UploadImagesDto {
   public readonly images: any[];
 }
 
-export class updateThumbnailDto {
-  @ApiProperty({
-    type: 'string',
-    format: 'binary',
-    description: 'Image to be uploaded',
-  })
-  public readonly image: any;
-}
-
 export class DeleteImagesDto {
   @ApiProperty()
   @IsString()
@@ -64,7 +55,7 @@ export class CreateUpdateTravelPackageDto {
   @IsNumber()
   public readonly package_price: number;
 
-  @ApiProperty({description: 'The duration of the travel package in days', example: 3})
+  @ApiProperty({description: 'The duration of the travel package in hours', example:4})
   @IsNumber()
   public readonly duration: number;
 
@@ -79,4 +70,5 @@ export class CreateUpdateTravelPackageDto {
   @ApiProperty({description: 'The list of items included in the travel package', example: '["Tickets", "Bottle water", "Tour Guide"]'})
   @IsArray()
   public readonly includes: string[];
+  
 }

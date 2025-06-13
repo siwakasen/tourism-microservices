@@ -94,31 +94,49 @@
         ]
       }
     },
+    "transaction-service": {
+      "type": "application",
+      "root": "apps/transaction-service/src",
+      "entryFile": "main",
+      "sourceRoot": "apps/transaction-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/transaction-service/tsconfig.app.json",
+        "assets": [
+          {
+            "include": "common/envs/*.env",
+            "outDir": "dist/apps/transaction-service/src/common/helper"
+          }
+        ]
+      }
+    },
     "report-service": {
       "type": "application",
-      "root": "apps/report-service",
+      "root": "apps/report-service/src",
       "entryFile": "main",
       "sourceRoot": "apps/report-service/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/report-service/tsconfig.app.json"
+        "tsConfigPath": "apps/report-service/tsconfig.app.json",
+        "assets": [
+          {
+            "include": "common/envs/*.env",
+            "outDir": "dist/apps/report-service/src/common/helper"
+          }
+        ]
       }
     },
     "live-chat-service": {
       "type": "application",
-      "root": "apps/live-chat-service",
+      "root": "apps/live-chat-service/src",
       "entryFile": "main",
       "sourceRoot": "apps/live-chat-service/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/live-chat-service/tsconfig.app.json"
-      }
-    },
-    "transaction-service": {
-      "type": "application",
-      "root": "apps/transaction-service",
-      "entryFile": "main",
-      "sourceRoot": "apps/transaction-service/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/transaction-service/tsconfig.app.json"
+        "tsConfigPath": "apps/live-chat-service/tsconfig.app.json",
+        "assets": [
+          {
+            "include": "common/envs/*.env",
+            "outDir": "dist/apps/live-chat-service/src/common/helper"
+          }
+        ]
       }
     }
   }

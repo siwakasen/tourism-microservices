@@ -18,7 +18,7 @@ export class GrpcCustomerController {
 
   @GrpcMethod('CustomerGrpcService', 'RegisterCustomer')
   async registerCustomer(data: RegisterCustomerDto, metadata: Metadata, call: ServerUnaryCall<any, any>) {
-    const id = await this.grpcCustomerService.registerCustomerGrpc(data);
-    return {id: id};
+    const response = await this.grpcCustomerService.registerCustomerGrpc(data);
+    return response;
   }
 }

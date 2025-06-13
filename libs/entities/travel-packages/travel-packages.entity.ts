@@ -6,7 +6,6 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
-  Unique,
 } from 'typeorm';
 
 @Entity('travel_packages')
@@ -48,8 +47,7 @@ export class TravelPackages {
   package_price: number;
 
   @ApiProperty({
-    description: 'The duration of the travel package in days',
-    example: 3,
+    description: 'The duration of the travel package in hours',
   })
   @Column({ type: 'int' })
   duration: number;
@@ -62,9 +60,7 @@ export class TravelPackages {
   max_persons: number;
 
   @ApiProperty({
-    description: 'The detailed itineraries for the travel package',
-    example:
-      '[{"day": 1, "activity": "Visit Ubud Forest"}, {"day": 2, "activity": "Relax at Kuta Beach"}]',
+    description: 'The detailed itineraries for the travel package in hours',
   })
   @Column({ type: 'json', nullable: true })
   itineraries: string[];

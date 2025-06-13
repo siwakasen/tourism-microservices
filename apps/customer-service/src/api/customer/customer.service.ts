@@ -1,12 +1,12 @@
 import { HttpStatus, HttpException, Injectable, Inject, OnModuleInit } from '@nestjs/common';
-import { LoginReqDto, RegisterCustomerDto } from './customer.dto';
+import { LoginReqDto, RegisterCustomerDto, requestResetPasswordDto, ResetPasswordDto } from './customer.dto';
 import { Customer } from 'libs/entities/customer/customer.entity';
 import {  Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthHelper } from '@app/helpers/auth/user/auth.helper';
 import { ClientGrpc } from '@nestjs/microservices';
 import { CustomerServiceClient } from 'libs/entities/grpc-interfaces/customer-grpc.interface';
-import { requestResetPasswordDto, ResetPasswordDto } from 'apps/employees-service/src/api/employees/employees.dto';
+
 import { CustomerToken } from 'libs/entities/customer/customer.token.entity';
 import { MailService } from '@app/helpers/mail/mail.service';
 
@@ -16,10 +16,10 @@ export class CustomerService implements OnModuleInit {
   @Inject('CUS_PACKAGE')
   private clientCus: ClientGrpc;
 
-  private customerService: CustomerServiceClient;
+  private customerGrpcService: CustomerServiceClient;
 
   onModuleInit() {
-    this.customerService = this.clientCus.getService<CustomerServiceClient>('CustomerGrpcService');
+    this.customerGrpcService = this.clientCus.getService<CustomerServiceClient>('CustomerGrpcService');
   }
 
   @InjectRepository(Customer)
@@ -190,7 +190,7 @@ export class CustomerService implements OnModuleInit {
 
   public async registerCustomerGrpc(body: RegisterCustomerDto) {
     try {
-       await this.customerService.registerCustomer({
+      const {id,jwtToken} = await this.customerGrpcService.registerCustomer({
         email: body.email,
         password: body.password,
         name: body.name,
@@ -199,7 +199,11 @@ export class CustomerService implements OnModuleInit {
       }).toPromise();
       return {
         success: true,
-        message: 'Customer registered successfully',
+        data: {
+          message: 'Customer registered successfully',
+          token: jwtToken,
+          id: id,
+        },
       };
     } catch (error) {
       throw new HttpException(error.details, HttpStatus.INTERNAL_SERVER_ERROR);

@@ -1,12 +1,11 @@
-import { Body, Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { CustomerService } from './customer.service';
 import { ApiBadRequestResponse, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
-import { LoginReqDto, RegisterCustomerDto, requestResetPasswordDto } from './customer.dto';
+import { LoginReqDto, LoginResDto, RegisterCustomerDto, requestResetPasswordDto, ResetPasswordDto } from './customer.dto';
 import { GetCustomer } from '@app/helpers/auth/decorators/get-user.decorator';
 import { Customer } from 'libs/entities/customer/customer.entity';
 import { JwtAuthGuard } from '@app/helpers/auth/user/auth.guard';
 import { Roles, UserType } from '@app/helpers/auth/decorators/auth.decorator';
-import { ResetPasswordDto } from 'apps/employees-service/src/api/employees/employees.dto';
 
 @Controller('customers')
 @ApiBearerAuth()
@@ -23,7 +22,7 @@ export class CustomerController {
   @Post('login')
   @ApiResponse({ status: 200, description: 'Customer logged in successfully' })
   @ApiBadRequestResponse({ description: 'Customer not found' })
-  public async login(@Body() body: LoginReqDto) {
+  public async login(@Body() body: LoginReqDto) : Promise <LoginResDto> {
     return this.customerService.login(body);
   }
 

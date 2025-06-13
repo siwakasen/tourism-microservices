@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsOptional, IsString } from "class-validator";
+import {  IsBoolean, IsEmail, IsJSON, IsOptional, IsString, IsStrongPassword, MinLength } from "class-validator";
 
 export class RegisterCustomerDto {
   @ApiProperty({
@@ -38,7 +38,6 @@ export class RegisterCustomerDto {
   @IsString()
   @IsOptional()
   country_origin: string;
-
 }
 
 export class LoginReqDto {
@@ -51,8 +50,34 @@ export class LoginReqDto {
     password: string;
   }
 
+  export class LoginResDto {
+      @ApiProperty({ default: { message: 'Login success', token: 'token' } })
+      @IsJSON()
+      public readonly data: {
+        message: string;
+        token: string;
+      };  
+
+      @ApiProperty({ default: true })
+      @IsBoolean()
+      public readonly success: boolean;
+  }
+
 export class requestResetPasswordDto {
   @ApiProperty({ default: 'test@gmail.com' })
   @IsEmail()
   public readonly email: string;
 }
+
+export class ResetPasswordDto {
+  @ApiProperty()
+  @IsString()
+  public readonly token: string;
+
+  @ApiProperty()
+  @IsString()
+  @MinLength(8)
+  @IsStrongPassword()
+  public readonly password: string;
+}
+

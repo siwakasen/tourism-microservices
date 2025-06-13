@@ -27,6 +27,7 @@ message RegisterCustomerRequest{
 
 message RegisterCustomerResponse{
   int32 id = 1;
+  string jwtToken = 2;
 }
 
 

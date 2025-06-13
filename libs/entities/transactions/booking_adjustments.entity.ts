@@ -1,0 +1,68 @@
+import { ApiProperty } from "@nestjs/swagger";
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
+
+export enum RequestType {
+  CANCELLATION = 'CANCELLATION',
+  RESCHEDULE = 'RESCHEDULE'
+}
+
+export enum AdjustmentStatus {
+  PENDING = 'PENDING',
+  WAITING_PAYMENT = 'WAITING_PAYMENT',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+  EXPIRED = 'EXPIRED'
+}
+
+@Entity('booking_adjustments')
+class BookingAdjustments extends BaseEntity {
+  @ApiProperty()
+  @PrimaryGeneratedColumn()
+  public id!: number;
+
+  @ApiProperty()
+  @Column({ type: 'int', nullable: false })
+  public booking_id!: number;
+
+  @ApiProperty({ enum: RequestType })
+  @Column({
+    type: 'enum',
+    enum: RequestType,
+    nullable: false
+  })
+  public request_type!: RequestType;
+
+  @ApiProperty({ enum: AdjustmentStatus })
+  @Column({
+    type: 'enum',
+    enum: AdjustmentStatus,
+    default: AdjustmentStatus.PENDING
+  })
+  public status: AdjustmentStatus;
+
+  @ApiProperty()
+  @Column({ type: 'text', nullable: true })
+  public reason: string;
+
+  @ApiProperty()
+  @Column({ type: 'timestamp', nullable: true })
+  public new_start_date: Date;
+
+  @ApiProperty()
+  @Column({ type: 'timestamp', nullable: true })
+  public new_end_date: Date;
+
+  @ApiProperty()
+  @Column({ type: 'int', nullable: true })
+  public additional_price: number;
+
+  @ApiProperty()
+  @CreateDateColumn()
+  public created_at: Date;
+
+  @ApiProperty()
+  @UpdateDateColumn()
+  public updated_at: Date;
+}
+
+export { BookingAdjustments };

@@ -38,7 +38,10 @@ export class GrpcCustomerService {
         ...body,
         password: hashedPassword,
       });
-      return newCustomer.id;
+      return {
+        id: newCustomer.id,
+        jwtToken: await this.helper.generateToken(newCustomer),
+      };
       
     } catch (error) {
       throw new RpcException(error.message);
