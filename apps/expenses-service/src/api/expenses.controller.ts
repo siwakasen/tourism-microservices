@@ -5,7 +5,7 @@ import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Roles, UserType } from '@app/helpers/auth/decorators/auth.decorator';
 import { JwtAuthGuard } from '@app/helpers/auth/user/auth.guard';
 import { GetEmployee } from '@app/helpers/auth/decorators/get-user.decorator';
-import { Employee } from 'libs/entities/employees';
+import { Employee } from 'libs/entities';
 
 @ApiTags('Expenses')
 @ApiBearerAuth()

@@ -6,7 +6,8 @@ import { TypeOrmConfigService } from './shared/typeorm/typeorm.service';
 import { TravelPackagesModule } from './api/travel-packages/travel-packages.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-import { LoggerMiddleware } from '../../../libs/helpers/middleware/logger.midleware';
+import { LoggerMiddleware } from 'libs/helpers/middleware/logger.midleware';
+import { GrpcTravelPackagesModule } from './api/grpc-travel-packages/grpc-travel.module';
 
 const envFilePath: string = getEnvPath(`${__dirname}/common/helper`);
 console.log('envFilePath:', getEnvPath(`${__dirname}`));
@@ -17,9 +18,6 @@ const TravelPackagesLogger = new LoggerMiddleware({
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true, // Membuat config tersedia secara global
-    }),
     ConfigModule.forRoot({ envFilePath, isGlobal: true }),
     TypeOrmModule.forRootAsync({ useClass: TypeOrmConfigService }),
     ServeStaticModule.forRoot({
@@ -27,6 +25,7 @@ const TravelPackagesLogger = new LoggerMiddleware({
       serveRoot: '/public', // Optional: URL prefix for static files
     }),
     TravelPackagesModule,
+    GrpcTravelPackagesModule,
   ],
 })
 export class ApiModule implements NestModule {

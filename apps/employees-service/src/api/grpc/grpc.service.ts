@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { AuthRedisService } from '../employees/redis.service';
 import { RpcException } from '@nestjs/microservices';
-import { Employee } from 'libs/entities/employees';
+import { Employee } from 'libs/entities';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 

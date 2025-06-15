@@ -3,4 +3,7 @@ export * from './employees/index';
 export * from './employees/employee.entity';
 export * from './cars/cars.entity';
 export * from './expenses/expenses.entity';
-export * from './customer/customer.entity';
+export * from './customer';
+export * from './grpc-interfaces';
+export * from './roles/roles.entity';
+export * from './transactions';

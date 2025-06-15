@@ -1,7 +1,6 @@
 import { Controller, Inject } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
 import { GrpcService } from './grpc.service';
-import { Employee } from 'libs/entities/employees';
 
 @Controller()
 export class GrpcController {

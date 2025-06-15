@@ -10,7 +10,6 @@ import {
   HttpException,
   HttpStatus,
   Delete,
-  Patch,
   UseGuards,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -29,6 +28,7 @@ import {
   CreateUpdateTravelPackageDto,
   UploadImagesDto,
   DeleteImagesDto,
+  UploadThumbnailDto,
 } from './travel-packages.dto';
 import { diskStorage } from 'multer';
 import { JwtAuthGuard } from '@app/helpers/auth/user/auth.guard';
@@ -125,6 +125,46 @@ export class TravelPackagesController {
 
   @ApiResponse({
     status: 200,
+    description: 'Successfully updated travel package thumbnail',
+  })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FilesInterceptor('thumbnail', 1, {
+    storage: diskStorage({
+      destination: './dist/apps/travel-packages-service/public/travel-images',
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        cb(null, file.fieldname + '-' + uniqueSuffix + '.jpg');
+      },
+    }),
+    fileFilter: (req, file, cb) => {
+      if (!file.mimetype.startsWith('image/')) {
+        return cb(new HttpException('Invalid file type', HttpStatus.BAD_REQUEST), false);
+      }
+      cb(null, true);
+    },
+  }))
+  @ApiBody({
+    type: UploadThumbnailDto,
+  })
+  @UseGuards(JwtAuthGuard)
+  @Roles(UserType.ADMIN)
+  @Post('upload-thumbnail/:id')
+  public async uploadThumbnail(
+    @Param('id') id: number,
+    @UploadedFiles() file: Express.Multer.File,
+  ) {
+    if (!file) {
+      return {
+        message: 'Please upload a thumbnail image',
+        error: 'Bad Request',
+        statusCode: HttpStatus.BAD_REQUEST,
+      };
+    }
+    return await this.travelPackagesService.updateThumbnail(id, file);
+  }
+
+  @ApiResponse({
+    status: 200,
     description: 'Successfully deleted travel package images',
   })
   @ApiBody({
@@ -164,4 +204,5 @@ export class TravelPackagesController {
   public async deleteTravelPackage(@Param('id') id: number) {
     return await this.travelPackagesService.deleteTravelPackage(id);
   }
+
 }

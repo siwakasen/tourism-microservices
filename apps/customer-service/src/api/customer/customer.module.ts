@@ -3,14 +3,13 @@ import { CustomerController } from './customer.controller';
 import { CustomerService } from './customer.service';
 import {  ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Customer } from 'libs/entities/customer/customer.entity';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ClientGrpc, ClientsModule, Transport } from '@nestjs/microservices';
 import { MailModule } from '@app/helpers/mail/mail.module';
 import { AuthHelper } from '@app/helpers/auth/user/auth.helper';
 import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
-import { CustomerToken } from 'libs/entities/customer/customer.token.entity';
+import { Customer, CustomerToken } from 'libs/entities';
 
 @Module({
   imports: [
@@ -26,13 +25,13 @@ import { CustomerToken } from 'libs/entities/customer/customer.token.entity';
     ClientsModule.registerAsync([
       {
         inject: [ConfigService],
-        name: 'CUS_PACKAGE',
+        name: 'CUS_AUTH_PACKAGE',
         useFactory: (config: ConfigService) => ({
           transport: Transport.GRPC,
           options: {
             package: 'auth',
             protoPath: 'contract/auth-customer-api.proto',
-            url: config.get<string>('CUS_AUTH_SERVICE'),
+            url: config.get<string>('CUS_AUTH_CLIENT'),
             loader: {
               keepCase: true,
             },
@@ -49,7 +48,7 @@ import { CustomerToken } from 'libs/entities/customer/customer.token.entity';
       console.log('[CustomerModule] Initializing AuthHelper with customer GRPC client');
       return new AuthHelper(jwt, undefined, clientCus);
     },
-    inject: [JwtService, 'CUS_PACKAGE'],
+    inject: [JwtService, 'CUS_AUTH_PACKAGE'],
   }],
   exports: [CustomerService, AuthHelper, JwtStrategy],
 })

@@ -3,6 +3,7 @@ import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, U
 
 export enum BookingStatus {
   WAITING_PAYMENT = 'WAITING_PAYMENT',
+  WAITING_CONFIRMATION = 'WAITING_CONFIRMATION',
   CONFIRMED = 'CONFIRMED',
   ONGOING = 'ONGOING',
   WAITING_RETURN = 'WAITING_RETURN',

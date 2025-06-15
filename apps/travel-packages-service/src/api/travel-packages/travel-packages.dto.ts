@@ -72,3 +72,12 @@ export class CreateUpdateTravelPackageDto {
   public readonly includes: string[];
   
 }
+
+export class UploadThumbnailDto {
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    description: 'Thumbnail image to be uploaded',
+  })
+  public readonly thumbnail: any;
+}

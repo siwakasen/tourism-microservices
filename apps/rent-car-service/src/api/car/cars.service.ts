@@ -169,6 +169,9 @@ export class CarsService {
         message: 'Image uploaded successfully',
       };
     } catch (error) {
+      if (image) {
+        fs.unlinkSync(image.path);
+      }
       await queryRunner.rollbackTransaction();
       if (error.message === 'Car not found') {
         throw new HttpException(

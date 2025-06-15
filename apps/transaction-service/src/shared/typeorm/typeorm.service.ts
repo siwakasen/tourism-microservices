@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmOptionsFactory, TypeOrmModuleOptions } from '@nestjs/typeorm';
-import {  Bookings, BookingAdjustments, Payment, Refunds, Ratings } from 'libs/entities/transactions';
+import {  Bookings, BookingAdjustments, Payment, Refunds, Ratings } from 'libs/entities';
 
 @Injectable()
 export class TypeOrmConfigService implements TypeOrmOptionsFactory {

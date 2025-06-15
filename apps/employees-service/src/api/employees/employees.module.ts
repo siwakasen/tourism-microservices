@@ -2,8 +2,6 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmployeeService } from './employees.service';
 import { EmployeeController } from './employees.controller';
-import { Employee } from 'libs/entities/employees/employee.entity';
-import { EmployeeToken } from 'libs/entities/employees/employee.token.entity';
 import { AuthRedisService } from './redis.service';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule, JwtService } from '@nestjs/jwt';
@@ -13,7 +11,7 @@ import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
 import { AuthHelper } from '@app/helpers/auth/user/auth.helper';
 import { MailModule } from '@app/helpers/mail/mail.module';
 import { MailService } from '@app/helpers/mail/mail.service';
-import { Roles } from 'libs/entities/roles/roles.entity';
+import { Employee, EmployeeToken, Roles } from 'libs/entities';
 
 @Module({
   imports: [
@@ -29,13 +27,13 @@ import { Roles } from 'libs/entities/roles/roles.entity';
     ClientsModule.registerAsync([
       {
         inject: [ConfigService],
-        name: 'EMP_PACKAGE',
+        name: 'EMP_AUTH_PACKAGE',
         useFactory: (config: ConfigService) => ({
           transport: Transport.GRPC,
           options: {
             package: 'auth',
             protoPath: 'contract/auth-employee-api.proto', // Ensure this path is correct
-            url: config.get<string>('AUTH_SERVICE'),
+            url: config.get<string>('EMP_AUTH_CLIENT'),
           },
         }),
       },
@@ -53,7 +51,7 @@ import { Roles } from 'libs/entities/roles/roles.entity';
       useFactory: (jwt: JwtService, clientEmp: ClientGrpc) => {
         return new AuthHelper(jwt, clientEmp);
       },
-      inject: [JwtService, 'EMP_PACKAGE'],
+      inject: [JwtService, 'EMP_AUTH_PACKAGE'],
     }
   ],
   exports: [

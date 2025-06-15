@@ -30,6 +30,10 @@ export @Entity('customers')
   public password: string;
 
   @ApiProperty()
+  @Column({ type: 'json', nullable: true })
+  public identity_file: string[];
+
+  @ApiProperty()
   @CreateDateColumn()
   public created_at!: Date;
 

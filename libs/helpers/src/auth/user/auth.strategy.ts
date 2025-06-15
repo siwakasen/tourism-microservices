@@ -1,9 +1,8 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, HttpException, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { Employee } from 'libs/entities';
-import { Customer } from 'libs/entities/customer/customer.entity';
+import { Employee, Customer } from 'libs/entities';
 import { AuthHelper } from './auth.helper';
 
 @Injectable()
@@ -15,12 +14,15 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'user') {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: config.get('JWT_KEY'),
-      ignoreExpiration: false,
+      ignoreExpiration: false
     });
   }
 
   public async validate(payload: any): Promise<Employee | Customer> {
-    
+    const isTokenExpired = await this.helper.validateTokenExpiration(payload['exp']);
+    if(!isTokenExpired) {
+      throw new HttpException('Token Expired', HttpStatus.UNAUTHORIZED);
+    }
 
     const user = await this.helper.validateUser(payload);
     if (user) {

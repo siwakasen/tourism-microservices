@@ -6,7 +6,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Employee } from 'libs/entities/employees/employee.entity';
 import { DataSource, Repository } from 'typeorm';
 import {
   CreateEmployeeDto,
@@ -17,13 +16,13 @@ import {
   RegisterOwnerResponseDto,
   requestResetPasswordDto,
   ResetPasswordDto,
+  PaginationEmployeeByRoleDto,
 } from './employees.dto';
 import { AuthRedisService } from './redis.service';
 import { AuthHelper } from '@app/helpers/auth/user/auth.helper';
-import { EmployeeToken } from 'libs/entities';
 import { MailService } from '@app/helpers/mail/mail.service';
 import { FormatErrorInterceptor } from 'libs/helpers/interceptors/exeption.interceptor';
-import { Roles } from 'libs/entities/roles/roles.entity';
+import { Employee, EmployeeToken, Roles } from 'libs/entities';
 
 @Injectable()
 @UseInterceptors(FormatErrorInterceptor)
@@ -302,6 +301,46 @@ export class EmployeeService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  public async getEmployeesByRole(payload: PaginationEmployeeByRoleDto) {
+    const { page = 1, limit = 10, role_id } = payload;
+    if(role_id == 1) {
+      throw new HttpException('No employees found', HttpStatus.NOT_FOUND);
+    }
+    const queryBuilder = this.repository.createQueryBuilder('employees')
+    .leftJoinAndSelect('employees.role', 'role')
+    .select([
+      'employees.id',
+      'employees.name',
+      'employees.email',
+      'employees.salary',
+      'employees.last_update_password',
+      'employees.created_at',
+      'employees.updated_at',
+      'employees.deleted_at',
+      'role.id',
+      'role.role_name'
+    ])
+    .orderBy('employees.created_at', 'DESC')
+    .where('role.id = :roleId', { roleId: role_id });
+    
+    const [result, total] = await queryBuilder
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
+    
+    return {
+      data: result,
+      meta: {
+        totalItems: total,
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        limit,
+        hasNextPage: page < Math.ceil(total / limit),
+        hasPrevPage: page > 1,
+      }
+    };
   }
 
   public async createEmployee(payload: CreateEmployeeDto) {

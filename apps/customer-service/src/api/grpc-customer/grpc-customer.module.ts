@@ -1,10 +1,10 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { Customer } from "libs/entities/customer/customer.entity";
+import { Customer } from "libs/entities";
 import { GrpcCustomerController } from "./grpc-customer.controller";
 import { GrpcCustomerService } from "./grpc-customer.service";
 import { CustomerModule } from "../customer/customer.module";
-import { CustomerToken } from "libs/entities/customer/customer.token.entity";
+import { CustomerToken } from "libs/entities";
 
 
 @Module({

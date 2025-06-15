@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEmail, IsNumber, IsOptional, IsStrongPassword, MinLength } from 'class-validator';
 import { IsString } from 'class-validator';
-import { Employee } from 'libs/entities/employees/employee.entity';
+import { Employee } from 'libs/entities';
 
 export class LoginReqDto {
   @ApiProperty({ default: 'owner@example.com' })
@@ -120,6 +120,23 @@ export class PaginationEmployeeDto {
   @IsString()
   @IsOptional()
   public readonly search: string;
+}
+
+export class PaginationEmployeeByRoleDto {
+  @ApiProperty({ default: 1 })
+  @IsNumber()
+  @Type(() => Number)
+  public readonly page: number;
+
+  @ApiProperty({ default: 10 })
+  @IsNumber()
+  @Type(() => Number)
+  public readonly limit: number;
+
+  @ApiProperty({ default: 2 })
+  @IsNumber()
+  @Type(() => Number)
+  public readonly role_id: number;
 }
 
 export class CreateEmployeeDto {

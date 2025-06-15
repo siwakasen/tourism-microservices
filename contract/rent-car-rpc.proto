@@ -1,0 +1,14 @@
+syntax = "proto3";
+package car;
+
+message GetCarRequest{
+    int32 id = 1;
+}
+
+message GetCarResponse{
+    int32 pricePerDay = 1;
+}
+
+service CarGrpcService{
+    rpc GetCar (GetCarRequest) returns (GetCarResponse);
+}

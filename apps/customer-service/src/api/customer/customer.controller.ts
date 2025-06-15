@@ -1,11 +1,13 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Post, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { CustomerService } from './customer.service';
-import { ApiBadRequestResponse, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
-import { LoginReqDto, LoginResDto, RegisterCustomerDto, requestResetPasswordDto, ResetPasswordDto } from './customer.dto';
+import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiConsumes, ApiResponse } from '@nestjs/swagger';
+import { LoginReqDto, LoginResDto, RegisterCustomerDto, requestResetPasswordDto, ResetPasswordDto, UploadIdentityFileDto } from './customer.dto';
 import { GetCustomer } from '@app/helpers/auth/decorators/get-user.decorator';
-import { Customer } from 'libs/entities/customer/customer.entity';
+import { Customer } from 'libs/entities';
 import { JwtAuthGuard } from '@app/helpers/auth/user/auth.guard';
 import { Roles, UserType } from '@app/helpers/auth/decorators/auth.decorator';
+import { diskStorage } from 'multer';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('customers')
 @ApiBearerAuth()
@@ -18,6 +20,53 @@ export class CustomerController {
   public async registerCustomer(@Body() body: RegisterCustomerDto) {
     return this.customerService.registerCustomer(body);
   } 
+
+  @ApiBody({
+    type: UploadIdentityFileDto,
+  })
+  @Post('upload-identity-file')
+  @ApiResponse({ status: 200, description: 'Identity file uploaded successfully' })
+  @UseInterceptors(
+    FilesInterceptor(
+      'identity-file',2,{
+        storage: diskStorage({
+          destination: './dist/apps/customer-service/public/identity-files',
+          filename: (req, file, cb) => {
+            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+            cb(null, file.fieldname + '-' + uniqueSuffix + '.jpg');
+          },
+        }),
+        fileFilter: (req, file, cb) => {
+          if (!file.mimetype.startsWith('image/')) {
+            return cb(
+              new HttpException(
+                {
+                  message: ['Invalid file type. Only images are allowed.'],
+                  error: 'Not Acceptable',
+                  statusCode: HttpStatus.NOT_ACCEPTABLE,
+                },
+                HttpStatus.NOT_ACCEPTABLE,
+              ),
+              false,
+            );
+          }
+          cb(null, true);
+        },
+      }
+    ))
+  @UseGuards(JwtAuthGuard)
+  @Roles(UserType.CUSTOMER)
+  @ApiConsumes('multipart/form-data')
+  public async uploadIdentityFile(@GetCustomer() customer: Customer, @UploadedFiles() files: Express.Multer.File[]) {
+    if (files.length <2 ) {
+      return {
+        message: 'Please upload both the driver license and identity card',
+        error: 'Bad Request',
+        statusCode: HttpStatus.BAD_REQUEST,
+      };
+    }
+    return this.customerService.uploadIdentityFile(files, customer.id);
+  }
 
   @Post('login')
   @ApiResponse({ status: 200, description: 'Customer logged in successfully' })
@@ -59,4 +108,6 @@ export class CustomerController {
       throw error;
     }
   }
+
+  
 }

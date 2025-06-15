@@ -1,7 +1,5 @@
 syntax = "proto3";
 package auth;
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/empty.proto";
 
 // Request message for getting a customer by ID
 message GetCustomerRequest {

@@ -29,6 +29,7 @@ import {
   requestResetPasswordDto,
   ResetPasswordDto,
   TokenDto,
+  PaginationEmployeeByRoleDto,
 } from './employees.dto';
 import { EmployeeService } from './employees.service';
 import { JwtAuthGuard } from '@app/helpers/auth/user/auth.guard';
@@ -75,7 +76,7 @@ export class EmployeeController {
   }
 
 
-  @Get('get-all-employees')
+  @Get()
   @Roles(UserType.OWNER)
   @UseGuards(JwtAuthGuard)
   public async getAllEmployees(@Query() query: PaginationEmployeeDto) {
@@ -83,21 +84,30 @@ export class EmployeeController {
     return await this.service.getAllEmployees(query);
   }
 
-  @Get('get-employee-by-id/:id')
+  @Get('by-role')
+  @Roles(UserType.ADMIN)
+  @UseGuards(JwtAuthGuard)
+  public async getEmployeesByRole(@Query() query: PaginationEmployeeByRoleDto) {
+    return await this.service.getEmployeesByRole(query);
+  }
+
+  
+
+  @Get(':id')
   @Roles(UserType.OWNER)
   @UseGuards(JwtAuthGuard)
   public async getEmployeeById(@Param('id') id: number) {
     return await this.service.getEmployeeById(id);
   }
 
-  @Post('create-employee')
+  @Post('')
   @Roles(UserType.OWNER)
   @UseGuards(JwtAuthGuard)
   public async createEmployee(@Body() body: CreateEmployeeDto) {
     return await this.service.createEmployee(body);
   }
 
-  @Patch('update-employee/:id')
+  @Patch(':id')
   @Roles(UserType.OWNER)
   @UseGuards(JwtAuthGuard)
   public async updateEmployee(@Param('id') id: number, @Body() body: UpdateEmployeeDto) {
@@ -107,7 +117,7 @@ export class EmployeeController {
     return await this.service.updateEmployee(id, body);
   }
 
-  @Delete('delete-employee/:id')
+  @Delete(':id')
   @Roles(UserType.OWNER)
   @UseGuards(JwtAuthGuard)
   public async deleteEmployee(@Param('id') id: number) {

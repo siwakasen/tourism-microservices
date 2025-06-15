@@ -167,7 +167,13 @@ export class TravelPackagesService {
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
-
+        if(files.length > 0) {
+          for(const file of files) {
+            if(file) {
+              fs.unlinkSync(file.path);
+            }
+          }
+      }
       if (error.message === 'Travel Package not found') {
         throw new HttpException(
           {
@@ -220,6 +226,9 @@ export class TravelPackagesService {
         message: 'Thumbnail updated successfully',
       };
     } catch (error) {
+      if(file) {
+        fs.unlinkSync(file.path);
+      }
       await queryRunner.rollbackTransaction();
 
       if (error.message === 'Travel Package not found') {

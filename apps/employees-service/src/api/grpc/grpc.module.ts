@@ -4,8 +4,7 @@ import { GrpcService } from './grpc.service';
 import { GrpcController } from './grpc.controller';
 import { AuthRedisService } from '../employees/redis.service';
 import {  EmployeeModule } from '../employees/employees.module';
-import { Employee, EmployeeToken } from 'libs/entities';
-import { Roles } from 'libs/entities/roles/roles.entity';
+import { Employee, EmployeeToken, Roles } from 'libs/entities';
 
 @Module({
   imports: [

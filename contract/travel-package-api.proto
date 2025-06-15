@@ -1,0 +1,15 @@
+syntax = "proto3";
+package travelpackage;
+
+message GetTravelPackageRequest {
+  int32 id = 1;
+}
+
+message GetTravelPackageResponse {
+  int32 packagePrice = 1;
+  int32 duration = 2;
+}
+
+service TravelPackageGrpcService {
+  rpc GetTravelPackage (GetTravelPackageRequest) returns (GetTravelPackageResponse);
+}

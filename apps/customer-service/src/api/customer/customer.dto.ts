@@ -1,35 +1,35 @@
 import { ApiProperty } from "@nestjs/swagger";
-import {  IsBoolean, IsEmail, IsJSON, IsOptional, IsString, IsStrongPassword, MinLength } from "class-validator";
+import {  IsArray, IsBoolean, IsEmail, IsJSON, IsOptional, IsString, IsStrongPassword, MinLength } from "class-validator";
 
 export class RegisterCustomerDto {
   @ApiProperty({
     description: 'The email of the customer',
-    example: 'john.doe@example.com',
+    example: 'example@gmail.com',
   })
   @IsEmail()
-  email: string;
+  public readonly email: string;
 
   @ApiProperty({
     description: 'The password of the customer',
     example: 'Password12!@',
   })
   @IsString()
-  password: string;
+  public readonly password: string;
 
   @ApiProperty({
     description: 'The name of the customer',
-    example: 'John Doe',
+    example: 'Example',
   })
   @IsString()
-  name: string;
+  public readonly name: string;
 
   @ApiProperty({
     description: 'The phone number of the customer',
-    example: '08123456789',
+    example: '081234567890',
   })
   @IsString()
   @IsOptional()
-  phone_number: string;
+  public readonly phone_number: string;
 
   @ApiProperty({
     description: 'The country of the customer',
@@ -37,17 +37,44 @@ export class RegisterCustomerDto {
   })
   @IsString()
   @IsOptional()
-  country_origin: string;
+  public readonly country_origin: string;
+}
+
+export class RegisterCustomerResDto {
+  @ApiProperty({ default: { message: 'Register success', token: 'token', id: 1 } })
+  @IsJSON()
+  public readonly data: {
+    message: string;
+    token: string;
+    id: number;
+  };
+
+  @ApiProperty({ default: true })
+  @IsBoolean()
+  public readonly success: boolean;
+}
+
+export class UploadIdentityFileDto {
+  @ApiProperty({
+    description: 'The identity file of the customer',
+    type: 'array',
+    items: {
+      type: 'string',
+      format: 'binary',
+    },
+  })
+  @IsArray()
+  public readonly 'identity-file': string[];
 }
 
 export class LoginReqDto {
-    @ApiProperty({ default: 'john.doe@example.com' })
+    @ApiProperty({ default: 'example@gmail.com' })
     @IsEmail()
-    email: string;
+    public readonly email: string;
   
     @ApiProperty({ default: 'Password12!@' })
     @IsString()
-    password: string;
+    public readonly password: string;
   }
 
   export class LoginResDto {
@@ -64,7 +91,7 @@ export class LoginReqDto {
   }
 
 export class requestResetPasswordDto {
-  @ApiProperty({ default: 'test@gmail.com' })
+  @ApiProperty({ default: 'example@gmail.com' })
   @IsEmail()
   public readonly email: string;
 }

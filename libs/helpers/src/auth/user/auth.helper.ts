@@ -2,12 +2,12 @@ import {
   Injectable,
   Inject,
   OnModuleInit,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { Employee } from 'libs/entities/employees';
-import { Customer } from 'libs/entities/customer/customer.entity';
-import { AuthServiceClient } from 'libs/entities/grpc-interfaces/auth-grpc.interface';
+import { AuthServiceClient, Customer, Employee } from 'libs/entities';
 import { ClientGrpc } from '@nestjs/microservices';
 import * as crypto from 'crypto';
 
@@ -29,16 +29,22 @@ export class AuthHelper implements OnModuleInit {
 
   constructor(
     jwt: JwtService,
-    @Inject('EMP_PACKAGE') private clientEmp?: ClientGrpc,
-    @Inject('CUS_PACKAGE') private clientCus?: ClientGrpc,
+    @Inject('EMP_AUTH_PACKAGE') private clientEmp?: ClientGrpc,
+    @Inject('CUS_AUTH_PACKAGE') private clientCus?: ClientGrpc,
   ) {
     this.jwt = jwt;
   }
 
   // Decoding the JWT Token
   public async decode(token: string): Promise<unknown> {
-    console.log('token', token);
     return this.jwt.decode(token, null);
+  }
+
+  public async validateTokenExpiration(exp: number): Promise<boolean> { 
+    if(exp < Math.floor(Date.now() / 1000)) {
+      return false;
+    }
+    return true;
   }
 
   // Get User by User ID we get from decode()

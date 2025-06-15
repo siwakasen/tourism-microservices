@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Customer } from 'libs/entities/customer/customer.entity';
+import { Customer } from 'libs/entities/';
 import { RpcException } from '@nestjs/microservices';
 import { RegisterCustomerDto } from '../customer/customer.dto';
 import { AuthHelper } from '@app/helpers/auth/user/auth.helper';
@@ -29,7 +29,7 @@ export class GrpcCustomerService {
     try {
       const customer: Customer = await this.repository.findOne({ where: { email: body.email } });
       if (customer) {
-        throw new RpcException('Customer already exists');
+        throw new RpcException('Email already used');
       }
 
       const hashedPassword = await this.helper.hashingPassword(body.password);

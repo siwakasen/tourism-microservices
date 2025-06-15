@@ -5,8 +5,9 @@ import { getEnvPath } from './common/helper/env.helper';
 import { TypeOrmConfigService } from './shared/typeorm/typeorm.service';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-import { CarsModule } from './api/cars.module';
+import { CarsModule } from './api/car/cars.module';
 import { LoggerMiddleware } from 'libs/helpers/middleware/logger.midleware';
+import { GrpcCarModule } from './api/grpc-car/grpc-car.module';
 
 const envFilePath: string = getEnvPath(`${__dirname}/common/helper`);
 console.log('envFilePath:', getEnvPath(`${__dirname}`));
@@ -27,6 +28,7 @@ const CarLogger = new LoggerMiddleware({
       serveRoot: '/public', // Optional: URL prefix for static files
     }),
     CarsModule,
+    GrpcCarModule,
   ],
 })
 export class ApiModule implements NestModule {
