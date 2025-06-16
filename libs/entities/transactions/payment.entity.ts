@@ -3,8 +3,13 @@ import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, U
 
 export enum PaymentStatus {
   PENDING = 'PENDING',
-  COMPLETED = 'COMPLETED',
+  SUCCESS = 'SUCCESS',
   FAILED = 'FAILED'
+}
+
+export enum PaymentMethod {
+  MIDTRANS = 'MIDTRANS',
+  PAYPAL = 'PAYPAL',
 }
 
 @Entity('payments')
@@ -26,12 +31,12 @@ class Payment extends BaseEntity {
   public amount!: number;
 
   @ApiProperty()
-  @Column({ type: 'timestamp', nullable: false })
+  @Column({ type: 'timestamp', nullable: true })
   public payment_date!: Date;
 
   @ApiProperty()
   @Column({ type: 'varchar', nullable: false })
-  public payment_method!: string;
+  public payment_method!: PaymentMethod;
 
   @ApiProperty()
   @Column({ type: 'varchar', nullable: true })

@@ -7,6 +7,7 @@ message GetCarRequest{
 
 message GetCarResponse{
     int32 pricePerDay = 1;
+    string carName = 2;
 }
 
 service CarGrpcService{

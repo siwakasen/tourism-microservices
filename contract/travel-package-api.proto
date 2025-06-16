@@ -8,8 +8,10 @@ message GetTravelPackageRequest {
 message GetTravelPackageResponse {
   int32 packagePrice = 1;
   int32 duration = 2;
+  string packageName = 3;
 }
 
 service TravelPackageGrpcService {
   rpc GetTravelPackage (GetTravelPackageRequest) returns (GetTravelPackageResponse);
+
 }

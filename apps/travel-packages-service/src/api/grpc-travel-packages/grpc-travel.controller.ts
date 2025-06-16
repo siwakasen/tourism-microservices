@@ -9,7 +9,7 @@ export class GrpcTravelPackagesController {
 
   @GrpcMethod('TravelPackageGrpcService', 'GetTravelPackage')
   async getTravelPackage(data: { id: number }) {
-    const packagePrice = await this.grpcTravelPackagesService.getTravelPackage(data.id);
-    return packagePrice;
+    const result = await this.grpcTravelPackagesService.getTravelPackage(data.id);
+    return result;  
   }
 }

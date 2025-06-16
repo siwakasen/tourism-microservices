@@ -2,17 +2,18 @@ import { Module } from '@nestjs/common';
 import { BookingController } from './booking.controller';
 import { BookingService } from './booking.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Bookings } from 'libs/entities';
+import { Bookings, Payment } from 'libs/entities';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { ClientGrpc, ClientsModule, Transport } from '@nestjs/microservices';
 import { AuthHelper } from '@app/helpers/auth/user/auth.helper';
 import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
+import { PaymentService } from '../payments/payment.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Bookings]),
+    TypeOrmModule.forFeature([Bookings, Payment]),
     PassportModule.register({ defaultStrategy: 'user', property: 'user' }),
     JwtModule.registerAsync({
       inject: [ConfigService],
@@ -72,7 +73,7 @@ import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
     ]),
   ],
   controllers: [BookingController],
-  providers: [BookingService, JwtStrategy,{
+  providers: [BookingService, PaymentService, JwtStrategy,{
     provide: AuthHelper,
     useFactory: (jwt: JwtService, clientCus: ClientGrpc) => {
       return new AuthHelper(jwt, undefined, clientCus);

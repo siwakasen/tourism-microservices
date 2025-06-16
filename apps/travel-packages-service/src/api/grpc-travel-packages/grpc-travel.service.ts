@@ -22,6 +22,7 @@ export class GrpcTravelPackagesService {
       return {
         packagePrice: travelPackage.package_price,
         duration: travelPackage.duration,
+        packageName: travelPackage.package_name,
       };
     } catch (error) {
       throw new RpcException(error.message);

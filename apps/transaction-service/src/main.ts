@@ -3,6 +3,7 @@ import { ApiModule } from './api.module';
 import { ConfigService } from '@nestjs/config';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app: NestExpressApplication = await NestFactory.create(ApiModule);
@@ -10,17 +11,26 @@ async function bootstrap() {
   const port: number = config.get<number>('PORT');
 
   app.set('trust proxy', 1);
-  app.enableCors({
+  app.enableCors(
+    {
     origin: [
       'http://localhost:3000',
       'https://client-web-app.vulpbox.com',
       'https://admin-web-app.vulpbox.com',
+      'https://vulpies.tail66dfd8.ts.net',  
+      'api.sandbox.midtrans.com',
+      'app.sandbox.midtrans.com',
+      'api.sandbox.veritrans.co.id',
+      'simulator.sandbox.midtrans.com',
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization','application/json'],
     maxAge: 600,
-  });
+  }
+);
+
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   const configSwagger = new DocumentBuilder()
     .setTitle('Transaction Service')
@@ -28,7 +38,7 @@ async function bootstrap() {
     .setVersion('1.0')
     .addBearerAuth()
     .addServer(`http://localhost:${port}`)
-    .addServer(`https://transaction-service.vulpbox.com`)
+    .addServer(`https://vulpies.tail66dfd8.ts.net`)
     .build();
   const document = SwaggerModule.createDocument(app, configSwagger);
   SwaggerModule.setup('api-docs', app, document);

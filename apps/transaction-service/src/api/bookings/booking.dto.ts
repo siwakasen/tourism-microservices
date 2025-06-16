@@ -1,71 +1,61 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsBoolean, IsDate, IsEmail, IsJSON, IsNumber, IsOptional, IsString } from "class-validator";
-import { Bookings } from "libs/entities";
+import { IsBoolean, IsDate, IsEmail, IsEnum, IsJSON, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateIf } from "class-validator";
+import { Bookings, PaymentMethod } from "libs/entities";
 
-export class BookingRegisterReqDto {
-  // BOOKING DATA
-  @ApiProperty()
+
+export class BookingReqDto{
+  @ApiProperty({
+    description: 'The package id of the booking',
+    example: 6,
+  })
   @IsNumber()
   @IsOptional()
   public readonly package_id: number;
 
-  @ApiProperty()
+  @ApiProperty({
+    description: 'The car id of the booking',
+    example: 1,
+  })
   @IsNumber()
   @IsOptional()
   public readonly car_id: number;
 
-  @ApiProperty()
+  @ApiProperty({
+    description: 'The with driver of the booking',
+    example: true,
+  })
   @IsBoolean()
   @IsOptional()
   public readonly with_driver: boolean;
 
+
+  @ApiProperty({
+    description: 'The number of persons of the booking',
+    example: 1,
+  })
+  @IsNumber()
+  @IsOptional()
+  public readonly number_of_persons: number;
+
   @ApiProperty()
   @IsDate()
+  @Type(() => Date)
+  @IsNotEmpty()
   public readonly start_date: Date;
 
   @ApiProperty()
   @IsDate()
+  @Type(() => Date)
   @IsOptional()
   public readonly end_date: Date;
 
-  // CUSTOMER DATA
   @ApiProperty({
-    description: 'The email of the customer',
-    example: 'john.doe@example.com',
+    description: 'The payment method of the booking',
+    example: 'MIDTRANS',
   })
-  @IsEmail()
-  public readonly email: string;
-
-  @ApiProperty({
-    description: 'The password of the customer',
-    example: 'Password12!@',
-  })
-  @IsString()
-  public readonly password: string;
-
-  @ApiProperty({
-    description: 'The name of the customer',
-    example: 'John Doe',
-  })
-  @IsString()
-  public readonly name: string;
-
-  @ApiProperty({
-    description: 'The phone number of the customer',
-    example: '08123456789',
-  })
-  @IsString()
-  @IsOptional()
-  public readonly phone_number: string;
-
-  @ApiProperty({
-    description: 'The country of the customer',
-    example: 'Indonesia',
-  })
-  @IsString()
-  @IsOptional()
-  public readonly country_origin: string;
+  @IsEnum(PaymentMethod)
+  public readonly payment_method: PaymentMethod;
 
   @ApiProperty({
     description: 'The pickup location of the customer',
@@ -82,12 +72,13 @@ export class BookingRegisterReqDto {
   @IsString()
   @IsOptional()
   public readonly pickup_time: string;
+  
 }
- 
+
 export class RegisterCustomerDto {
   @ApiProperty({
     description: 'The email of the customer',
-    example: 'example@gmail.com',
+    example: 'siwakasen@gmail.com',
   })
   @IsEmail()
   public readonly email: string;
@@ -101,7 +92,7 @@ export class RegisterCustomerDto {
 
   @ApiProperty({
     description: 'The name of the customer',
-    example: 'Example',
+    example: 'Siwa Kasen',
   })
   @IsString()
   public readonly name: string;
@@ -123,6 +114,44 @@ export class RegisterCustomerDto {
   public readonly country_origin: string;
 }
 
+export class BookingRegisterReqDto extends BookingReqDto {
+  @ApiProperty({
+    description: 'The email of the customer',
+    example: 'siwakasen@gmail.com',
+  })
+  @IsEmail()
+  public readonly email: string;
+
+  @ApiProperty({
+    description: 'The password of the customer',
+    example: 'Password12!@',
+  })
+  @IsString()
+  public readonly password: string;
+
+  @ApiProperty({
+    description: 'The name of the customer',
+    example: 'Siwa Kasen',
+  })
+  @IsString()
+  public readonly name: string;
+
+  @ApiProperty({
+    description: 'The phone number of the customer',
+    example: '081234567890',
+  })
+  @IsString()
+  @IsOptional()
+  public readonly phone_number: string;
+
+  @ApiProperty({
+    description: 'The country of the customer',
+    example: 'Indonesia',
+  })
+  @IsString()
+  @IsOptional()
+  public readonly country_origin: string;
+}
 
 export class BookingRegisterResDto {
   @ApiProperty({ default: { message: 'Booking success', token: 'token' } })
@@ -130,6 +159,7 @@ export class BookingRegisterResDto {
   public readonly data: {
     message: string;
     token: string;
+    redirect_url: string;
   };  
 
   @ApiProperty({ default: true })
@@ -142,6 +172,8 @@ export class BookingWithoutRegisterResDto {
   @IsJSON()
   public readonly data: {
     message: string;
+    token: string;
+    redirect_url: string;
   };
 
   @ApiProperty({ default: true })
@@ -163,12 +195,17 @@ export class PaginationDto {
   @IsString()
   @IsOptional()
   public readonly search: string;
+
 }
 
 export class BookingResDto {
   @ApiProperty({ default: { data: [], meta: { totalItems: 0, currentPage: 1, totalPages: 1, limit: 10, hasNextPage: false, hasPrevPage: false } } })
   @IsJSON()
-  public readonly data: Bookings[];
+  public readonly data: {
+    bookings: Bookings;
+    package_name?: string;
+    car_name?: string;
+  }[];
 
   @ApiProperty({ default: { totalItems: 0, currentPage: 1, totalPages: 1, limit: 10, hasNextPage: false, hasPrevPage: false } })
   @IsJSON()

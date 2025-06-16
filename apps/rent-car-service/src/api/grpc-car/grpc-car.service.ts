@@ -19,6 +19,7 @@ export class GrpcCarService {
             }
             return{
                 pricePerDay: car.price_per_day,
+                carName: car.car_name,
             }
         } catch (error) {
             throw new RpcException(error.message);

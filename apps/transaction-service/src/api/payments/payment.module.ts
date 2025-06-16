@@ -1,0 +1,84 @@
+import { Module } from "@nestjs/common";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { PaymentController } from "./payment.controller";
+import { PaymentService } from "./payment.service";
+import { Payment } from "libs/entities";
+import { BookingService } from "../bookings/booking.service";
+import { ConfigService } from "@nestjs/config";
+import { ClientGrpc, ClientsModule, Transport } from "@nestjs/microservices";
+import { AuthHelper } from "@app/helpers/auth/user/auth.helper";
+import { JwtModule, JwtService } from "@nestjs/jwt";
+import { JwtStrategy } from "@app/helpers/auth/user/auth.strategy";
+import { PassportModule } from "@nestjs/passport";
+
+@Module({
+    imports: [
+        TypeOrmModule.forFeature([Payment]),
+        PassportModule.register({ defaultStrategy: 'user', property: 'user' }),
+        JwtModule.registerAsync({
+        inject: [ConfigService],
+        useFactory: (config: ConfigService) => ({
+            secret: config.get('JWT_KEY'),
+            signOptions: { expiresIn: config.get('JWT_EXPIRES') },
+        }),
+        }),
+        ClientsModule.registerAsync([
+            {
+                inject: [ConfigService],
+                name: 'CUS_AUTH_CLIENT',
+                useFactory: (config: ConfigService) => ({
+                    transport: Transport.GRPC,
+                    options: {
+                        package: 'auth',
+                        protoPath: 'contract/auth-customer-api.proto',
+                        url: config.get<string>('CUS_AUTH_CLIENT'),
+                    },
+                }),
+            },
+        ]),
+        ClientsModule.registerAsync([
+            {
+                inject: [ConfigService],
+                name: 'TRAVEL_PACKAGE_CLIENT',
+                useFactory: (config: ConfigService) => ({
+                    transport: Transport.GRPC,
+                    options: {
+                        package: 'travelpackage',
+                        protoPath: 'contract/travel-package-api.proto',
+                        url: config.get<string>('TRAVEL_PACKAGE_CLIENT'),
+                        loader: {
+                            keepCase: true,
+                        },
+                    },
+                }),
+            },
+        ]),
+        ClientsModule.registerAsync([
+            {
+                inject: [ConfigService],
+                name: 'CAR_CLIENT',
+                useFactory: (config: ConfigService) => ({
+                    transport: Transport.GRPC,
+                    options: {
+                        package: 'car',
+                        protoPath: 'contract/rent-car-rpc.proto',
+                        url: config.get<string>('CAR_CLIENT'),
+                        loader: {
+                            keepCase: true,
+                        },
+                    },
+                }),
+            },
+        ]),
+    ],
+    controllers: [PaymentController],
+    providers: [PaymentService, BookingService, JwtStrategy,{
+        provide: AuthHelper,
+        useFactory: (jwt: JwtService, clientCus: ClientGrpc) => {
+          return new AuthHelper(jwt, undefined, clientCus);
+        },
+        inject: [JwtService, 'CUS_AUTH_CLIENT'],
+    }],
+    exports: [PaymentService],
+})
+export class PaymentModule {}       
