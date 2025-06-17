@@ -14,7 +14,7 @@ async function bootstrap() {
   app.enableCors(
     {
     origin: [
-      'http://localhost:3000',
+      'http://localhost:3005',
       'https://client-web-app.vulpbox.com',
       'https://admin-web-app.vulpbox.com',
       'https://vulpies.tail66dfd8.ts.net',  

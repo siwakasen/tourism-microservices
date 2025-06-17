@@ -37,19 +37,18 @@ export class JwtAuthGuard extends Guard('user') implements IAuthGuard {
 
     // Handle customer type
     if (requiredRoles.includes(UserType.CUSTOMER)) {
-      if(user && !user.roleId) {
+      if(user && !user.role_id) {
         return true;
       }
       return false;
     }
 
     // Handle employee types (owner and admin)
-    if (user && user.roleId) {
-      
-      if (requiredRoles.includes(UserType.OWNER) && user.roleId === 1) {
+    if (user && user.role_id) {
+      if (requiredRoles.includes(UserType.OWNER) && user.role_id === 1) {
         return true;
       }
-      if (requiredRoles.includes(UserType.ADMIN) && user.roleId === 2) {
+      if (requiredRoles.includes(UserType.ADMIN) && user.role_id === 2) {
         return true;
       }
     }

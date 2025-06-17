@@ -2,7 +2,7 @@ import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { PaymentController } from "./payment.controller";
 import { PaymentService } from "./payment.service";
-import { Payment } from "libs/entities";
+import { Bookings, Payment } from "libs/entities";
 import { BookingService } from "../bookings/booking.service";
 import { ConfigService } from "@nestjs/config";
 import { ClientGrpc, ClientsModule, Transport } from "@nestjs/microservices";
@@ -13,7 +13,7 @@ import { PassportModule } from "@nestjs/passport";
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([Payment]),
+        TypeOrmModule.forFeature([Payment, Bookings]),
         PassportModule.register({ defaultStrategy: 'user', property: 'user' }),
         JwtModule.registerAsync({
         inject: [ConfigService],
@@ -29,7 +29,7 @@ import { PassportModule } from "@nestjs/passport";
                 useFactory: (config: ConfigService) => ({
                     transport: Transport.GRPC,
                     options: {
-                        package: 'auth',
+                        package: 'authcus',
                         protoPath: 'contract/auth-customer-api.proto',
                         url: config.get<string>('CUS_AUTH_CLIENT'),
                     },
@@ -63,6 +63,23 @@ import { PassportModule } from "@nestjs/passport";
                         package: 'car',
                         protoPath: 'contract/rent-car-rpc.proto',
                         url: config.get<string>('CAR_CLIENT'),
+                        loader: { 
+                            keepCase: true,
+                        },
+                    },
+                }),
+            },
+        ]),
+        ClientsModule.registerAsync([
+            {
+                inject: [ConfigService],
+                name: 'EMP_AUTH_CLIENT',
+                useFactory: (config: ConfigService) => ({
+                    transport: Transport.GRPC,
+                    options: {
+                        package: 'authemp',
+                        protoPath: 'contract/auth-employee-api.proto',
+                        url: config.get<string>('EMP_AUTH_CLIENT'),
                         loader: {
                             keepCase: true,
                         },
@@ -74,10 +91,10 @@ import { PassportModule } from "@nestjs/passport";
     controllers: [PaymentController],
     providers: [PaymentService, BookingService, JwtStrategy,{
         provide: AuthHelper,
-        useFactory: (jwt: JwtService, clientCus: ClientGrpc) => {
-          return new AuthHelper(jwt, undefined, clientCus);
+        useFactory: (jwt: JwtService, cusAuthClient: ClientGrpc, empAuthClient: ClientGrpc  ) => {
+          return new AuthHelper(jwt, empAuthClient, cusAuthClient);
         },
-        inject: [JwtService, 'CUS_AUTH_CLIENT'],
+        inject: [JwtService, 'CUS_AUTH_CLIENT', 'EMP_AUTH_CLIENT'],
     }],
     exports: [PaymentService],
 })

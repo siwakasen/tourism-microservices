@@ -25,11 +25,11 @@ import { Customer, CustomerToken } from 'libs/entities';
     ClientsModule.registerAsync([
       {
         inject: [ConfigService],
-        name: 'CUS_AUTH_PACKAGE',
+        name: 'CUS_AUTH_CLIENT',
         useFactory: (config: ConfigService) => ({
           transport: Transport.GRPC,
           options: {
-            package: 'auth',
+            package: 'authcus',
             protoPath: 'contract/auth-customer-api.proto',
             url: config.get<string>('CUS_AUTH_CLIENT'),
             loader: {
@@ -48,7 +48,7 @@ import { Customer, CustomerToken } from 'libs/entities';
       console.log('[CustomerModule] Initializing AuthHelper with customer GRPC client');
       return new AuthHelper(jwt, undefined, clientCus);
     },
-    inject: [JwtService, 'CUS_AUTH_PACKAGE'],
+    inject: [JwtService, 'CUS_AUTH_CLIENT'],
   }],
   exports: [CustomerService, AuthHelper, JwtStrategy],
 })

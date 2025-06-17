@@ -64,21 +64,39 @@ import { PaymentService } from '../payments/payment.service';
         useFactory: (config: ConfigService) => ({
           transport: Transport.GRPC,
           options: {
-            package: 'auth',
+            package: 'authcus',
             protoPath: 'contract/auth-customer-api.proto',
             url: config.get<string>('CUS_AUTH_CLIENT'),
           },
         }),
       },
     ]),
+    ClientsModule.registerAsync([
+      {
+          inject: [ConfigService],
+          name: 'EMP_AUTH_CLIENT',
+          useFactory: (config: ConfigService) => ({
+              transport: Transport.GRPC,
+              options: {
+                  package: 'authemp',
+                  protoPath: 'contract/auth-employee-api.proto',
+                  url: config.get<string>('EMP_AUTH_CLIENT'),
+                  loader: {
+                      keepCase: true,
+                  },
+              },
+          }),
+      },
+  ]),
   ],
   controllers: [BookingController],
   providers: [BookingService, PaymentService, JwtStrategy,{
     provide: AuthHelper,
-    useFactory: (jwt: JwtService, clientCus: ClientGrpc) => {
-      return new AuthHelper(jwt, undefined, clientCus);
+    useFactory: (jwt: JwtService, cusAuthClient: ClientGrpc, empAuthClient: ClientGrpc) => {
+      return new AuthHelper(jwt, empAuthClient, cusAuthClient);
     },
-    inject: [JwtService, 'CUS_AUTH_CLIENT'],
-  }],
+    inject: [JwtService, 'CUS_AUTH_CLIENT', 'EMP_AUTH_CLIENT'],
+  },
+],
 })
 export class BookingModule {}

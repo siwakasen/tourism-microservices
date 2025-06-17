@@ -12,7 +12,7 @@ import * as fs from 'fs';
 @Injectable()
 export class CustomerService implements OnModuleInit {
 
-  @Inject('CUS_AUTH_PACKAGE')
+  @Inject('CUS_AUTH_CLIENT')
   private clientCus: ClientGrpc;
 
   private customerGrpcService: CustomerServiceClient;

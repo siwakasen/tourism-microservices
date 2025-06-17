@@ -9,6 +9,7 @@ import { PaymentService } from '../payments/payment.service';
 
 @Injectable()
 export class BookingService implements OnModuleInit {
+  constructor(private readonly paymentService: PaymentService) {}
 
   @Inject('CUS_AUTH_CLIENT')
   private clientCus: ClientGrpc;
@@ -24,7 +25,6 @@ export class BookingService implements OnModuleInit {
   private carGrpcService: CarServiceClient;
   @Inject(DataSource)
   private readonly dataSource: DataSource;
-
   onModuleInit() {
     this.customerGrpcService = this.clientCus.getService<CustomerServiceClient>('CustomerGrpcService');
     this.travelPackageGrpcService = this.clientTravelPackage.getService<TravelPackageServiceClient>('TravelPackageGrpcService');
@@ -33,7 +33,6 @@ export class BookingService implements OnModuleInit {
 
   public async registerCustomerGrpc(payload: RegisterCustomerDto) {
     try {
-      console.log(payload);
       const {id,jwtToken} = await this.customerGrpcService.registerCustomer({
         email: payload.email,
         password: payload.password,
@@ -41,10 +40,23 @@ export class BookingService implements OnModuleInit {
         phoneNumber: payload.phone_number ,
         countryOrigin: payload.country_origin,
       }).toPromise();
+
+      console.log('id', id);
       return {
         token: jwtToken,
         customer_id: id,
       };
+    } catch (error) {
+      throw new HttpException(error.details, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  public async deleteCustomerGrpc(customer_id: number) {
+    try {
+      const response = await this.customerGrpcService.deleteCustomer({
+        id: customer_id,
+      }).toPromise();
+      return response;
     } catch (error) {
       throw new HttpException(error.details, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -83,17 +95,21 @@ export class BookingService implements OnModuleInit {
   //   }
   // }
 
-  public async createBooking(payload: BookingReqDto, customer: Customer) : Promise<{
+  public async createBooking(payload: BookingReqDto, customer: Customer, isRegister: boolean) : Promise<{
     success: boolean,
-    booking: Bookings,
-    total_price: number,
-    product_name: string,
+    data:{
+      message: string,
+      redirect_url: string
+    }
   }> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
       let booking: Bookings;
+      let product_name = '';
+      let total_price = 0;
+      let redirect_url = null;
 
       if(payload.package_id){
         /*
@@ -114,7 +130,8 @@ export class BookingService implements OnModuleInit {
           endDate = new Date(startDate.getTime() + 1 * 60 * 1000);
           }
 
-        const total_price = packageData.packagePrice * payload.number_of_persons;
+        total_price = packageData.packagePrice * payload.number_of_persons;
+        product_name = packageData.packageName;
 
 
          booking = await queryRunner.manager.save(Bookings, {
@@ -127,15 +144,6 @@ export class BookingService implements OnModuleInit {
             pickup_location: payload.pickup_location,
             pickup_time: payload.pickup_time 
         });
-
-        await queryRunner.commitTransaction();
-        return {
-          success: true,
-          booking: booking,
-          total_price: total_price,
-          product_name: packageData.packageName,
-        }
-        
       }else if(payload.car_id){
         /*
 
@@ -146,7 +154,9 @@ export class BookingService implements OnModuleInit {
         if(!carData){
           throw new HttpException('Car not found', HttpStatus.NOT_FOUND);
         }
-        const {pricePerDay} = carData;
+        const {pricePerDay, carName} = carData;
+        product_name = carName;
+
         const startDate = new Date(payload.start_date);
         const endDate = new Date(payload.end_date);
         const days = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
@@ -157,7 +167,7 @@ export class BookingService implements OnModuleInit {
         if(payload.with_driver){
           driverPrice = 6;
         }
-        const total_price = pricePerDay * days + driverPrice * days;
+        total_price = pricePerDay * days + driverPrice * days;
 
         booking = await queryRunner.manager.save(Bookings, {
           car_id: payload.car_id,
@@ -171,16 +181,30 @@ export class BookingService implements OnModuleInit {
           pickup_time: payload.pickup_time,
           with_driver: payload.with_driver || false,
         });
-        await queryRunner.commitTransaction();
-        return {
-          success: true,
-          booking: booking,
-          total_price: total_price,
-          product_name: carData.carName,
+      }
+      
+
+      if(payload.payment_method === PaymentMethod.MIDTRANS){
+        const {redirect_url : midtrans_redirect_url} = await this.paymentService.createTransactionMidtrans(booking, product_name, total_price, customer, queryRunner);
+        redirect_url = midtrans_redirect_url;
+      }else if(payload.payment_method === PaymentMethod.PAYPAL){
+        const {redirect_url : paypal_redirect_url} = await this.paymentService.createOrderPaypal(booking, product_name, total_price, customer, queryRunner);
+        redirect_url = paypal_redirect_url;
+      }
+      console.log('redirect_url', redirect_url);
+      await queryRunner.commitTransaction();
+      return {
+        success: true,
+        data: {
+          message: 'Booking success',
+          redirect_url: redirect_url,
         }
       }
     } catch (error) {
       await queryRunner.rollbackTransaction();
+      if(isRegister){
+        await this.deleteCustomerGrpc(customer.id);
+      }
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     } finally {
       await queryRunner.release();
@@ -237,39 +261,62 @@ export class BookingService implements OnModuleInit {
         },
       };
     } catch (error) {
+
       throw new HttpException(error.details, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  public async updatePaymentStatus(order_id: number, status: PaymentStatus) {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+  public async getAllBookings(paginationDto: PaginationDto) : Promise<BookingResDto> {
     try {
-      const booking = await queryRunner.manager.findOne(Bookings, {
-        where: { id: order_id },
-      });
-      if(!booking){
-        throw new HttpException('Booking not found', HttpStatus.NOT_FOUND);
-      }
-      if(status === PaymentStatus.SUCCESS){
-        booking.status = BookingStatus.COMPLETED;
-      }else if(status === PaymentStatus.PENDING){
-        booking.status = BookingStatus.WAITING_PAYMENT;
-      }else{
-        booking.status = BookingStatus.PAYMENT_FAILED;
-      }
-      await queryRunner.manager.save(booking);
-      await queryRunner.commitTransaction();
+      const {page, limit} = paginationDto;
+      const queryBuilder = this.dataSource.manager.createQueryBuilder(Bookings, 'bookings')
+        .orderBy('bookings.created_at', 'DESC');
+
+      const [result, total] = await queryBuilder.skip((page - 1) * limit).take(limit).getManyAndCount();
+      const newResult = [];
+        for(const booking of result){
+          // Get payments for this booking
+          const payments = await this.dataSource.manager.find(Payment, {
+            where: { booking_id: booking.id }
+          });
+
+          if(booking.package_id){
+            const {packageName} = await this.getPackageGrpc({
+              package_id: booking.package_id
+            });
+            newResult.push({
+              ...booking,
+              payments,
+              package_name: packageName,
+            });
+          }else if(booking.car_id){
+            const {carName} = await this.getCarGrpc({
+              car_id: booking.car_id,
+            });
+            newResult.push({
+              ...booking,
+              payments,
+              car_name: carName,
+            });
+          }
+        }
+      const totalPages = Math.ceil(total / limit);
+      const hasNextPage = page < totalPages;
+
       return {
-        success: true,
-        booking: booking,
-      }
+        data : newResult,
+        meta: {
+          totalItems: total,
+          currentPage: page,
+          totalPages,
+          limit,
+          hasNextPage,
+          hasPrevPage: page > 1,
+        },
+      };
     } catch (error) {
-      await queryRunner.rollbackTransaction();
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    } finally {
-      await queryRunner.release();
     }
   }
+
 }

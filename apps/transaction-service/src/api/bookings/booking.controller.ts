@@ -7,8 +7,12 @@ import { Roles, UserType } from '@app/helpers/auth/decorators/auth.decorator';
 import { JwtAuthGuard } from '@app/helpers/auth/user/auth.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { PaymentService } from '../payments/payment.service';
+import { Pipeline } from 'ioredis';
+import { ApiTags } from '@nestjs/swagger';
 
 
+@ApiTags('Booking Controller')
+@ApiBearerAuth()
 @Controller('bookings')
 export class BookingController {
   constructor(private readonly bookingService: BookingService, private readonly paymentService: PaymentService) {}
@@ -16,9 +20,15 @@ export class BookingController {
   @Get()
   @UseGuards(JwtAuthGuard)
   @Roles(UserType.CUSTOMER)
-  @ApiBearerAuth()
   async getBookings(@GetCustomer() customer: Customer, @Query() query: PaginationDto) : Promise<BookingResDto>  {
    return this.bookingService.getBookings(customer.id, query);
+  }
+
+  @Get('/all')
+  @UseGuards(JwtAuthGuard)
+  @Roles(UserType.ADMIN)
+  async getAllBookings(@Query() query: PaginationDto) : Promise<BookingResDto> {
+    return this.bookingService.getAllBookings(query);
   }
 
   private bookingValidation(payload: BookingReqDto) {
@@ -39,20 +49,9 @@ export class BookingController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @Roles(UserType.CUSTOMER)
-  @ApiBearerAuth()
   async bookingWithoutRegister(@Body() body: BookingReqDto, @GetCustomer() customer: Customer)  {
     this.bookingValidation(body);
-
-    const result = await this.bookingService.createBooking(body, customer);
-    const {redirect_url} = await this.paymentService.createTransactionMidtrans(result.booking, result.product_name, result.total_price, customer);
-    return {
-      success: result.success,
-      data: {
-        message: 'Booking success',
-        redirect_url: redirect_url,
-      }
-    }
-    
+    return this.bookingService.createBooking(body, customer, false);
   }
 
   @Post('/and-register')
@@ -66,22 +65,14 @@ export class BookingController {
       customer.email = body.email;
       customer.phone_number = body.phone_number;
 
-
-      const {total_price, product_name, booking, success} = await this.bookingService.createBooking(body, customer);
-      if(body.payment_method === PaymentMethod.MIDTRANS){
-        const transaction = await this.paymentService.createTransactionMidtrans(booking, product_name, total_price, customer);
-        return {
-          success: success,
-          data: {
-            message: 'Booking success',
-            token: token,
-            redirect_url: transaction.redirect_url,
-          }
+      const result = await this.bookingService.createBooking(body, customer, true);
+      return {
+        success: true,
+        data: {
+          message: 'Booking success',
+          redirect_url: result.data.redirect_url,
+          token: token,
         }
-      }else{
-        
       }
     }
-
-  
 }

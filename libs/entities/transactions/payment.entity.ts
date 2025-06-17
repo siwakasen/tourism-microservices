@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from "typeorm";
+import { Bookings } from "./bookings.entity";
 
 export enum PaymentStatus {
   PENDING = 'PENDING',
@@ -20,6 +21,11 @@ class Payment extends BaseEntity {
 
   @ApiProperty()
   @Column({ type: 'int', nullable: false })
+  @ManyToOne(() => Bookings, (booking) => booking.id, {
+    cascade: true,
+    nullable: false,
+  })
+  @JoinColumn({ name: 'booking_id' })
   public booking_id!: number;
 
   @ApiProperty()

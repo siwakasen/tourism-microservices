@@ -1,5 +1,5 @@
 syntax = "proto3";
-package auth;
+package authcus;
 
 // Request message for getting a customer by ID
 message GetCustomerRequest {
@@ -28,9 +28,18 @@ message RegisterCustomerResponse{
   string jwtToken = 2;
 }
 
+message DeleteCustomerRequest{
+  int32 id = 1;
+}
+
+message DeleteCustomerResponse{
+  string message = 1;
+}
+
 
 // Service definition for customer operations
 service CustomerGrpcService {
   rpc GetCustomer (GetCustomerRequest) returns (GetCustomerResponse);
   rpc RegisterCustomer (RegisterCustomerRequest) returns (RegisterCustomerResponse);
+  rpc DeleteCustomer (DeleteCustomerRequest) returns (DeleteCustomerResponse); 
 } 

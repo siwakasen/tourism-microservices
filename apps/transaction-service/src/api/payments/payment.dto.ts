@@ -3,13 +3,11 @@ import { IsString, IsNumber, IsArray, IsOptional, ValidateNested } from 'class-v
 import { Type } from 'class-transformer';
 
 
-
-export class PaymentNotificationDto {
+export class CapturePaymentPaypalDto {
     @ApiProperty({
         description: 'The order id of the payment',
         example: '121',
     })
     @IsString()
-    @IsOptional()
-    public  test: string;
+    public orderId: string;
 }

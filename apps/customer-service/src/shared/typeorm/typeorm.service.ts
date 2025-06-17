@@ -19,7 +19,8 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       entities: [Customer, CustomerToken],
       migrations: ['dist/migrations/*.{ts,js}'],
       migrationsTableName: 'typeorm_migrations',
-      logger: 'file',
+      logger: 'advanced-console',
+      logging: ['error'],
       synchronize: true, // NEVER USE TRUE IN PRODUCTION
     };
     

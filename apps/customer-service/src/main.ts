@@ -32,7 +32,7 @@ async function bootstrap() {
       transport: Transport.GRPC,
       options: {
         url: `0.0.0.0:${gRPCPort}`,
-        package: 'auth',
+        package: 'authcus',
         protoPath: 'contract/auth-customer-api.proto',
       },
     },

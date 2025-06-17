@@ -24,11 +24,11 @@ import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
     ClientsModule.registerAsync([
       {
         inject: [ConfigService],
-        name: 'EMP_AUTH_PACKAGE',
+        name: 'EMP_AUTH_CLIENT',
         useFactory: (config: ConfigService) => ({
           transport: Transport.GRPC,
           options: {
-            package: 'auth',
+            package: 'authemp',
             protoPath: 'contract/auth-employee-api.proto', // Ensure this path is correct
             url: config.get<string>('EMP_AUTH_CLIENT'),
           },
@@ -42,7 +42,7 @@ import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
     useFactory: (jwt: JwtService, clientEmp: ClientGrpc) => {
         return new AuthHelper(jwt, clientEmp);
       },
-      inject: [JwtService, 'EMP_AUTH_PACKAGE'],
+      inject: [JwtService, 'EMP_AUTH_CLIENT'],
     }],
 })
 export class ExpensesModule {}

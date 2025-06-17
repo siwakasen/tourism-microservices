@@ -17,11 +17,22 @@ export class AuthHelper implements OnModuleInit {
   private customerService?: AuthServiceClient;
 
   onModuleInit() {
-    if (this.clientEmp) {
-      this.employeeService = this.clientEmp.getService<AuthServiceClient>('EmployeeGrpcService');
-    }
-    if (this.clientCus) {
-      this.customerService = this.clientCus.getService<AuthServiceClient>('CustomerGrpcService');
+    try {
+      if (this.clientEmp) {
+        this.employeeService = this.clientEmp.getService<AuthServiceClient>('EmployeeGrpcService');
+        if (!this.employeeService) {
+          throw new Error('Failed to initialize employee service');
+        }
+      }
+      if (this.clientCus) {
+        this.customerService = this.clientCus.getService<AuthServiceClient>('CustomerGrpcService');
+        if (!this.customerService) {
+          throw new Error('Failed to initialize customer service');
+        }
+      }
+    } catch (error) {
+      console.error('Failed to initialize gRPC services:', error);
+      throw error;
     }
   }
 
@@ -29,8 +40,8 @@ export class AuthHelper implements OnModuleInit {
 
   constructor(
     jwt: JwtService,
-    @Inject('EMP_AUTH_PACKAGE') private clientEmp?: ClientGrpc,
-    @Inject('CUS_AUTH_PACKAGE') private clientCus?: ClientGrpc,
+    @Inject('EMP_AUTH_CLIENT') private clientEmp?: ClientGrpc,
+    @Inject('CUS_AUTH_CLIENT') private clientCus?: ClientGrpc,
   ) {
     this.jwt = jwt;
   }
@@ -50,7 +61,7 @@ export class AuthHelper implements OnModuleInit {
   // Get User by User ID we get from decode()
   public async validateUser(decoded: any): Promise<Employee | Customer> {
     try {
-      if (this.employeeService) {
+      if (this.employeeService && decoded.type === 'emp') {
         const employee = await this.employeeService.getEmployee({ id: decoded.sub }).toPromise();
         return employee;
       }else{
@@ -85,6 +96,7 @@ export class AuthHelper implements OnModuleInit {
   public async generateToken(user: Employee | Customer): Promise<string> {
     return this.jwt.signAsync({
       sub: user.id.toString(), // subject claim for user ID
+      type: user instanceof Employee ? 'emp' : 'cus',
       jti: crypto.randomUUID(), // unique token ID
       iat: Math.floor(Date.now() / 1000), // issued at timestamp
     },{

@@ -40,6 +40,10 @@ class Bookings extends BaseEntity {
   public with_driver: boolean;
 
   @ApiProperty()
+  @Column({ type: 'int', nullable: true })
+  public number_of_persons: number;
+
+  @ApiProperty()
   @Column({ type: 'timestamp', nullable: false })
   public start_date: Date;
 
