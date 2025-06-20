@@ -7,25 +7,25 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { AuthServiceClient, Customer, Employee } from 'libs/entities';
+import { EmployeeServiceClient, Customer, Employee, CustomerServiceClient } from 'libs/entities';
 import { ClientGrpc } from '@nestjs/microservices';
 import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthHelper implements OnModuleInit {
-  private employeeService?: AuthServiceClient;
-  private customerService?: AuthServiceClient;
+  private employeeService?: EmployeeServiceClient;
+  private customerService?: CustomerServiceClient;
 
   onModuleInit() {
     try {
       if (this.clientEmp) {
-        this.employeeService = this.clientEmp.getService<AuthServiceClient>('EmployeeGrpcService');
+        this.employeeService = this.clientEmp.getService<EmployeeServiceClient>('EmployeeGrpcService');
         if (!this.employeeService) {
           throw new Error('Failed to initialize employee service');
         }
       }
       if (this.clientCus) {
-        this.customerService = this.clientCus.getService<AuthServiceClient>('CustomerGrpcService');
+        this.customerService = this.clientCus.getService<CustomerServiceClient>('CustomerGrpcService');
         if (!this.customerService) {
           throw new Error('Failed to initialize customer service');
         }
@@ -54,6 +54,7 @@ export class AuthHelper implements OnModuleInit {
   public async validateTokenExpiration(exp: number): Promise<boolean> { 
     if(exp < Math.floor(Date.now() / 1000)) {
       return false;
+
     }
     return true;
   }
@@ -61,14 +62,20 @@ export class AuthHelper implements OnModuleInit {
   // Get User by User ID we get from decode()
   public async validateUser(decoded: any): Promise<Employee | Customer> {
     try {
+      console.log('requesting validate user');
       if (this.employeeService && decoded.type === 'emp') {
+        console.log('requesting employee service');
         const employee = await this.employeeService.getEmployee({ id: decoded.sub }).toPromise();
+        console.log('employee', employee);
         return employee;
       }else{
+        console.log('requesting customer service');
         const customer = await this.customerService.getCustomer({ id: decoded.sub }).toPromise();
+        console.log('customer', customer);
         return customer;
       }
     } catch (error) {
+      console.log(error);
       return null;
     }
   }

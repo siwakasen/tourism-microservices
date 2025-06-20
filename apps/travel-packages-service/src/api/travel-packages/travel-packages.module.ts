@@ -38,6 +38,9 @@ import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
             package: 'authemp',
             protoPath: 'contract/auth-employee-api.proto',
             url: config.get<string>('EMP_AUTH_CLIENT'),
+            loader: {
+              keepCase: true,
+            },
           },
         }),
       },

@@ -24,7 +24,7 @@ export class JwtAuthGuard extends Guard('user') implements IAuthGuard {
       context.getClass(),
     ]);
 
-
+    console.log(requiredRoles);
     if (!requiredRoles) {
       return true; // No roles required, allow access
     }

@@ -1,7 +1,7 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Post, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Query, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { CustomerService } from './customer.service';
 import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiConsumes, ApiResponse } from '@nestjs/swagger';
-import { LoginReqDto, LoginResDto, RegisterCustomerDto, requestResetPasswordDto, ResetPasswordDto, UploadIdentityFileDto } from './customer.dto';
+import {  LoginReqDto, LoginResDto, RegisterCustomerDto, requestResetPasswordDto, ResetPasswordDto, UploadIdentityFileDto } from './customer.dto';
 import { GetCustomer } from '@app/helpers/auth/decorators/get-user.decorator';
 import { Customer } from 'libs/entities';
 import { JwtAuthGuard } from '@app/helpers/auth/user/auth.guard';
@@ -81,7 +81,17 @@ export class CustomerController {
   @UseGuards(JwtAuthGuard)
   @Roles(UserType.CUSTOMER)
   public async getMyData(@GetCustomer() customer: Customer) {
-    return this.customerService.getMyData(customer.id);
+    return this.customerService.getCustomerById(customer.id);
+  }
+
+  
+  @Get(':id')
+  @ApiResponse({ status: 200, description: 'Customer data retrieved successfully' })
+  @ApiBadRequestResponse({ description: 'Customer not found' })
+  @UseGuards(JwtAuthGuard)
+  @Roles(UserType.ADMIN)
+  public async getCustomerById(@Param('id') id: number) {
+    return this.customerService.getCustomerById(id);
   }
 
   @Post('request-reset-password')
@@ -96,17 +106,6 @@ export class CustomerController {
   @ApiBadRequestResponse({ description: 'Token Invalid' })
   public async changePassword(@Body() body: ResetPasswordDto) {
     return this.customerService.changePassword(body);
-  }
-
-  @Post('register-via-grpc')
-  @ApiResponse({ status: 200, description: 'Customer registered successfully' })
-  @ApiBadRequestResponse({ description: 'Customer already exists' })
-  public async registerViaGrpc(@Body() body: RegisterCustomerDto) {
-    try {
-      return this.customerService.registerCustomerGrpc(body);
-    } catch (error) {
-      throw error;
-    }
   }
 
   

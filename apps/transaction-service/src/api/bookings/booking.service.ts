@@ -1,9 +1,9 @@
 import { HttpException, HttpStatus, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { BookingRegisterReqDto, BookingRegisterResDto, BookingReqDto, BookingResDto, PaginationDto } from './booking.dto';
 import { RegisterCustomerDto } from './booking.dto';
-import { Bookings, BookingStatus, Customer, CustomerServiceClient, Payment, PaymentMethod, PaymentStatus } from 'libs/entities';
+import { Bookings, BookingStatus, Customer, CustomerServiceClient, EmployeeServiceClient,   Payment, PaymentMethod, PaymentStatus } from 'libs/entities';
 import { ClientGrpc } from '@nestjs/microservices';
-import { DataSource } from 'typeorm';
+import { DataSource, In, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import { CarServiceClient, TravelPackageServiceClient } from 'libs/entities';
 import { PaymentService } from '../payments/payment.service';
 
@@ -19,16 +19,23 @@ export class BookingService implements OnModuleInit {
 
   @Inject('CAR_CLIENT')
   private clientCar: ClientGrpc;
+  
+  @Inject('EMP_AUTH_CLIENT')
+  private clientEmp: ClientGrpc;
 
   private customerGrpcService: CustomerServiceClient;
   private travelPackageGrpcService: TravelPackageServiceClient;
   private carGrpcService: CarServiceClient;
+  private employeeGrpcService: EmployeeServiceClient;
+
+
   @Inject(DataSource)
   private readonly dataSource: DataSource;
   onModuleInit() {
     this.customerGrpcService = this.clientCus.getService<CustomerServiceClient>('CustomerGrpcService');
     this.travelPackageGrpcService = this.clientTravelPackage.getService<TravelPackageServiceClient>('TravelPackageGrpcService');
     this.carGrpcService = this.clientCar.getService<CarServiceClient>('CarGrpcService');
+    this.employeeGrpcService = this.clientEmp.getService<EmployeeServiceClient>('EmployeeGrpcService');
   }
 
   public async registerCustomerGrpc(payload: RegisterCustomerDto) {
@@ -205,7 +212,68 @@ export class BookingService implements OnModuleInit {
       if(isRegister){
         await this.deleteCustomerGrpc(customer.id);
       }
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(error.message, error.status);
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  public async assignEmployee(booking_id: number, employee_id: number) {
+     const queryRunner = this.dataSource.createQueryRunner();
+     await queryRunner.connect();
+     await queryRunner.startTransaction();
+     try {
+      const booking = await queryRunner.manager.findOne(Bookings, {
+        where: { id: booking_id, status: BookingStatus.WAITING_CONFIRMATION },
+      });
+      if(!booking){
+        throw new HttpException('Booking not found', HttpStatus.NOT_FOUND);
+      }
+
+      const employee =  await this.employeeGrpcService.getEmployee({ id: employee_id }).toPromise();
+
+      if(!employee){
+        throw new HttpException('Employee not found', HttpStatus.NOT_FOUND);
+      }
+      const requiredRole = booking.with_driver ? 4 : 3;
+      
+      if((employee as any).role_id != requiredRole){
+        throw new HttpException('Employee role is not match with booking', HttpStatus.BAD_REQUEST);
+      }
+
+      const conflict = await queryRunner.manager.findOne(Bookings, {
+        where: [
+          {
+            employee_id: employee_id,
+            with_driver: booking.with_driver,
+            start_date: MoreThanOrEqual(booking.start_date),
+            status: In([ BookingStatus.CONFIRMED]),
+          }, 
+          {
+            employee_id: employee_id,
+            with_driver: booking.with_driver,
+            end_date: LessThanOrEqual(booking.end_date),
+            status: In([ BookingStatus.CONFIRMED]),
+          }
+        ],
+        select: ['id','status','car_id','package_id']
+      });
+      console.log('conflict', conflict);
+      if(conflict){
+        throw new HttpException('Employee is already assigned to another booking', HttpStatus.BAD_REQUEST);
+      }
+
+      await queryRunner.manager.update(Bookings, { id: booking_id }, { employee_id: employee_id, status: BookingStatus.CONFIRMED });
+      const updatedBooking = await queryRunner.manager.findOne(Bookings, { where: { id: booking_id } });
+      await queryRunner.commitTransaction();
+      return {
+        success: true,
+        data: updatedBooking,
+        message: 'Employee assigned to booking successfully',
+      };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(error.message, error.status || HttpStatus.NOT_FOUND);
     } finally {
       await queryRunner.release();
     }
@@ -262,22 +330,38 @@ export class BookingService implements OnModuleInit {
       };
     } catch (error) {
 
-      throw new HttpException(error.details, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(error.details, error.status);
     }
   }
 
   public async getAllBookings(paginationDto: PaginationDto) : Promise<BookingResDto> {
     try {
-      const {page, limit} = paginationDto;
-      const queryBuilder = this.dataSource.manager.createQueryBuilder(Bookings, 'bookings')
-        .orderBy('bookings.created_at', 'DESC');
+      const {page, limit, search} = paginationDto;
+      const queryBuilder = this.dataSource.manager
+      .createQueryBuilder(Bookings, 'bookings')
+      .orderBy('bookings.created_at', 'DESC');
+
+      const conditions = [];
+      const parameters: Record<string, any> = {};
+
+      if(search){
+        conditions.push('CAST(bookings.status AS TEXT) ILIKE :search');
+        parameters['search'] = `%${search}%`;
+      }
+
+      if(conditions.length){
+        queryBuilder.where(conditions.join(' OR '), parameters);
+      }
 
       const [result, total] = await queryBuilder.skip((page - 1) * limit).take(limit).getManyAndCount();
       const newResult = [];
         for(const booking of result){
           // Get payments for this booking
           const payments = await this.dataSource.manager.find(Payment, {
-            where: { booking_id: booking.id }
+            where: { booking_id: booking.id },
+            order: {
+              created_at: 'DESC'
+            }
           });
 
           if(booking.package_id){
@@ -315,7 +399,7 @@ export class BookingService implements OnModuleInit {
         },
       };
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(error.message, error.status);
     }
   }
 

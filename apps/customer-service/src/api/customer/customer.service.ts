@@ -100,7 +100,7 @@ export class CustomerService implements OnModuleInit {
   }
 
 
-  public async getMyData(id: number) {
+  public async getCustomerById(id: number) {
     try {
     const user: Customer = await this.repository.findOne({
       where: { id },

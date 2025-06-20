@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import {  IsArray, IsBoolean, IsEmail, IsJSON, IsOptional, IsString, IsStrongPassword, MinLength } from "class-validator";
+import {  IsArray, IsBoolean, IsEmail, IsJSON, IsNumber, IsOptional, IsString, IsStrongPassword, MinLength } from "class-validator";
 
 export class RegisterCustomerDto {
   @ApiProperty({

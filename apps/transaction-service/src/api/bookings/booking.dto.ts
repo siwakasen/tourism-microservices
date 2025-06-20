@@ -191,6 +191,8 @@ export class PaginationDto {
   @Type(() => Number)
   public readonly limit: number;
 
+  
+
   @ApiProperty({ default: '', required: false })
   @IsString()
   @IsOptional()
@@ -217,4 +219,20 @@ export class BookingResDto {
     hasNextPage: boolean;
     hasPrevPage: boolean;
   };
+}
+
+export class AssignEmployeeDto {
+  @ApiProperty({
+    description: 'The employee id of the booking',
+    example: 1,
+  })
+  @IsNumber()
+  public readonly employee_id: number;
+
+  @ApiProperty({
+    description: 'The booking id of the booking',
+    example: 1,
+  })
+  @IsNumber()
+  public readonly booking_id: number;
 }

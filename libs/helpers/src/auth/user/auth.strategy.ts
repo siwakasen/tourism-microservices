@@ -19,6 +19,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'user') {
   }
 
   public async validate(payload: any): Promise<Employee | Customer> {
+    console.log('payload', payload);
     const isTokenExpired = await this.helper.validateTokenExpiration(payload['exp']);
     if(!isTokenExpired) {
       throw new HttpException('Token Expired', HttpStatus.UNAUTHORIZED);

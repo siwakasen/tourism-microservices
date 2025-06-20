@@ -34,6 +34,9 @@ import { Employee, EmployeeToken, Roles } from 'libs/entities';
             package: 'authemp',
             protoPath: 'contract/auth-employee-api.proto', // Ensure this path is correct
             url: config.get<string>('EMP_AUTH_CLIENT'),
+            loader: {
+              keepCase: true,
+            },
           },
         }),
       },

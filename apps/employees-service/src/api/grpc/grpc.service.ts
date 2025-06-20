@@ -19,7 +19,7 @@ export class GrpcService {
       });
       
       if (!employee) {
-        throw new RpcException('User not Found');
+        throw new RpcException('Employee not Found');
       }
 
       const transformedEmployee = {
@@ -31,8 +31,7 @@ export class GrpcService {
 
       return transformedEmployee;
     } catch (error) {
-      console.error(error);
-      throw new RpcException(error.message);
+      throw new RpcException(error.error);
     }
   };
 }

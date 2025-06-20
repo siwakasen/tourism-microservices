@@ -39,16 +39,32 @@ import { Customer, CustomerToken } from 'libs/entities';
         }),
       },
     ]),
+    ClientsModule.registerAsync([
+      {
+          inject: [ConfigService],
+          name: 'EMP_AUTH_CLIENT',
+          useFactory: (config: ConfigService) => ({
+              transport: Transport.GRPC,
+              options: {
+                  package: 'authemp',
+                  protoPath: 'contract/auth-employee-api.proto',
+                  url: config.get<string>('EMP_AUTH_CLIENT'),
+                  loader: {
+                      keepCase: true,
+                  },
+              },
+          }),
+      },
+  ]),
     MailModule,
   ],
   controllers: [CustomerController],
   providers: [CustomerService, JwtStrategy, {
     provide: AuthHelper,
-    useFactory: (jwt: JwtService, clientCus: ClientGrpc) => {
-      console.log('[CustomerModule] Initializing AuthHelper with customer GRPC client');
-      return new AuthHelper(jwt, undefined, clientCus);
+    useFactory: (jwt: JwtService, clientCus: ClientGrpc, clientEmp: ClientGrpc  ) => {
+      return new AuthHelper(jwt, clientEmp, clientCus);
     },
-    inject: [JwtService, 'CUS_AUTH_CLIENT'],
+    inject: [JwtService, 'CUS_AUTH_CLIENT', 'EMP_AUTH_CLIENT'],
   }],
   exports: [CustomerService, AuthHelper, JwtStrategy],
 })
