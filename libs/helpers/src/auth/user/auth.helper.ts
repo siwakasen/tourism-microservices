@@ -62,20 +62,14 @@ export class AuthHelper implements OnModuleInit {
   // Get User by User ID we get from decode()
   public async validateUser(decoded: any): Promise<Employee | Customer> {
     try {
-      console.log('requesting validate user');
       if (this.employeeService && decoded.type === 'emp') {
-        console.log('requesting employee service');
         const employee = await this.employeeService.getEmployee({ id: decoded.sub }).toPromise();
-        console.log('employee', employee);
         return employee;
       }else{
-        console.log('requesting customer service');
         const customer = await this.customerService.getCustomer({ id: decoded.sub }).toPromise();
-        console.log('customer', customer);
         return customer;
       }
     } catch (error) {
-      console.log(error);
       return null;
     }
   }

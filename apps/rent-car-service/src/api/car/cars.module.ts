@@ -39,6 +39,23 @@ import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
         }),
       },
     ]),
+    ClientsModule.registerAsync([
+      {
+        inject: [ConfigService],
+        name: 'BOOKINGS_CLIENT',
+        useFactory: (config: ConfigService) => ({
+          transport: Transport.GRPC,
+          options: {
+            package: 'bookings',
+            protoPath: 'contract/bookings-api.proto',
+            url: config.get<string>('BOOKINGS_CLIENT'),
+            loader: {
+              keepCase: true,
+            },
+          },
+        }),
+      },
+    ])
   ],
   controllers: [CarsController],
   providers: [CarsService, JwtStrategy, {

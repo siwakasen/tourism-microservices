@@ -28,6 +28,7 @@ import {
   PaginationDto,
   CreateUpdateCarsDto,
   UploadImageDto,
+  AvailableCarsDto,
 } from './cars.dto';
 import { CarsService } from './cars.service';
 import { JwtAuthGuard } from '@app/helpers/auth/user/auth.guard';
@@ -47,6 +48,11 @@ export class CarsController {
   @Get('')
   public async getAllCars(@Query() query: PaginationDto) {
     return await this.carsService.getAllCars(query);
+  }
+
+  @Get('available')
+  public async getAvailableCars( @Query() query: AvailableCarsDto) {
+    return await this.carsService.getAvailableCars( query);
   }
 
   @ApiResponse({

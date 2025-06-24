@@ -13,7 +13,13 @@ async function bootstrap() {
   const port: number = config.get<number>('PORT');
   const gRPCPort: number = config.get<number>('CAR_GRPC_PORT');
   app.set('trust proxy', 1);
-  app.enableCors();
+  app.enableCors({
+    origin: [
+      'https://client-web-app.vulpbox.com',
+      'https://admin-web-app.vulpbox.com',
+      'http://localhost:5173',
+    ],
+  });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   //   app.useGlobalInterceptors(new FormatErrorInterceptor());
 
@@ -36,7 +42,10 @@ async function bootstrap() {
       options: {
         url: `0.0.0.0:${gRPCPort}`,
         package: 'car',
-        protoPath: 'contract/rent-car-rpc.proto',
+        protoPath: 'contract/rent-car-api.proto',
+        loader: {
+          keepCase: true,
+        },
       },
     },
   );
@@ -45,6 +54,7 @@ async function bootstrap() {
   });
 
   await appGRPC.listen();
+  console.log('[GRPC Rent Car Service]', `gRPC: 0.0.0.0:${gRPCPort}`);
 }
 
 bootstrap();

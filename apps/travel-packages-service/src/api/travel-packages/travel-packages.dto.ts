@@ -63,7 +63,9 @@ export class CreateUpdateTravelPackageDto {
   @IsNumber()
   public readonly max_persons: number;
 
-  @ApiProperty({description: 'The detailed itineraries for the travel package', example: '[{"day": 1, "activity": "Visit Ubud Forest"}, {"day": 2, "activity": "Relax at Kuta Beach"}, {"day": 3, "activity": "Visit Bali Safari and Marine Park"}]'})
+  @ApiProperty({description: 'The detailed itineraries for the travel package', 
+    example: ["Day 1: Arrival in Bali, Check-in at hotel, Welcome dinner at local restaurant", "Day 2: Full-day tour of Ubud including Temples, Waterfalls, and Traditional Village", "Day 3: Departure from Bali"]
+  })
   @IsArray()
   public readonly itineraries: string[];
 

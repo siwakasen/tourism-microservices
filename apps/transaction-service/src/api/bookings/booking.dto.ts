@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsBoolean, IsDate, IsEmail, IsEnum, IsJSON, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateIf } from "class-validator";
-import { Bookings, PaymentMethod } from "libs/entities";
+import {  IsBoolean, IsDate, IsEmail, IsEnum, IsJSON, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { Bookings, Payment, PaymentMethod } from "libs/entities";
 
 
 export class BookingReqDto{
@@ -38,13 +38,19 @@ export class BookingReqDto{
   @IsOptional()
   public readonly number_of_persons: number;
 
-  @ApiProperty()
+  @ApiProperty({
+    description: 'The start date of the booking',
+    example: new Date(new Date().getTime() + 1000 * 60 * 60 * 24),
+  })
   @IsDate()
   @Type(() => Date)
   @IsNotEmpty()
   public readonly start_date: Date;
 
-  @ApiProperty()
+  @ApiProperty({
+    description: 'The end date of the booking',
+    example: new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 2),
+  })
   @IsDate()
   @Type(() => Date)
   @IsOptional()
@@ -203,11 +209,7 @@ export class PaginationDto {
 export class BookingResDto {
   @ApiProperty({ default: { data: [], meta: { totalItems: 0, currentPage: 1, totalPages: 1, limit: 10, hasNextPage: false, hasPrevPage: false } } })
   @IsJSON()
-  public readonly data: {
-    bookings: Bookings;
-    package_name?: string;
-    car_name?: string;
-  }[];
+  public readonly data: Bookings[];
 
   @ApiProperty({ default: { totalItems: 0, currentPage: 1, totalPages: 1, limit: 10, hasNextPage: false, hasPrevPage: false } })
   @IsJSON()
@@ -236,3 +238,4 @@ export class AssignEmployeeDto {
   @IsNumber()
   public readonly booking_id: number;
 }
+

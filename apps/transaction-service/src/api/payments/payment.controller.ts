@@ -26,7 +26,7 @@ export class PaymentController {
 
     @Post('check-order-paypal')
     @UseGuards(JwtAuthGuard)
-    @Roles(UserType.CUSTOMER)
+    @Roles(UserType.CUSTOMER, UserType.ADMIN)
     @ApiBearerAuth()
     async checkOrderPaypal(@Body() body:CapturePaymentPaypalDto) {
         const data = await this.paymentService.checkOrderPaypal(body.orderId);

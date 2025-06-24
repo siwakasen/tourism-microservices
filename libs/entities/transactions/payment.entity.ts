@@ -20,21 +20,24 @@ class Payment extends BaseEntity {
   public id!: number;
 
   @ApiProperty()
-  @Column({ type: 'int', nullable: false })
   @ManyToOne(() => Bookings, (booking) => booking.id, {
     cascade: true,
     nullable: false,
   })
   @JoinColumn({ name: 'booking_id' })
-  public booking_id!: number;
+  public booking!: Bookings;
 
   @ApiProperty()
   @Column({ type: 'int', nullable: true })
   public modification_id: number;
 
   @ApiProperty()
-  @Column({ type: 'int', nullable: false })
-  public amount!: number;
+  @Column({ type: 'float', nullable: false })
+  public gross_amount!: number;
+
+  @ApiProperty()
+  @Column({ type: 'float', nullable: true })
+  public net_amount!: number;
 
   @ApiProperty()
   @Column({ type: 'timestamp', nullable: true })

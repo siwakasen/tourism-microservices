@@ -4,7 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { getEnvPath } from './common/helper/env.helper';
 import { TypeOrmConfigService } from './shared/typeorm/typeorm.service';
 import { EmployeeModule } from './api/employees/employees.module';
-import { GrpcModule } from './api/grpc/grpc.module';
+import { GrpcModule } from './api/grpc-employees/grpc-employees.module';
 import { LoggerMiddleware } from 'libs/helpers/middleware/logger.midleware';
 
 const envFilePath: string = getEnvPath(`${__dirname}/common/helper`);

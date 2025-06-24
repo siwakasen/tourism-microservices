@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from "typeorm";
+import { Payment } from "./payment.entity";
 
 export enum BookingStatus {
   WAITING_PAYMENT = 'WAITING_PAYMENT',
@@ -77,6 +78,9 @@ class Bookings extends BaseEntity {
   @ApiProperty()
   @UpdateDateColumn()
   public updated_at: Date;
+
+  @OneToMany(() => Payment, (payment) => payment.booking)
+  public payments: Payment[];
 }
 
 export { Bookings };

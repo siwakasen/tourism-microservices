@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, JoinColumn, ManyToOne } from "typeorm";
+import { Bookings } from "./bookings.entity";
 
 export enum RequestType {
   CANCELLATION = 'CANCELLATION',
@@ -21,8 +22,12 @@ class BookingAdjustments extends BaseEntity {
   public id!: number;
 
   @ApiProperty()
-  @Column({ type: 'int', nullable: false })
-  public booking_id!: number;
+  @ManyToOne(() => Bookings, (booking) => booking.id, {
+    cascade: true,
+    nullable: false,
+  })
+  @JoinColumn({ name: 'booking_id' })
+  public booking: Bookings;
 
   @ApiProperty({ enum: RequestType })
   @Column({

@@ -1,9 +1,9 @@
 import { HttpException, HttpStatus, Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { BookingRegisterReqDto, BookingRegisterResDto, BookingReqDto, BookingResDto, PaginationDto } from './booking.dto';
+import { BookingReqDto, BookingResDto, PaginationDto } from './booking.dto';
 import { RegisterCustomerDto } from './booking.dto';
-import { Bookings, BookingStatus, Customer, CustomerServiceClient, EmployeeServiceClient,   Payment, PaymentMethod, PaymentStatus } from 'libs/entities';
+import { Bookings, BookingStatus, Customer, CustomerServiceClient, EmployeeServiceClient,   Payment, PaymentMethod } from 'libs/entities';
 import { ClientGrpc } from '@nestjs/microservices';
-import { DataSource, In, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
+import { Between, DataSource, In, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import { CarServiceClient, TravelPackageServiceClient } from 'libs/entities';
 import { PaymentService } from '../payments/payment.service';
 
@@ -39,7 +39,7 @@ export class BookingService implements OnModuleInit {
   }
 
   public async registerCustomerGrpc(payload: RegisterCustomerDto) {
-    try {
+    try { 
       const {id,jwtToken} = await this.customerGrpcService.registerCustomer({
         email: payload.email,
         password: payload.password,
@@ -58,7 +58,7 @@ export class BookingService implements OnModuleInit {
     }
   }
 
-  public async deleteCustomerGrpc(customer_id: number) {
+  private async deleteCustomerGrpc(customer_id: number) {
     try {
       const response = await this.customerGrpcService.deleteCustomer({
         id: customer_id,
@@ -93,14 +93,6 @@ export class BookingService implements OnModuleInit {
       throw new HttpException(error.details, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-
-  // public async assignEmployeeGrpc(payload: BookingRegisterReqDto) {
-  //   try {
-  //     const employee = await this.employeeGrpcService.assignEmployee({
-  //       id: payload.employee_id,
-  //     }).toPromise();
-  //   }
-  // }
 
   public async createBooking(payload: BookingReqDto, customer: Customer, isRegister: boolean) : Promise<{
     success: boolean,
@@ -147,6 +139,7 @@ export class BookingService implements OnModuleInit {
             start_date: startDate,
             end_date: endDate,
             customer_id: customer.id,
+            number_of_persons: payload.number_of_persons,
             status: BookingStatus.WAITING_PAYMENT,
             pickup_location: payload.pickup_location,
             pickup_time: payload.pickup_time 
@@ -190,7 +183,7 @@ export class BookingService implements OnModuleInit {
         });
       }
       
-
+      console.log('booking', booking);
       if(payload.payment_method === PaymentMethod.MIDTRANS){
         const {redirect_url : midtrans_redirect_url} = await this.paymentService.createTransactionMidtrans(booking, product_name, total_price, customer, queryRunner);
         redirect_url = midtrans_redirect_url;
@@ -246,15 +239,9 @@ export class BookingService implements OnModuleInit {
           {
             employee_id: employee_id,
             with_driver: booking.with_driver,
-            start_date: MoreThanOrEqual(booking.start_date),
-            status: In([ BookingStatus.CONFIRMED]),
-          }, 
-          {
-            employee_id: employee_id,
-            with_driver: booking.with_driver,
-            end_date: LessThanOrEqual(booking.end_date),
-            status: In([ BookingStatus.CONFIRMED]),
-          }
+            start_date: Between(booking.start_date, booking.end_date),
+            status: In([ BookingStatus.CONFIRMED, BookingStatus.ONGOING]),
+          },
         ],
         select: ['id','status','car_id','package_id']
       });
@@ -282,43 +269,23 @@ export class BookingService implements OnModuleInit {
   public async getBookings(customer_id: number, paginationDto: PaginationDto) : Promise<BookingResDto> {
     try {
       const {page, limit} = paginationDto;
+      
+      // Use a single query with left join to fetch bookings and payments
       const queryBuilder = this.dataSource.manager.createQueryBuilder(Bookings, 'bookings')
+        .leftJoinAndSelect('bookings.payments', 'payments')
         .where('bookings.customer_id = :customer_id', {customer_id})
-        .orderBy('bookings.created_at', 'DESC');
+        .orderBy('bookings.created_at', 'DESC')
+        .addOrderBy('payments.created_at', 'DESC');
         
-        const [result, total] = await queryBuilder.skip((page - 1) * limit).take(limit).getManyAndCount();
-        const newResult = [];
-        for(const booking of result){
-          // Get payments for this booking
-          const payments = await this.dataSource.manager.find(Payment, {
-            where: { booking_id: booking.id }
-          });
-
-          if(booking.package_id){
-            const {packageName} = await this.getPackageGrpc({
-              package_id: booking.package_id
-            });
-            newResult.push({
-              ...booking,
-              payments,
-              package_name: packageName,
-            });
-          }else if(booking.car_id){
-            const {carName} = await this.getCarGrpc({
-              car_id: booking.car_id,
-            });
-            newResult.push({
-              ...booking,
-              payments,
-              car_name: carName,
-            });
-          }
-        }
+      const [result, total] = await queryBuilder.skip((page - 1) * limit).take(limit).getManyAndCount();
+      
+      
+      
       const totalPages = Math.ceil(total / limit);
       const hasNextPage = page < totalPages;
 
       return {
-        data : newResult,
+        data : result,
         meta: {
           totalItems: total,
           currentPage: page,
@@ -329,7 +296,6 @@ export class BookingService implements OnModuleInit {
         },
       };
     } catch (error) {
-
       throw new HttpException(error.details, error.status);
     }
   }
@@ -337,9 +303,13 @@ export class BookingService implements OnModuleInit {
   public async getAllBookings(paginationDto: PaginationDto) : Promise<BookingResDto> {
     try {
       const {page, limit, search} = paginationDto;
+      
+      // Use a single query with left join to fetch bookings and payments
       const queryBuilder = this.dataSource.manager
-      .createQueryBuilder(Bookings, 'bookings')
-      .orderBy('bookings.created_at', 'DESC');
+        .createQueryBuilder(Bookings, 'bookings')
+        .leftJoinAndSelect('bookings.payments', 'payments')
+        .orderBy('bookings.created_at', 'DESC')
+        .addOrderBy('payments.created_at', 'DESC');
 
       const conditions = [];
       const parameters: Record<string, any> = {};
@@ -354,41 +324,13 @@ export class BookingService implements OnModuleInit {
       }
 
       const [result, total] = await queryBuilder.skip((page - 1) * limit).take(limit).getManyAndCount();
-      const newResult = [];
-        for(const booking of result){
-          // Get payments for this booking
-          const payments = await this.dataSource.manager.find(Payment, {
-            where: { booking_id: booking.id },
-            order: {
-              created_at: 'DESC'
-            }
-          });
-
-          if(booking.package_id){
-            const {packageName} = await this.getPackageGrpc({
-              package_id: booking.package_id
-            });
-            newResult.push({
-              ...booking,
-              payments,
-              package_name: packageName,
-            });
-          }else if(booking.car_id){
-            const {carName} = await this.getCarGrpc({
-              car_id: booking.car_id,
-            });
-            newResult.push({
-              ...booking,
-              payments,
-              car_name: carName,
-            });
-          }
-        }
+      
+      
       const totalPages = Math.ceil(total / limit);
       const hasNextPage = page < totalPages;
 
       return {
-        data : newResult,
+        data : result,
         meta: {
           totalItems: total,
           currentPage: page,

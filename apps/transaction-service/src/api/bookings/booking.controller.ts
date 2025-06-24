@@ -1,13 +1,12 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Post, Query, UseGuards } from '@nestjs/common';
 import { BookingService } from './booking.service';
-import { AssignEmployeeDto, BookingRegisterReqDto, BookingRegisterResDto, BookingReqDto, BookingResDto, BookingWithoutRegisterResDto, PaginationDto } from './booking.dto';
+import { AssignEmployeeDto, BookingRegisterReqDto, BookingRegisterResDto, BookingReqDto, BookingResDto, PaginationDto } from './booking.dto';
 import { GetCustomer } from '@app/helpers/auth/decorators/get-user.decorator';
-import { Customer, PaymentMethod } from 'libs/entities'; 
+import { Customer } from 'libs/entities'; 
 import { Roles, UserType } from '@app/helpers/auth/decorators/auth.decorator';
 import { JwtAuthGuard } from '@app/helpers/auth/user/auth.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { PaymentService } from '../payments/payment.service';
-import { Pipeline } from 'ioredis';
 import { ApiTags } from '@nestjs/swagger';
 
 

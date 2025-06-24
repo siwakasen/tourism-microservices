@@ -24,7 +24,7 @@ export class JwtAuthGuard extends Guard('user') implements IAuthGuard {
       context.getClass(),
     ]);
 
-    console.log(requiredRoles);
+
     if (!requiredRoles) {
       return true; // No roles required, allow access
     }
@@ -40,7 +40,6 @@ export class JwtAuthGuard extends Guard('user') implements IAuthGuard {
       if(user && !user.role_id) {
         return true;
       }
-      return false;
     }
 
     // Handle employee types (owner and admin)

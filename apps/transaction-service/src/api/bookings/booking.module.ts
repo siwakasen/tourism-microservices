@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { BookingController } from './booking.controller';
 import { BookingService } from './booking.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Bookings, Employee, Payment } from 'libs/entities';
+import { Bookings, Payment } from 'libs/entities';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -22,7 +22,6 @@ import { PaymentService } from '../payments/payment.service';
         signOptions: { expiresIn: config.get('JWT_EXPIRES') },
       }),
     }),
-    // regis to 2 grpc server for customer and travel package
     ClientsModule.registerAsync([
       {
         inject: [ConfigService],
@@ -48,7 +47,7 @@ import { PaymentService } from '../payments/payment.service';
           transport: Transport.GRPC,
           options: {
             package: 'car',
-            protoPath: 'contract/rent-car-rpc.proto',
+            protoPath: 'contract/rent-car-api.proto',
             url: config.get<string>('CAR_CLIENT'),
             loader: {
               keepCase: true,

@@ -1,11 +1,17 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, JoinColumn, ManyToOne, OneToOne } from "typeorm";
+import { Bookings } from "./bookings.entity";
 
 export enum RefundStatus {
   WAITING_FORM = 'WAITING_FORM',
   PROCESSING = 'PROCESSING',
   SUCCESS = 'SUCCESS',
   FAILED = 'FAILED'
+}
+
+export enum RefundMetod {
+  BANK_TRANSFER = 'BANK_TRANSFER',
+  PAYPAL = 'PAYPAL',
 }
 
 @Entity('refunds')
@@ -15,12 +21,37 @@ class Refunds extends BaseEntity {
   public id!: number;
 
   @ApiProperty()
-  @Column({ type: 'int', nullable: false })
-  public booking_id!: number;
+  @OneToOne(() => Bookings, (booking) => booking.id, {
+    cascade: true,
+    nullable: false,
+  })
+  @JoinColumn({ name: 'booking_id' })
+  public booking!: Bookings;
 
   @ApiProperty()
-  @Column({ type: 'int', nullable: false })
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
   public amount!: number;
+
+  @ApiProperty()
+  @Column({
+    type: 'enum',
+    enum: RefundMetod,
+    default: RefundMetod.BANK_TRANSFER,
+    nullable: true
+  })
+  public method?: RefundMetod;
+
+  @ApiProperty()
+  @Column({ type: 'text', nullable: true })
+  public bank_name?: string;
+
+  @ApiProperty()
+  @Column({ type: 'text', nullable: true })
+  public account_number?: string;
+
+  @ApiProperty()
+  @Column({ type: 'text', nullable: true })
+  public account_name?: string;
 
   @ApiProperty({ enum: RefundStatus })
   @Column({
@@ -29,6 +60,10 @@ class Refunds extends BaseEntity {
     default: RefundStatus.WAITING_FORM
   })
   public status: RefundStatus;
+
+  @ApiProperty()
+  @Column({ type: 'timestamp', nullable: true })
+  public refund_date?: Date;
 
   @ApiProperty()
   @Column({ type: 'text', nullable: true })

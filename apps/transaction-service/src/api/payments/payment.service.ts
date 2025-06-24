@@ -5,12 +5,17 @@ import { DataSource, QueryRunner, Repository } from "typeorm";
 import axios from 'axios';
 import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
+import { generateTokenAccess } from "../../common/helper/paypal-access-token.helper";
+import { convertUSDToIDR } from "../../common/helper/currency.helper";
 @Injectable()
 export class PaymentService {
 
     constructor(
         @Inject(DataSource)
         private readonly dataSource: DataSource,
+
+        
+        @Inject(ConfigService)
         private readonly configService: ConfigService,
 
         @InjectRepository(Bookings)
@@ -20,20 +25,11 @@ export class PaymentService {
         private readonly paymentRepository: Repository<Payment>,
     ) {}
 
-    private async convertUSDToIDR(usdAmount: number): Promise<number> {
-        try {
-            const response = await axios.get(process.env.EXCHANGE_RATE_API);
-            const rate = response.data.rates.IDR;
-            return Math.round(usdAmount * rate);
-        } catch (error) {
-            console.error('Currency conversion error:', error.response?.data || error.message);
-            throw new HttpException('Failed to convert currency', HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+    
 
     public async createTransactionMidtrans(payload: Bookings, product_name: string, total_price: number, customer: Customer, queryRunner: QueryRunner) : Promise<{redirect_url: string}> {
         try {
-            const total_price_idr = await this.convertUSDToIDR(total_price);
+            const total_price_idr = await convertUSDToIDR(total_price);
 
             const snap = new Snap({
                 isProduction: false,
@@ -65,7 +61,8 @@ export class PaymentService {
                 await queryRunner.manager.save(Payment, {
                     booking_id: payload.id,
                     payment_method: PaymentMethod.MIDTRANS,
-                    amount: total_price,
+                    gross_amount: total_price,
+                    net_amount: total_price,
                     status: PaymentStatus.PENDING,
                     payment_gateway_id: transaction.token,
                 })
@@ -105,7 +102,7 @@ export class PaymentService {
         // Sample transactionStatus handling logic
         if (transactionStatus == 'capture'){
             if (fraudStatus == 'accept'){
-                    await queryRunner.manager.update(Payment, {booking_id: orderId}, {status: PaymentStatus.SUCCESS});
+                    await queryRunner.manager.update(Payment, {booking_id: orderId}, {status: PaymentStatus.SUCCESS, payment_date: new Date()});
                     await queryRunner.manager.update(Bookings, {id: orderId}, {status: BookingStatus.WAITING_CONFIRMATION});
                     await queryRunner.commitTransaction();
                     return {
@@ -113,7 +110,7 @@ export class PaymentService {
                     }
             }
         } else if (transactionStatus == 'settlement'){
-            await queryRunner.manager.update(Payment, {booking_id: orderId}, {status: PaymentStatus.SUCCESS});
+            await queryRunner.manager.update(Payment, {booking_id: orderId}, {status: PaymentStatus.SUCCESS, payment_date: new Date()});
             await queryRunner.manager.update(Bookings, {id: orderId}, {status: BookingStatus.WAITING_CONFIRMATION});
             await queryRunner.commitTransaction();
             return {
@@ -146,23 +143,12 @@ export class PaymentService {
         }
     }
 
-    private async generateTokenAccess() : Promise<string>{
-            const response = await axios({
-                url: this.configService.get('PAYPAL_BASE_URL')+ '/v1/oauth2/token',
-                method: 'post',
-                data: 'grant_type=client_credentials',
-                auth: {
-                    username: this.configService.get('PAYPAL_CLIENT_ID'),
-                    password: this.configService.get('PAYPAL_CLIENT_SECRET')
-                }
-            });
-
-            return response.data.access_token;
-    }
+    
 
     public async createOrderPaypal(payload: Bookings, product_name: string, total_price: number, customer: Customer, queryRunner: QueryRunner) {
         try{
-        const access_token = await this.generateTokenAccess();
+            
+        const access_token = await generateTokenAccess(this.configService);
         const  response = await axios({
             url: `${this.configService.get('PAYPAL_BASE_URL')}/v2/checkout/orders`,
             method: 'post',
@@ -208,9 +194,9 @@ export class PaymentService {
             })
             })
             await queryRunner.manager.save(Payment, {
-                booking_id: payload.id,
+                booking: payload,
                 payment_method: PaymentMethod.PAYPAL,
-                amount: total_price,
+                gross_amount: total_price,
                 status: PaymentStatus.PENDING,
                 payment_gateway_id: response.data.id,
             })
@@ -232,9 +218,13 @@ export class PaymentService {
         }
 
         if(response.data.status === 'COMPLETED'){
-            const payment = await this.paymentRepository.findOne({where: {payment_gateway_id: orderId}});
-            await this.paymentRepository.update(payment.id, {status: PaymentStatus.SUCCESS});
-             await this.bookingRepository.update(payment.booking_id, {status: BookingStatus.WAITING_CONFIRMATION});
+            const payments = response.data.purchase_units[0].payments;
+            const {seller_receivable_breakdown} = payments.captures[0];
+
+
+            const payment = await this.paymentRepository.findOne({where: {payment_gateway_id: orderId}, relations: ['booking']});
+            await this.paymentRepository.update(payment.id, {status: PaymentStatus.SUCCESS, net_amount: seller_receivable_breakdown.net_amount.value, payment_date: new Date()});
+             await this.bookingRepository.update(payment.booking.id, {status: BookingStatus.WAITING_CONFIRMATION});
             return {
                 success: true,
                 data:{
@@ -247,7 +237,7 @@ export class PaymentService {
 
     public async capturePaymentPaypal(orderId: string) {
         try {
-            const access_token = await this.generateTokenAccess();
+            const access_token = await generateTokenAccess(this.configService);
             const response = await axios({
                 url: `${this.configService.get('PAYPAL_BASE_URL')}/v2/checkout/orders/${orderId}/capture`,
                 method: 'post',
@@ -270,7 +260,7 @@ export class PaymentService {
     }
 
     public async checkOrderPaypal(orderId: string) {
-        const access_token = await this.generateTokenAccess();
+        const access_token = await generateTokenAccess(this.configService);
         const response = await axios({
             url: `${this.configService.get('PAYPAL_BASE_URL')}/v2/checkout/orders/${orderId}`,
             method: 'get',

@@ -54,5 +54,6 @@ async function bootstrap() {
   });
 
   await appGRPC.listen();
+  console.log('[GRPC Customer Service]', `gRPC: 0.0.0.0:${gRPCPort}`);
 }
 bootstrap();

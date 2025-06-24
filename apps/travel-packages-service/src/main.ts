@@ -16,7 +16,7 @@ async function bootstrap() {
     origin: [
       'https://client-web-app.vulpbox.com',
       'https://admin-web-app.vulpbox.com',
-      'http://localhost:3000',
+      'http://localhost:5173',
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -54,6 +54,7 @@ async function bootstrap() {
   });
 
   await appGRPC.listen();
+  console.log('[GRPC Travel Package Service]', `gRPC: 0.0.0.0:${gRPCPort}`);
 }
 
 bootstrap();

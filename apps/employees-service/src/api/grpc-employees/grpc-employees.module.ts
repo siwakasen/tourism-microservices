@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { GrpcService } from './grpc.service';
-import { GrpcController } from './grpc.controller';
+import { GrpcService } from './grpc-employees.service';
+import { GrpcController } from './grpc-employees.controller';
 import { AuthRedisService } from '../employees/redis.service';
 import {  EmployeeModule } from '../employees/employees.module';
 import { Employee, EmployeeToken, Roles } from 'libs/entities';

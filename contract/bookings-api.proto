@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package bookings;
+
+service BookingsGrpcService {
+  rpc GetCarIdsByBookingDateRange (BookingDateRangeRequest) returns (CarIdsResponse);
+}
+
+message BookingDateRangeRequest {
+  string start_date = 1;
+  string end_date = 2;
+}
+
+message CarIdsResponse {
+  repeated int32 car_ids = 1;
+}

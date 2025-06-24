@@ -5,7 +5,6 @@ import {
   IsString,
   IsOptional,
   IsArray,
-  IsBoolean,
 } from 'class-validator';
 
 export class PaginationDto {
@@ -23,6 +22,17 @@ export class PaginationDto {
   @IsString()
   @IsOptional()
   public readonly search: string;
+}
+
+export class AvailableCarsDto extends PaginationDto {
+  @ApiProperty({ default: new Date(new Date().setDate(new Date().getDate() + 1)).toISOString() })
+  @IsString()
+  public readonly start_date: string;
+
+  @ApiProperty({ default: new Date(new Date().setDate(new Date().getDate() + 2)).toISOString() })
+  @IsString()
+  public readonly end_date: string;
+  
 }
 
 export class UploadImageDto {
