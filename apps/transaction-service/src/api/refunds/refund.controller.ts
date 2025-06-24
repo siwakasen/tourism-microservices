@@ -1,22 +1,56 @@
-import { Controller, Get, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, HttpException, HttpStatus, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import { RefundService } from "./refund.service";
-import { PaginationDto } from "./refund.dto";
-import { ApiBearerAuth } from "@nestjs/swagger";
+import { AddFormDto, PaginationDto } from "./refund.dto";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { JwtAuthGuard } from "@app/helpers/auth/user/auth.guard";
 import { Roles, UserType } from "@app/helpers/auth/decorators/auth.decorator";
+import { GetCustomer } from "@app/helpers/auth/decorators/get-user.decorator";
+import { Customer } from "libs/entities/customer/customer.entity";
+import { RefundMetod } from "libs/entities/transactions/refunds.entitiy";
 
 
 @Controller('refunds')
 @ApiBearerAuth()
+@ApiTags('Refund Controller')
 export class RefundController {
     constructor(private readonly refundService: RefundService) {}
 
-    @Get()
+
+    @Get('')
     @UseGuards(JwtAuthGuard)
-    @Roles(UserType.ADMIN)
+    @Roles(UserType.CUSTOMER)
     @ApiBearerAuth()
-    async getAllRefund(@Query() paginationDto: PaginationDto) {
-        return this.refundService.getAllRefund(paginationDto);
+    async getRefund(@Query() query: PaginationDto, @GetCustomer() customer: Customer) {
+        return this.refundService.getRefund(query, customer.id);
+    }
+
+    @Get('all')
+    @UseGuards(JwtAuthGuard)
+    @Roles(UserType.ADMIN, UserType.OWNER)
+    @ApiBearerAuth()
+    async getAllRefund(@Query() query: PaginationDto) {
+        return this.refundService.getAllRefund(query);
+    }
+
+    @Patch('save-form/:id')
+    @UseGuards(JwtAuthGuard)
+    @Roles(UserType.CUSTOMER)
+    @ApiBearerAuth()
+    async saveFormCustomer(@Param('id') id: number, @Body() body: AddFormDto, @GetCustomer() customer: Customer) {
+        if(body.method === RefundMetod.BANK_TRANSFER){
+            if(!body.bank_name || !body.account_number || !body.account_name){
+                throw new HttpException('Bank name, account number, and account name are required', HttpStatus.BAD_REQUEST);
+            }
+        }
+        return this.refundService.saveForm(body, customer.id, id);
+    }
+
+    @Patch('complete/:id')
+    @UseGuards(JwtAuthGuard)
+    @Roles(UserType.OWNER)
+    @ApiBearerAuth()
+    async completeRefund(@Param('id') id: number) {
+        return this.refundService.completeRefund(id);
     }
 
     
