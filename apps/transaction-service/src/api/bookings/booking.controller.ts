@@ -1,6 +1,6 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { BookingService } from './booking.service';
-import { AssignEmployeeDto, BookingRegisterReqDto, BookingRegisterResDto, BookingReqDto, BookingResDto, PaginationDto } from './booking.dto';
+import { AssignEmployeeDto, BookingRegisterReqDto, BookingRegisterResDto, BookingReqDto, BookingResDto, FinishBookingDto, PaginationDto } from './booking.dto';
 import { GetCustomer } from '@app/helpers/auth/decorators/get-user.decorator';
 import { Customer } from 'libs/entities'; 
 import { Roles, UserType } from '@app/helpers/auth/decorators/auth.decorator';
@@ -80,5 +80,12 @@ export class BookingController {
   @Roles(UserType.ADMIN)
   async assignEmployee(@Body() body: AssignEmployeeDto) {
     return this.bookingService.assignEmployee(body.booking_id, body.employee_id);
+  }
+
+  @Patch('/finish')
+  @UseGuards(JwtAuthGuard)
+  @Roles(UserType.ADMIN)
+  async finishBooking(@Body() body: FinishBookingDto) {
+    return this.bookingService.finishBooking(body.booking_id, body.status);
   }
 }

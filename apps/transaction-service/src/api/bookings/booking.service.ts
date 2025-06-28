@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { BookingReqDto, BookingResDto, PaginationDto } from './booking.dto';
 import { RegisterCustomerDto } from './booking.dto';
 import { Bookings, BookingStatus, Customer, CustomerServiceClient, EmployeeServiceClient,   Payment, PaymentMethod, PaymentStatus } from 'libs/entities';
@@ -6,6 +6,7 @@ import { ClientGrpc } from '@nestjs/microservices';
 import { Between, DataSource, In, LessThanOrEqual, MoreThanOrEqual, QueryRunner } from 'typeorm';
 import { CarServiceClient, TravelPackageServiceClient } from 'libs/entities';
 import { PaymentService } from '../payments/payment.service';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class BookingService implements OnModuleInit {
@@ -28,6 +29,7 @@ export class BookingService implements OnModuleInit {
   private carGrpcService: CarServiceClient;
   private employeeGrpcService: EmployeeServiceClient;
 
+  private readonly logger = new Logger(BookingService.name);
 
   @Inject(DataSource)
   private readonly dataSource: DataSource;
@@ -390,6 +392,64 @@ export class BookingService implements OnModuleInit {
       };
     } catch (error) {
       throw new HttpException(error.message, error.status);
+    }
+  }
+
+  public async finishBooking(booking_id: number, booking_status: BookingStatus.COMPLETED | BookingStatus.NO_SHOW) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const booking = await queryRunner.manager.findOne(Bookings, { where: { id: booking_id, status: BookingStatus.ONGOING } });
+      if(!booking){
+        throw new HttpException('Booking not found or not ongoing', HttpStatus.NOT_FOUND);
+      }
+      await queryRunner.manager.update(Bookings, { id: booking_id }, { status: booking_status });
+      await queryRunner.commitTransaction();
+      return {
+        success: true,
+        data: {
+          ...booking,
+          status: booking_status,
+        },
+        message: 'Booking status updated successfully',
+      };
+    } catch (error) {
+      this.logger.error(error);
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(error.message, error.status);
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  @Cron('0 0 0 * * *',{
+    name: 'set-booking-to-ongoing',
+    timeZone: 'Asia/Jakarta',
+  })
+  async handleUpdateConfirmedBookingToOngoing() {
+    this.logger.log(`Called at ${new Date().toISOString()}`);
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const bookings = await queryRunner.manager.find(Bookings, {
+        where: { status: BookingStatus.CONFIRMED, 
+          start_date: LessThanOrEqual(new Date()),
+         }, 
+      });
+      this.logger.log(`Found ${bookings.length} bookings to set to ongoing`);
+      for(const booking of bookings){
+        this.logger.log(`Set booking ${booking.id} to ongoing`);
+        await queryRunner.manager.update(Bookings, { id: booking.id }, { status: BookingStatus.ONGOING });
+      }
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      this.logger.error(error);
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(error.message, error.status);
+    } finally {
+      await queryRunner.release();
     }
   }
 

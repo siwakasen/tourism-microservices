@@ -9,6 +9,7 @@ import { PaymentModule } from './api/payments/payment.module';
 import { BookingGrpcModule } from './api/bookings/grpc/booking-grpc.module';
 import { BookingAdjustmentModule } from './api/booking-adjustments/booking-adjust.module';
 import { RefundModule } from './api/refunds/refund.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 const envFilePath: string = getEnvPath(`${__dirname}/common/helper`);
 console.log('envFilePath:', getEnvPath(`${__dirname}`));
@@ -21,6 +22,7 @@ const TransactionLogger = new LoggerMiddleware({
   imports: [
     ConfigModule.forRoot({ envFilePath, isGlobal: true }),
     TypeOrmModule.forRootAsync({ useClass: TypeOrmConfigService }),
+    ScheduleModule.forRoot(),
     BookingModule, 
     PaymentModule,
     BookingGrpcModule,

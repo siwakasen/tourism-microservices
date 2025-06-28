@@ -3,7 +3,6 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { PaymentController } from "./payment.controller";
 import { PaymentService } from "./payment.service";
 import { Bookings, Payment } from "libs/entities";
-import { BookingService } from "../bookings/booking.service";
 import { ConfigService } from "@nestjs/config";
 import { ClientGrpc, ClientsModule, Transport } from "@nestjs/microservices";
 import { AuthHelper } from "@app/helpers/auth/user/auth.helper";
@@ -90,7 +89,7 @@ import { AuthRedisService } from "./redis.service";
         ]),
     ],
     controllers: [PaymentController],
-    providers: [PaymentService, AuthRedisService, BookingService,  JwtStrategy,{
+    providers: [PaymentService, AuthRedisService,  JwtStrategy,{
         provide: AuthHelper,
         useFactory: (jwt: JwtService, cusAuthClient: ClientGrpc, empAuthClient: ClientGrpc  ) => {
           return new AuthHelper(jwt, empAuthClient, cusAuthClient);

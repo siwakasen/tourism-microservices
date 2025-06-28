@@ -90,7 +90,7 @@ import { AuthRedisService } from '../payments/redis.service';
   ]),
   ],
   controllers: [BookingController],
-  providers: [BookingService, PaymentService, AuthRedisService, JwtStrategy,{
+  providers: [BookingService, PaymentService, AuthRedisService, JwtStrategy, {
     provide: AuthHelper,
     useFactory: (jwt: JwtService, cusAuthClient: ClientGrpc, empAuthClient: ClientGrpc) => {
       return new AuthHelper(jwt, empAuthClient, cusAuthClient);

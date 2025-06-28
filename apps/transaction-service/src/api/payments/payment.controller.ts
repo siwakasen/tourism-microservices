@@ -1,6 +1,5 @@
-import { Controller, Get, Body, Post, Query, UseGuards } from "@nestjs/common";
+import { Controller, Body, Post, UseGuards } from "@nestjs/common";
 import { PaymentService } from "./payment.service";
-import { BookingService } from "../bookings/booking.service";
 import { CapturePaymentPaypalDto } from "./payment.dto";
 import { JwtAuthGuard } from "@app/helpers/auth/user/auth.guard";
 import { Roles, UserType } from "@app/helpers/auth/decorators/auth.decorator";
@@ -10,7 +9,7 @@ import { ApiBearerAuth } from "@nestjs/swagger";
 @Controller('payments')
 @ApiBearerAuth()
 export class PaymentController {
-    constructor(private readonly paymentService: PaymentService, private readonly bookingService: BookingService) {}
+    constructor(private readonly paymentService: PaymentService) {}
     
     @Post('notification-handler')
     async midtransCallback(@Body() body: any) {

@@ -101,11 +101,11 @@ export class PaymentService {
             let fraudStatus = statusResponse.fraud_status;
 
         console.log(`Transaction notification received. Order ID: ${orderId}. Transaction status: ${transactionStatus}. Fraud status: ${fraudStatus}`);
-
+        
         if (transactionStatus == 'capture'){
             if (fraudStatus == 'accept'){
                     await queryRunner.manager.update(Payment, {booking:{id: orderId}}, {status: PaymentStatus.SUCCESS, payment_date: new Date()});
-                    await queryRunner.manager.update(Bookings, {id: orderId}, {status: BookingStatus.WAITING_CONFIRMATION});
+                    await this.updateStatusBookingMidtrans(orderId, queryRunner, BookingStatus.WAITING_CONFIRMATION, true);
                     await queryRunner.commitTransaction();
                     return {
                         success: true,
@@ -113,7 +113,7 @@ export class PaymentService {
             }
         } else if (transactionStatus == 'settlement'){
             await queryRunner.manager.update(Payment, {booking: {id: orderId}}, {status: PaymentStatus.SUCCESS, payment_date: new Date()});
-            await queryRunner.manager.update(Bookings, {id: orderId}, {status: BookingStatus.WAITING_CONFIRMATION});
+            await this.updateStatusBookingMidtrans(orderId, queryRunner, BookingStatus.WAITING_CONFIRMATION, true);
             await queryRunner.commitTransaction();
             return {
                 success: true,
@@ -122,14 +122,14 @@ export class PaymentService {
           transactionStatus == 'deny' ||
           transactionStatus == 'expire'){
             await queryRunner.manager.update(Payment, {booking_id: orderId}, {status: PaymentStatus.FAILED});
-            await queryRunner.manager.update(Bookings, {id: orderId}, {status: BookingStatus.PAYMENT_FAILED});
+            await this.updateStatusBookingMidtrans(orderId, queryRunner, BookingStatus.PAYMENT_FAILED, false);
             await queryRunner.commitTransaction();
             return {
                 success: true,
             }
         } else if (transactionStatus == 'pending'){
             await queryRunner.manager.update(Payment, {booking_id: orderId}, {status: PaymentStatus.PENDING});
-            await queryRunner.manager.update(Bookings, {id: orderId}, {status: BookingStatus.WAITING_PAYMENT});
+            await this.updateStatusBookingMidtrans(orderId, queryRunner, BookingStatus.WAITING_PAYMENT, false);
             await queryRunner.commitTransaction();
             return {
                 success: true,
@@ -142,6 +142,19 @@ export class PaymentService {
             throw new HttpException('Error processing payment notification', HttpStatus.INTERNAL_SERVER_ERROR);
         }finally{
             await queryRunner.release();
+        }
+    }
+
+    private async updateStatusBookingMidtrans( orderId: string, queryRunner: QueryRunner, status: BookingStatus, isSuccess: boolean) {
+        const booking = await queryRunner.manager.findOne(Bookings, {where: {id: Number(orderId)}});
+        if(isSuccess){
+            if(!booking.with_driver){
+                await queryRunner.manager.update(Bookings, {id: orderId}, {status: BookingStatus.CONFIRMED});
+            }else{
+                await queryRunner.manager.update(Bookings, {id: orderId}, {status: BookingStatus.WAITING_CONFIRMATION});
+            }
+        }else{
+            await queryRunner.manager.update(Bookings, {id: orderId}, {status: status});
         }
     }
 
@@ -211,7 +224,7 @@ export class PaymentService {
         }
     }
 
-    public async updateStatusPayment(response: any, orderId: string) {
+    public async updateStatusPaypal(response: any, orderId: string) {
         if(response.status  === 404){
             throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
         }
@@ -226,7 +239,11 @@ export class PaymentService {
 
             const payment = await this.paymentRepository.findOne({where: {payment_gateway_id: orderId}, relations: ['booking']});
             await this.paymentRepository.update(payment.id, {status: PaymentStatus.SUCCESS, net_amount: seller_receivable_breakdown.net_amount.value, payment_date: new Date()});
-             await this.bookingRepository.update(payment.booking.id, {status: BookingStatus.WAITING_CONFIRMATION});
+            if(!payment.booking.with_driver){
+                await this.bookingRepository.update(payment.booking.id, {status: BookingStatus.CONFIRMED});
+            }else{
+                await this.bookingRepository.update(payment.booking.id, {status: BookingStatus.WAITING_CONFIRMATION});
+            }
             return {
                 success: true,
                 data:{
@@ -248,7 +265,7 @@ export class PaymentService {
                     'Authorization': `Bearer ${access_token}`,
                 },
             });
-            await this.updateStatusPayment(response, orderId);
+            await this.updateStatusPaypal(response, orderId);
             return{
                 success: true,
                 data:{
@@ -271,7 +288,7 @@ export class PaymentService {
                 'Authorization': `Bearer ${access_token}`,
             },
         });
-        await this.updateStatusPayment(response, orderId);
+        await this.updateStatusPaypal(response, orderId);
         return response.data;
     }
 

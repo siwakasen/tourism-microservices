@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import {  IsBoolean, IsDate, IsEmail, IsEnum, IsJSON, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
-import { Bookings, Payment, PaymentMethod } from "libs/entities";
+import {  IsBoolean, IsDate, IsEmail, IsEnum, IsIn, IsJSON, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { AdjustmentStatus, Bookings, BookingStatus, Payment, PaymentMethod } from "libs/entities";
 
 
 export class BookingReqDto{
@@ -239,3 +239,21 @@ export class AssignEmployeeDto {
   public readonly booking_id: number;
 }
 
+export class FinishBookingDto {
+  @ApiProperty({
+    description: 'The booking id of the booking',
+    example: 1,
+  })
+  @IsNumber()
+  public readonly booking_id: number;
+
+  @ApiProperty({ 
+    enum: [BookingStatus.COMPLETED, BookingStatus.NO_SHOW],
+    description: 'Status can only be COMPLETED or NO_SHOW',
+    example: BookingStatus.COMPLETED
+  })
+  @IsIn([BookingStatus.COMPLETED, BookingStatus.NO_SHOW], {
+    message: 'Status must be either COMPLETED or NO_SHOW'
+  })
+  public readonly status: BookingStatus.COMPLETED | BookingStatus.NO_SHOW; 
+}
