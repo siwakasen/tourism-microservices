@@ -30,6 +30,7 @@ import {
   ResetPasswordDto,
   TokenDto,
   PaginationEmployeeByRoleDto,
+  AvailableEmployeesDto,
 } from './employees.dto';
 import { EmployeeService } from './employees.service';
 import { JwtAuthGuard } from '@app/helpers/auth/user/auth.guard';
@@ -89,6 +90,13 @@ export class EmployeeController {
   @UseGuards(JwtAuthGuard)
   public async getEmployeesByRole(@Query() query: PaginationEmployeeByRoleDto) {
     return await this.service.getEmployeesByRole(query);
+  }
+
+  @Get('available')
+  @Roles(UserType.OWNER, UserType.ADMIN)
+  @UseGuards(JwtAuthGuard)
+  public async getAvailableEmployees(@Query() query: AvailableEmployeesDto) {
+    return await this.service.getAvailableEmployees(query);
   }
 
   

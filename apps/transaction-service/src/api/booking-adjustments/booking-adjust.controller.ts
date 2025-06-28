@@ -1,16 +1,15 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, HttpException, HttpStatus, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { BookingAdjustmentService } from "./booking-adjust.service";
 import { JwtAuthGuard } from "@app/helpers/auth/user/auth.guard";
 import { Roles, UserType } from "@app/helpers/auth/decorators/auth.decorator";
 import { GetCustomer } from "@app/helpers/auth/decorators/get-user.decorator";
-import { AdjustmentStatus, Customer } from "libs/entities";
-import { ApproveRejectAdjustmentDto, CancelBookingReqDto, PaginationDto } from "./booking-adjust.dto";
+import { Customer } from "libs/entities";
+import { ApprovementRescheduleDto, ApproveRejectCancellationDto, CancelBookingReqDto, PaginationDto, RescheduleBookingReqDto } from "./booking-adjust.dto";
 
-
-@ApiTags('Booking Adjustment Controller')
+@ApiTags('Booking Controller')
 @ApiBearerAuth()
-@Controller('')
+@Controller('bookings')
 export class BookingAdjustmentController {
     constructor(private readonly bookingAdjustmentService: BookingAdjustmentService) {}
 
@@ -28,10 +27,25 @@ export class BookingAdjustmentController {
       return this.bookingAdjustmentService.getAdjustments(paginationDto);
     }
 
-    @Patch('/adjustments/approvement/:id')
+    @Patch('/aprrovement-cancellation/:id')
     @UseGuards(JwtAuthGuard)
     @Roles(UserType.ADMIN)
-    async approveRejectAdjustment(@Param('id') id: number, @Body() body: ApproveRejectAdjustmentDto) {
-      return this.bookingAdjustmentService.approveRejectAdjustment(id, body.status);
+    async approvementCancellation(@Param('id') id: number, @Body() body: ApproveRejectCancellationDto) {
+      return this.bookingAdjustmentService.approvementCancellation(id, body.status);
+    }
+
+    @Post('/reschedule/:booking_id')
+    @UseGuards(JwtAuthGuard)
+    @Roles(UserType.CUSTOMER)
+    async rescheduleBooking(@Param('booking_id') booking_id: number, @GetCustomer() customer: Customer, @Body() body: RescheduleBookingReqDto) {
+      
+      return this.bookingAdjustmentService.rescheduleBooking(booking_id, customer.id, body);
+    }
+
+    @Patch('/approvement-reschedule/:id')
+    @UseGuards(JwtAuthGuard)
+    @Roles(UserType.ADMIN)
+    async approvementReschedule(@Param('id') id: number, @Body() body: ApprovementRescheduleDto) {
+      return this.bookingAdjustmentService.approvementReschedule(id, body);
     }
 }

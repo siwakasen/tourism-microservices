@@ -7,6 +7,7 @@ import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
 import { generateTokenAccess } from "../../common/helper/paypal-access-token.helper";
 import { convertUSDToIDR } from "../../common/helper/currency.helper";
+import { AuthRedisService } from "./redis.service";
 @Injectable()
 export class PaymentService {
 
@@ -23,6 +24,8 @@ export class PaymentService {
 
         @InjectRepository(Payment)
         private readonly paymentRepository: Repository<Payment>,
+
+        private readonly redisService: AuthRedisService,
     ) {}
 
     
@@ -59,7 +62,7 @@ export class PaymentService {
 
              const transaction = await snap.createTransaction(parameter).then(async (transaction) => {
                 await queryRunner.manager.save(Payment, {
-                    booking_id: payload.id,
+                    booking: payload,
                     payment_method: PaymentMethod.MIDTRANS,
                     gross_amount: total_price,
                     net_amount: total_price,
@@ -99,10 +102,9 @@ export class PaymentService {
 
         console.log(`Transaction notification received. Order ID: ${orderId}. Transaction status: ${transactionStatus}. Fraud status: ${fraudStatus}`);
 
-        // Sample transactionStatus handling logic
         if (transactionStatus == 'capture'){
             if (fraudStatus == 'accept'){
-                    await queryRunner.manager.update(Payment, {booking_id: orderId}, {status: PaymentStatus.SUCCESS, payment_date: new Date()});
+                    await queryRunner.manager.update(Payment, {booking:{id: orderId}}, {status: PaymentStatus.SUCCESS, payment_date: new Date()});
                     await queryRunner.manager.update(Bookings, {id: orderId}, {status: BookingStatus.WAITING_CONFIRMATION});
                     await queryRunner.commitTransaction();
                     return {
@@ -110,7 +112,7 @@ export class PaymentService {
                     }
             }
         } else if (transactionStatus == 'settlement'){
-            await queryRunner.manager.update(Payment, {booking_id: orderId}, {status: PaymentStatus.SUCCESS, payment_date: new Date()});
+            await queryRunner.manager.update(Payment, {booking: {id: orderId}}, {status: PaymentStatus.SUCCESS, payment_date: new Date()});
             await queryRunner.manager.update(Bookings, {id: orderId}, {status: BookingStatus.WAITING_CONFIRMATION});
             await queryRunner.commitTransaction();
             return {
@@ -147,8 +149,8 @@ export class PaymentService {
 
     public async createOrderPaypal(payload: Bookings, product_name: string, total_price: number, customer: Customer, queryRunner: QueryRunner) {
         try{
-            
-        const access_token = await generateTokenAccess(this.configService);
+        
+        const access_token = await this.generateAccessToken();
         const  response = await axios({
             url: `${this.configService.get('PAYPAL_BASE_URL')}/v2/checkout/orders`,
             method: 'post',
@@ -237,7 +239,7 @@ export class PaymentService {
 
     public async capturePaymentPaypal(orderId: string) {
         try {
-            const access_token = await generateTokenAccess(this.configService);
+            const access_token = await this.generateAccessToken();
             const response = await axios({
                 url: `${this.configService.get('PAYPAL_BASE_URL')}/v2/checkout/orders/${orderId}/capture`,
                 method: 'post',
@@ -260,7 +262,7 @@ export class PaymentService {
     }
 
     public async checkOrderPaypal(orderId: string) {
-        const access_token = await generateTokenAccess(this.configService);
+        const access_token = await this.generateAccessToken();
         const response = await axios({
             url: `${this.configService.get('PAYPAL_BASE_URL')}/v2/checkout/orders/${orderId}`,
             method: 'get',
@@ -271,6 +273,15 @@ export class PaymentService {
         });
         await this.updateStatusPayment(response, orderId);
         return response.data;
+    }
+
+    private async generateAccessToken() {
+        let access_token = await this.redisService.getValue('access_token');
+        if(!access_token){
+            console.log('Generating new access token');
+            access_token = await generateTokenAccess(this.configService, this.redisService);
+        }
+        return access_token;
     }
   
 }

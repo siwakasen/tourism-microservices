@@ -97,7 +97,7 @@ export class CarsService implements OnModuleInit {
         .take(limit)
         .getManyAndCount();
 
-        const totalPages = Math.ceil(total / limit);
+      const totalPages = Math.ceil(total / limit);
       const hasNextPage = page < totalPages;
 
       return {

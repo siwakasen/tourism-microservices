@@ -34,6 +34,7 @@ import { AddFormDto, PaginationDto } from "./refund.dto";
             const { page, limit, search } = paginationDto;
             const queryBuilder = this.dataSource.manager.createQueryBuilder(Refunds, 'refunds')
             .leftJoinAndSelect('refunds.booking', 'bookings')
+            .leftJoinAndSelect('bookings.booking_adjustments', 'booking_adjustments')
             .where('bookings.customer_id = :customer_id', { customer_id })
             .orderBy('refunds.created_at', 'DESC');
 
@@ -81,6 +82,7 @@ import { AddFormDto, PaginationDto } from "./refund.dto";
             const { page, limit, search } = paginationDto;
             const queryBuilder = this.dataSource.manager.createQueryBuilder(Refunds, 'refunds')
             .leftJoinAndSelect('refunds.booking', 'bookings')
+            .leftJoinAndSelect('bookings.booking_adjustments', 'booking_adjustments')
             .orderBy('refunds.created_at', 'DESC');
 
             const conditions = [];

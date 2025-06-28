@@ -14,7 +14,6 @@ export class PaymentController {
     
     @Post('notification-handler')
     async midtransCallback(@Body() body: any) {
-        console.log(body);
         const statusResponse = await this.paymentService.paymentNotificationHandler(body);
         return statusResponse;
     }

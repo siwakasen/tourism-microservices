@@ -4,6 +4,7 @@ package bookings;
 
 service BookingsGrpcService {
   rpc GetCarIdsByBookingDateRange (BookingDateRangeRequest) returns (CarIdsResponse);
+  rpc GetEmployeesByBookingDateRange (BookingDateRangeRequest) returns (EmployeeIdsResponse);
 }
 
 message BookingDateRangeRequest {
@@ -13,4 +14,8 @@ message BookingDateRangeRequest {
 
 message CarIdsResponse {
   repeated int32 car_ids = 1;
+}
+
+message EmployeeIdsResponse{
+  repeated int32 employee_ids = 1;
 }

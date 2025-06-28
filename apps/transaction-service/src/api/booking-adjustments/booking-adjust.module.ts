@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { BookingAdjustments, Bookings, Refunds } from "libs/entities";
+import { BookingAdjustments, Bookings, Payment, Refunds } from "libs/entities";
 import { BookingAdjustmentController } from "./booking-adjust.controller";
 import { BookingAdjustmentService } from "./booking-adjust.service";
 import { PassportModule } from "@nestjs/passport";
@@ -14,7 +14,7 @@ import { RefundService } from "../refunds/refund.service";
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([BookingAdjustments, Refunds, Bookings]),
+        TypeOrmModule.forFeature([BookingAdjustments, Refunds, Bookings, Payment]),
         PassportModule.register({ defaultStrategy: 'user', property: 'user' }),
         JwtModule.registerAsync({
             inject: [ConfigService],
@@ -23,20 +23,6 @@ import { RefundService } from "../refunds/refund.service";
                 signOptions: { expiresIn: config.get('JWT_EXPIRES') },
             }),
         }),
-        ClientsModule.registerAsync([
-            {
-              inject: [ConfigService],
-              name: 'CUS_AUTH_CLIENT',
-              useFactory: (config: ConfigService) => ({
-                transport: Transport.GRPC,
-                options: {
-                  package: 'authcus',
-                  protoPath: 'contract/auth-customer-api.proto',
-                  url: config.get<string>('CUS_AUTH_CLIENT'),
-                },
-              }),
-            },
-          ]),
           ClientsModule.registerAsync([
             {
                 inject: [ConfigService],
@@ -57,12 +43,12 @@ import { RefundService } from "../refunds/refund.service";
     ],
     
     controllers: [BookingAdjustmentController],
-    providers: [BookingAdjustmentService, JwtStrategy,{
+    providers: [BookingAdjustmentService, JwtStrategy, RefundService,{
         provide: AuthHelper,
-        useFactory: (jwt: JwtService, cusAuthClient: ClientGrpc, empAuthClient: ClientGrpc) => {
-          return new AuthHelper(jwt, empAuthClient, cusAuthClient);
+        useFactory: (jwt: JwtService,  empAuthClient: ClientGrpc) => {
+          return new AuthHelper(jwt, empAuthClient  );
         },
-        inject: [JwtService, 'CUS_AUTH_CLIENT', 'EMP_AUTH_CLIENT'],
-      }, RefundService],
+        inject: [JwtService, 'EMP_AUTH_CLIENT'],
+      }],
 })
 export class BookingAdjustmentModule {}

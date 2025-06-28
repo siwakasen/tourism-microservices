@@ -3,10 +3,11 @@ import {
   HttpStatus,
   Inject,
   Injectable,
+  OnModuleInit,
   UseInterceptors,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import {
   CreateEmployeeDto,
   UpdateEmployeeDto,
@@ -17,16 +18,19 @@ import {
   requestResetPasswordDto,
   ResetPasswordDto,
   PaginationEmployeeByRoleDto,
+  AvailableEmployeesDto,
 } from './employees.dto';
 import { AuthRedisService } from './redis.service';
 import { AuthHelper } from '@app/helpers/auth/user/auth.helper';
 import { MailService } from '@app/helpers/mail/mail.service';
 import { FormatErrorInterceptor } from 'libs/helpers/interceptors/exeption.interceptor';
 import { Employee, EmployeeToken, Roles } from 'libs/entities';
+import { BookingsServiceClient } from 'libs/entities/grpc-interfaces/bookings.interface';
+import { ClientGrpc } from '@nestjs/microservices';
 
 @Injectable()
 @UseInterceptors(FormatErrorInterceptor)
-export class EmployeeService {
+export class EmployeeService implements OnModuleInit {
   constructor(
     private readonly redisService: AuthRedisService,
     private readonly mailService: MailService,
@@ -40,6 +44,14 @@ export class EmployeeService {
   private readonly helper: AuthHelper;
   @InjectRepository(EmployeeToken)
   private readonly EmployeeTokenRepo: Repository<EmployeeToken>;
+
+  @Inject('BOOKINGS_CLIENT')
+  private clientBookings: ClientGrpc;
+  private bookingsGrpcService: BookingsServiceClient;
+
+  onModuleInit() {
+    this.bookingsGrpcService = this.clientBookings.getService<BookingsServiceClient>('BookingsGrpcService');
+  }
 
   public async registerOwner(body: RegisterOwnerDto): Promise<RegisterOwnerResponseDto> {
     const { email, password, name, role_id }: RegisterOwnerDto = body;
@@ -338,6 +350,55 @@ export class EmployeeService {
         totalPages: Math.ceil(total / limit),
         limit,
         hasNextPage: page < Math.ceil(total / limit),
+        hasPrevPage: page > 1,
+      }
+    };
+  }
+
+  public async getAvailableEmployees(payload: AvailableEmployeesDto) {
+    const { page = 1, limit = 10, start_date, end_date, role_id } = payload;
+    const { employee_ids } = await this.bookingsGrpcService.getEmployeesByBookingDateRange({ start_date, end_date }).toPromise();
+    const queryBuilder = this.repository.createQueryBuilder('employees')
+    .leftJoinAndSelect('employees.role', 'role')
+    .select([
+      'employees.id',
+      'employees.name', 
+      'employees.email',
+      'employees.salary',
+      'employees.last_update_password',
+      'employees.created_at',
+      'employees.updated_at',
+      'employees.deleted_at',
+      'role.id',
+      'role.role_name'
+    ])
+    .orderBy('employees.created_at', 'DESC')
+    if(employee_ids && role_id){
+      queryBuilder
+        .where('employees.id NOT IN (:...employee_ids)', { employee_ids })
+        .andWhere('role.id = :roleId', { roleId: role_id });
+    } else if(employee_ids) {
+      queryBuilder.where('employees.id NOT IN (:...employee_ids)', { employee_ids });
+    } else if(role_id) {
+      queryBuilder.where('role.id = :roleId', { roleId: role_id });
+    }
+
+    const [result, total] = await queryBuilder
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
+
+    const totalPages = Math.ceil(total / limit);
+    const hasNextPage = page < totalPages;
+
+    return {
+      data: result,
+      meta: {
+        totalItems: total,
+        currentPage: page,
+        totalPages,
+        limit,
+        hasNextPage,
         hasPrevPage: page > 1,
       }
     };

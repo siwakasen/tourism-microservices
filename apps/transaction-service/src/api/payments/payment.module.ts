@@ -10,6 +10,7 @@ import { AuthHelper } from "@app/helpers/auth/user/auth.helper";
 import { JwtModule, JwtService } from "@nestjs/jwt";
 import { JwtStrategy } from "@app/helpers/auth/user/auth.strategy";
 import { PassportModule } from "@nestjs/passport";
+import { AuthRedisService } from "./redis.service";
 
 @Module({
     imports: [
@@ -89,7 +90,7 @@ import { PassportModule } from "@nestjs/passport";
         ]),
     ],
     controllers: [PaymentController],
-    providers: [PaymentService, BookingService,  JwtStrategy,{
+    providers: [PaymentService, AuthRedisService, BookingService,  JwtStrategy,{
         provide: AuthHelper,
         useFactory: (jwt: JwtService, cusAuthClient: ClientGrpc, empAuthClient: ClientGrpc  ) => {
           return new AuthHelper(jwt, empAuthClient, cusAuthClient);

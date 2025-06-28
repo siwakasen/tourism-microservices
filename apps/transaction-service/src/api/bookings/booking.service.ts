@@ -1,9 +1,9 @@
 import { HttpException, HttpStatus, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { BookingReqDto, BookingResDto, PaginationDto } from './booking.dto';
 import { RegisterCustomerDto } from './booking.dto';
-import { Bookings, BookingStatus, Customer, CustomerServiceClient, EmployeeServiceClient,   Payment, PaymentMethod } from 'libs/entities';
+import { Bookings, BookingStatus, Customer, CustomerServiceClient, EmployeeServiceClient,   Payment, PaymentMethod, PaymentStatus } from 'libs/entities';
 import { ClientGrpc } from '@nestjs/microservices';
-import { Between, DataSource, In, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
+import { Between, DataSource, In, LessThanOrEqual, MoreThanOrEqual, QueryRunner } from 'typeorm';
 import { CarServiceClient, TravelPackageServiceClient } from 'libs/entities';
 import { PaymentService } from '../payments/payment.service';
 
@@ -93,6 +93,52 @@ export class BookingService implements OnModuleInit {
       throw new HttpException(error.details, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+  
+  private async checkCarConflict(queryRunner : QueryRunner, car_id: number, new_start_date: Date, new_end_date: Date) {
+    if (!car_id) return; 
+    const startDate = new Date(new_start_date);
+    const endDate = new Date(new_end_date);
+    startDate.setHours(0, 0, 0, 0);
+    endDate.setHours(23, 59, 59, 999);
+    // Check for CONFIRMED or ONGOING
+    const car_conflict = await queryRunner.manager.findOne(Bookings, {
+      where: [
+        {
+          car_id,
+          start_date: LessThanOrEqual(endDate),
+          end_date: MoreThanOrEqual(startDate),
+          status: In([BookingStatus.CONFIRMED, BookingStatus.ONGOING]),
+        },
+      ],
+      select: ['id', 'status', 'car_id', 'package_id'],
+    });
+    if (car_conflict) {
+      throw new HttpException('Car is already assigned to another booking', HttpStatus.BAD_REQUEST);
+    }
+    // Check for WAITING_CONFIRMATION with successful payment
+    const waiting_confirmed = await queryRunner.manager.findOne(Bookings, {
+      where: [
+        {
+          car_id,
+          start_date: LessThanOrEqual(endDate),
+          end_date: MoreThanOrEqual(startDate),
+          status: BookingStatus.WAITING_CONFIRMATION,
+        },
+      ],
+      select: ['id', 'status', 'car_id', 'package_id'],
+    });
+    if (waiting_confirmed) {
+      const payment = await queryRunner.manager.findOne(Payment, {
+        where: {
+          booking: { id: waiting_confirmed.id },
+          status: PaymentStatus.SUCCESS,
+        },
+      });
+      if (payment) {
+        throw new HttpException('Car is already assigned to another booking (waiting confirmation with successful payment)', HttpStatus.BAD_REQUEST);
+      }
+    }
+  }
 
   public async createBooking(payload: BookingReqDto, customer: Customer, isRegister: boolean) : Promise<{
     success: boolean,
@@ -150,6 +196,7 @@ export class BookingService implements OnModuleInit {
         RENT CAR
 
         */
+        await this.checkCarConflict(queryRunner, payload.car_id, payload.start_date, payload.end_date);
         const carData = await this.getCarGrpc(payload);
         if(!carData){
           throw new HttpException('Car not found', HttpStatus.NOT_FOUND);
@@ -167,7 +214,8 @@ export class BookingService implements OnModuleInit {
         if(payload.with_driver){
           driverPrice = 6;
         }
-        total_price = pricePerDay * days + driverPrice * days;
+        total_price = (pricePerDay + driverPrice) * Number(days.toFixed(0));
+        
 
         booking = await queryRunner.manager.save(Bookings, {
           car_id: payload.car_id,
@@ -181,9 +229,9 @@ export class BookingService implements OnModuleInit {
           pickup_time: payload.pickup_time,
           with_driver: payload.with_driver || false,
         });
+        
       }
       
-      console.log('booking', booking);
       if(payload.payment_method === PaymentMethod.MIDTRANS){
         const {redirect_url : midtrans_redirect_url} = await this.paymentService.createTransactionMidtrans(booking, product_name, total_price, customer, queryRunner);
         redirect_url = midtrans_redirect_url;
@@ -205,7 +253,7 @@ export class BookingService implements OnModuleInit {
       if(isRegister){
         await this.deleteCustomerGrpc(customer.id);
       }
-      throw new HttpException(error.message, error.status);
+      throw new HttpException(error.message, error.status || HttpStatus.INTERNAL_SERVER_ERROR);
     } finally {
       await queryRunner.release();
     }
@@ -245,7 +293,6 @@ export class BookingService implements OnModuleInit {
         ],
         select: ['id','status','car_id','package_id']
       });
-      console.log('conflict', conflict);
       if(conflict){
         throw new HttpException('Employee is already assigned to another booking', HttpStatus.BAD_REQUEST);
       }
@@ -275,7 +322,8 @@ export class BookingService implements OnModuleInit {
         .leftJoinAndSelect('bookings.payments', 'payments')
         .where('bookings.customer_id = :customer_id', {customer_id})
         .orderBy('bookings.created_at', 'DESC')
-        .addOrderBy('payments.created_at', 'DESC');
+        .addOrderBy('payments.created_at', 'DESC')
+        
         
       const [result, total] = await queryBuilder.skip((page - 1) * limit).take(limit).getManyAndCount();
       

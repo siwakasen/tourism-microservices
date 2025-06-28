@@ -7,7 +7,7 @@ import { BookingModule } from './api/bookings/booking.module';
 import { LoggerMiddleware } from 'libs/helpers/middleware/logger.midleware';
 import { PaymentModule } from './api/payments/payment.module';
 import { BookingGrpcModule } from './api/bookings/grpc/booking-grpc.module';
-import { BookingAdjustmentModule } from './api/booking-adjustments/bookin-adjust.module';
+import { BookingAdjustmentModule } from './api/booking-adjustments/booking-adjust.module';
 import { RefundModule } from './api/refunds/refund.module';
 
 const envFilePath: string = getEnvPath(`${__dirname}/common/helper`);

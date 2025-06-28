@@ -84,7 +84,7 @@ export class AuthHelper implements OnModuleInit {
       {
         algorithm: 'HS256',
         secret: process.env.JWT_KEY,
-        expiresIn: '1d',
+        expiresIn: '4h',
       },
     );
   };
@@ -103,7 +103,7 @@ export class AuthHelper implements OnModuleInit {
     },{
       algorithm: 'HS256',
       secret: process.env.JWT_KEY,
-      expiresIn: '1d',
+      expiresIn: '12h',
     });
   }
 

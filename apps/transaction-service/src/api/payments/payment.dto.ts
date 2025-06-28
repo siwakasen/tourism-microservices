@@ -6,7 +6,7 @@ import { Type } from 'class-transformer';
 export class CapturePaymentPaypalDto {
     @ApiProperty({
         description: 'The order id of the payment',
-        example: '121',
+        example: '5F221903UM402261S',
     })
     @IsString()
     public orderId: string;

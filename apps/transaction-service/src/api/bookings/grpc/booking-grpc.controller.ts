@@ -10,8 +10,11 @@ export class BookingGrpcController {
 
     @GrpcMethod('BookingsGrpcService', 'GetCarIdsByBookingDateRange')
     async getCarIdsByBookingDateRange(data: { start_date: string, end_date: string }) {
-        console.log('data', data);
-        const carIds = await this.bookingGrpcService.getCarIdsByBookingDateRange(data.start_date, data.end_date);
-        return carIds;
+        return await this.bookingGrpcService.getCarIdsByBookingDateRange(data.start_date, data.end_date);
+    }
+
+    @GrpcMethod('BookingsGrpcService', 'GetEmployeesByBookingDateRange')
+    async getEmployeesByBookingDateRange(data: { start_date: string, end_date: string }) {
+        return await this.bookingGrpcService.getEmployeesByBookingDateRange(data.start_date, data.end_date);
     }
 }

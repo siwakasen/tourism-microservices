@@ -5,11 +5,11 @@ import { IsString } from 'class-validator';
 import { Employee } from 'libs/entities';
 
 export class LoginReqDto {
-  @ApiProperty({ default: 'owner@example.com' })
+  @ApiProperty({ default: 'admin@example.com' })
   @IsEmail()
   email: string;
 
-  @ApiProperty({ default: 'Password123!' })
+  @ApiProperty({ default: 'Password12!@' })
   @IsString()
   password: string;
 }
@@ -179,4 +179,20 @@ export class UpdateEmployeeDto {
   @IsOptional()
   @Type(() => Number)
   public readonly salary: number;
+}
+
+export class AvailableEmployeesDto extends PaginationEmployeeDto {
+  @ApiProperty({ default: new Date(new Date().setDate(new Date().getDate() + 1)).toISOString() })
+  @IsString()
+  public readonly start_date: string;
+
+  @ApiProperty({ default: new Date(new Date().setDate(new Date().getDate() + 2)).toISOString() })
+  @IsString()
+  public readonly end_date: string;
+
+  @ApiProperty({ default: 3})
+  @IsNumber()
+  @Type(() => Number)
+  public readonly role_id: number;
+  
 }
