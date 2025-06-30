@@ -14,6 +14,7 @@ async function bootstrap() {
   app.set('trust proxy', 1);
   app.enableCors({
     origin: [
+      'http://localhost:3000',
       'http://localhost:5173',
       'https://client-web-app.vulpbox.com',
       'https://admin-web-app.vulpbox.com',

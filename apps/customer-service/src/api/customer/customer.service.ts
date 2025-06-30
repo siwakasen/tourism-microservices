@@ -58,7 +58,6 @@ export class CustomerService implements OnModuleInit {
       await this.repository.save(customer);
 
       return {
-        success: true,
         token: await this.helper.generateToken(customer),
         message: 'Register success',
       };
@@ -88,7 +87,6 @@ export class CustomerService implements OnModuleInit {
 
     delete user.password;
     return {
-      success: true,
       data: { 
         message: 'Login success',
         token: await this.helper.generateToken(user),
@@ -112,7 +110,6 @@ export class CustomerService implements OnModuleInit {
 
     delete user.password;
     return {
-      success: true,
       data: user,
     };
     } catch (error) {
@@ -139,7 +136,6 @@ export class CustomerService implements OnModuleInit {
         created_at: currentDate,
       });
       return {
-        success: true,
         message: 'Link to reset password has been sent to your email',
       };
     } catch (error) {
@@ -181,7 +177,6 @@ export class CustomerService implements OnModuleInit {
       await this.CustomerTokenRepo.save(checkToken);
 
       return {
-        success: true,
         message: 'Password changed successfully',
       };
     } catch (error) {
@@ -219,7 +214,6 @@ export class CustomerService implements OnModuleInit {
       await this.repository.save(user);
       await queryRunner.commitTransaction();
       return {
-        success: true,
         message: 'Driver license and identity card uploaded successfully',
       };
     } catch (error) {
@@ -246,7 +240,6 @@ export class CustomerService implements OnModuleInit {
         countryOrigin: body.country_origin,
       }).toPromise();
       return {
-        success: true,
         data: {
           message: 'Register success',
           token: jwtToken,

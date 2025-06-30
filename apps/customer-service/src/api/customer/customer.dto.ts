@@ -48,10 +48,6 @@ export class RegisterCustomerResDto {
     token: string;
     id: number;
   };
-
-  @ApiProperty({ default: true })
-  @IsBoolean()
-  public readonly success: boolean;
 }
 
 export class UploadIdentityFileDto {
@@ -84,10 +80,6 @@ export class LoginReqDto {
         message: string;
         token: string;
       };  
-
-      @ApiProperty({ default: true })
-      @IsBoolean()
-      public readonly success: boolean;
   }
 
 export class requestResetPasswordDto {

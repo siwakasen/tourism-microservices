@@ -66,7 +66,6 @@ export class BookingController {
 
       const result = await this.bookingService.createBooking(body, customer, true);
       return {
-        success: true,
         data: {
           message: 'Booking success',
           redirect_url: result.data.redirect_url,

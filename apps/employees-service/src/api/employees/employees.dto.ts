@@ -24,16 +24,6 @@ export class DataEmployeeDto {
   token: string;
 }
 
-export class LoginResponseDto {
-  @ApiProperty()
-  @IsString()
-  data: DataEmployeeDto;
-
-  @ApiProperty()
-  @IsString()
-  success: boolean;
-}
-
 export class TokenDto {
   @ApiProperty()
   @IsString()
@@ -75,10 +65,6 @@ export class RegisterOwnerDto {
 export class RegisterOwnerResponseDto {
   @ApiProperty()
   @IsString()
-  public readonly success: boolean;
-
-  @ApiProperty()
-  @IsString()
   public readonly message: string;
 }
 
@@ -90,12 +76,6 @@ export class requestResetPasswordDto {
 }
 
 export class EmailResponseDto {
-  @ApiProperty({
-    example: true,
-    description: 'Indicates whether the email was sent successfully.',
-  })
-  @IsString()
-  public readonly success: boolean;
 
   @ApiProperty({
     example: 'Email sent successfully.',

@@ -83,7 +83,6 @@ export class PaymentService {
     }
 
     public async paymentNotificationHandler(notificationJson: any) : Promise<{
-        success: boolean,
     }> {
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();

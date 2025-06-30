@@ -17,6 +17,8 @@ async function bootstrap() {
       'http://localhost:3000',
       'https://client-web-app.vulpbox.com',
       'https://admin-web-app.vulpbox.com',
+      'http://localhost:5173',
+      'http://localhost:3000',
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

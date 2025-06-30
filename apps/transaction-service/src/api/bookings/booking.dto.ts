@@ -168,9 +168,6 @@ export class BookingRegisterResDto {
     redirect_url: string;
   };  
 
-  @ApiProperty({ default: true })
-  @IsBoolean()
-  public readonly success: boolean;
 }
 
 export class BookingWithoutRegisterResDto {
@@ -182,9 +179,6 @@ export class BookingWithoutRegisterResDto {
     redirect_url: string;
   };
 
-  @ApiProperty({ default: true })
-  @IsBoolean()
-  public readonly success: boolean;
 }
 export class PaginationDto {
   @ApiProperty({ default: 1 })

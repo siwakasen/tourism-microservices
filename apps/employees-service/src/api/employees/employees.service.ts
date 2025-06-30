@@ -75,7 +75,6 @@ export class EmployeeService implements OnModuleInit {
     await this.repository.save(owner);
 
     return{
-      success: true,
       message: 'Owner registered successfully',
     }
   }
@@ -109,7 +108,6 @@ export class EmployeeService implements OnModuleInit {
 
     // delete user.password;
     return {
-      success: true,
       data: { message: 'Login success', token: await this.helper.generateToken(user) },
     };
   };
@@ -143,7 +141,6 @@ export class EmployeeService implements OnModuleInit {
     });
 
     return {
-      success: true,
       message: 'Link to reset password has been sent to your email',
     };
   }
@@ -186,7 +183,6 @@ export class EmployeeService implements OnModuleInit {
       await this.EmployeeTokenRepo.save(checkToken);
 
       return {
-        success: true,
         message: 'Success change password',
       };
     } catch (e) {
@@ -436,7 +432,6 @@ export class EmployeeService implements OnModuleInit {
       await queryRunner.commitTransaction();
 
       return {
-        success: true,
         message: 'Successfully create employee',
       };
     } catch (error) {
@@ -481,7 +476,6 @@ export class EmployeeService implements OnModuleInit {
       await queryRunner.manager.save(employee);
       await queryRunner.commitTransaction();
       return {
-        success: true,
         message: 'Successfully update employee',
       };
     } catch (error) {
@@ -516,7 +510,6 @@ export class EmployeeService implements OnModuleInit {
       await queryRunner.manager.softDelete(Employee, id);
       await queryRunner.commitTransaction();
       return {
-        success: true,
         message: 'Successfully delete employee',
       };
     } catch (error) {

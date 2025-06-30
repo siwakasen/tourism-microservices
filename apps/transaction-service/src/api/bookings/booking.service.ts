@@ -143,7 +143,6 @@ export class BookingService implements OnModuleInit {
   }
 
   public async createBooking(payload: BookingReqDto, customer: Customer, isRegister: boolean) : Promise<{
-    success: boolean,
     data:{
       message: string,
       redirect_url: string
@@ -244,7 +243,6 @@ export class BookingService implements OnModuleInit {
       console.log('redirect_url', redirect_url);
       await queryRunner.commitTransaction();
       return {
-        success: true,
         data: {
           message: 'Booking success',
           redirect_url: redirect_url,
@@ -303,7 +301,6 @@ export class BookingService implements OnModuleInit {
       const updatedBooking = await queryRunner.manager.findOne(Bookings, { where: { id: booking_id } });
       await queryRunner.commitTransaction();
       return {
-        success: true,
         data: updatedBooking,
         message: 'Employee assigned to booking successfully',
       };
@@ -407,7 +404,6 @@ export class BookingService implements OnModuleInit {
       await queryRunner.manager.update(Bookings, { id: booking_id }, { status: booking_status });
       await queryRunner.commitTransaction();
       return {
-        success: true,
         data: {
           ...booking,
           status: booking_status,
@@ -428,14 +424,15 @@ export class BookingService implements OnModuleInit {
     timeZone: 'Asia/Jakarta',
   })
   async handleUpdateConfirmedBookingToOngoing() {
-    this.logger.log(`Called at ${new Date().toISOString()}`);
+    this.logger.log(`Called at ${new Date(Date.now()+24*60*60*1000).toLocaleString('en-US', { timeZone: 'Asia/Jakarta' })}`);
+    const jakartaDate = new Date(Date.now()+24*60*60*1000);
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
       const bookings = await queryRunner.manager.find(Bookings, {
         where: { status: BookingStatus.CONFIRMED, 
-          start_date: LessThanOrEqual(new Date()),
+          start_date: LessThanOrEqual(jakartaDate),
          }, 
       });
       this.logger.log(`Found ${bookings.length} bookings to set to ongoing`);

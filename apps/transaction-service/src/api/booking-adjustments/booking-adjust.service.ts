@@ -48,7 +48,6 @@ export class BookingAdjustmentService implements OnModuleInit {
               // ada case untuk report-service : status cancelled dengan payment PENDING tidak dihitung
               await this.dataSource.manager.update(Bookings, { id: booking_id }, { status: BookingStatus.CANCELLED });
               return {
-                success: true,
                 message: 'Booking cancellation request created successfully',
               };
             }
