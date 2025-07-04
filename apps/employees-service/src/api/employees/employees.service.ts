@@ -3,6 +3,7 @@ import {
   HttpStatus,
   Inject,
   Injectable,
+  Logger,
   OnModuleInit,
   UseInterceptors,
 } from '@nestjs/common';
@@ -81,6 +82,7 @@ export class EmployeeService implements OnModuleInit {
 
   public login = async (body: LoginReqDto) => {
     const { email, password }: LoginReqDto = body;
+    Logger.log(`Login request received for email: ${email}, password: ${password}`);
     const user = await this.repository.findOne({
       where: {
         email: email,
@@ -311,46 +313,6 @@ export class EmployeeService implements OnModuleInit {
     }
   }
 
-  public async getEmployeesByRole(payload: PaginationEmployeeByRoleDto) {
-    const { page = 1, limit = 10, role_id } = payload;
-    if(role_id == 1) {
-      throw new HttpException('No employees found', HttpStatus.NOT_FOUND);
-    }
-    const queryBuilder = this.repository.createQueryBuilder('employees')
-    .leftJoinAndSelect('employees.role', 'role')
-    .select([
-      'employees.id',
-      'employees.name',
-      'employees.email',
-      'employees.salary',
-      'employees.last_update_password',
-      'employees.created_at',
-      'employees.updated_at',
-      'employees.deleted_at',
-      'role.id',
-      'role.role_name'
-    ])
-    .orderBy('employees.created_at', 'DESC')
-    .where('role.id = :roleId', { roleId: role_id });
-    
-    const [result, total] = await queryBuilder
-      .skip((page - 1) * limit)
-      .take(limit)
-      .getManyAndCount();
-    
-    return {
-      data: result,
-      meta: {
-        totalItems: total,
-        currentPage: page,
-        totalPages: Math.ceil(total / limit),
-        limit,
-        hasNextPage: page < Math.ceil(total / limit),
-        hasPrevPage: page > 1,
-      }
-    };
-  }
-
   public async getAvailableEmployees(payload: AvailableEmployeesDto) {
     const { page = 1, limit = 10, start_date, end_date, role_id } = payload;
     const { employee_ids } = await this.bookingsGrpcService.getEmployeesByBookingDateRange({ start_date, end_date }).toPromise();
@@ -525,5 +487,13 @@ export class EmployeeService implements OnModuleInit {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  public async verifyToken(token: string) {
+    const tokenData = await this.helper.verifyResetPwToken(token);
+    if (!tokenData) {
+      throw new HttpException('Token Invalid', HttpStatus.BAD_REQUEST);
+    }
+    return tokenData;
   }
 }

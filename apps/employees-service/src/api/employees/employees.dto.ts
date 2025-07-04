@@ -14,6 +14,14 @@ export class LoginReqDto {
   password: string;
 }
 
+export class LoginResponseDto {
+  @ApiProperty()
+  public readonly data: {
+    message: string;
+    token: string;
+  }
+}
+
 export class DataEmployeeDto {
   @ApiProperty()
   @IsString()

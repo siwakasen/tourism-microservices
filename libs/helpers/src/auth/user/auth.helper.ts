@@ -89,7 +89,7 @@ export class AuthHelper implements OnModuleInit {
     );
   };
 
-  public verifyResetPwToken = (token: string) => {
+  public async verifyResetPwToken(token: string) {
     return this.jwt.verify<{ email: string; iat: number }>(token);
   };
 

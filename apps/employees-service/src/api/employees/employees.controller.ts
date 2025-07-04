@@ -85,13 +85,6 @@ export class EmployeeController {
     return await this.service.getAllEmployees(query);
   }
 
-  @Get('by-role')
-  @Roles(UserType.ADMIN)
-  @UseGuards(JwtAuthGuard)
-  public async getEmployeesByRole(@Query() query: PaginationEmployeeByRoleDto) {
-    return await this.service.getEmployeesByRole(query);
-  }
-
   @Get('available')
   @Roles(UserType.OWNER, UserType.ADMIN)
   @UseGuards(JwtAuthGuard)
@@ -130,5 +123,10 @@ export class EmployeeController {
   @UseGuards(JwtAuthGuard)
   public async deleteEmployee(@Param('id') id: number) {
     return await this.service.deleteEmployee(id);
+  }
+
+  @Post('verify-token')
+  public async verifyToken(@Body() body: TokenDto) {
+    return await this.service.verifyToken(body.token);
   }
 }
