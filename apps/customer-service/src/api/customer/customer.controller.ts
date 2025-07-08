@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Query, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Query, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { CustomerService } from './customer.service';
 import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiConsumes, ApiResponse } from '@nestjs/swagger';
 import {  LoginReqDto, LoginResDto, RegisterCustomerDto, requestResetPasswordDto, ResetPasswordDto, UploadIdentityFileDto } from './customer.dto';
@@ -69,13 +69,14 @@ export class CustomerController {
   }
 
   @Post('login')
+  @HttpCode(200)
   @ApiResponse({ status: 200, description: 'Customer logged in successfully' })
   @ApiBadRequestResponse({ description: 'Customer not found' })
   public async login(@Body() body: LoginReqDto) : Promise <LoginResDto> {
     return this.customerService.login(body);
   }
 
-  @Get('my-data')
+  @Get('me')
   @ApiResponse({ status: 200, description: 'Customer data retrieved successfully' })
   @ApiBadRequestResponse({ description: 'Customer not found' })
   @UseGuards(JwtAuthGuard)

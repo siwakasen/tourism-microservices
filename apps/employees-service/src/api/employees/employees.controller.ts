@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   HttpException,
   HttpStatus,
   Param,
@@ -10,7 +11,6 @@ import {
   Post,
   Put,
   Query,
-  Request,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -29,7 +29,6 @@ import {
   requestResetPasswordDto,
   ResetPasswordDto,
   TokenDto,
-  PaginationEmployeeByRoleDto,
   AvailableEmployeesDto,
 } from './employees.dto';
 import { EmployeeService } from './employees.service';
@@ -64,6 +63,7 @@ export class EmployeeController {
     type: LoginResponseDto,
   })
   @Post('login')
+  @HttpCode(200)
   private async login(@Body() body: LoginReqDto) {
     const response = await this.service.login(body);
     return response;
@@ -130,3 +130,4 @@ export class EmployeeController {
     return await this.service.verifyToken(body.token);
   }
 }
+

@@ -11,7 +11,7 @@ const envFilePath: string = getEnvPath(`${__dirname}/common/helper`);
 console.log('envFilePath:', getEnvPath(`${__dirname}`));
 
 const CustomersLogger = new LoggerMiddleware({
-  fileName: 'customers.log',
+  directory: 'dist/apps/customer-service/logs',
 });
 
 @Module({

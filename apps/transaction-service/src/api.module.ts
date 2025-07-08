@@ -15,7 +15,7 @@ const envFilePath: string = getEnvPath(`${__dirname}/common/helper`);
 console.log('envFilePath:', getEnvPath(`${__dirname}`));
 
 const TransactionLogger = new LoggerMiddleware({
-  fileName: 'transaction.log',
+  directory: 'dist/apps/transaction-service/logs',
 });
 
 @Module({

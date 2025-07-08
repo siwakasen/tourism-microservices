@@ -12,7 +12,7 @@ const envFilePath: string = getEnvPath(`${__dirname}/common/helper`);
 console.log('envFilePath:', getEnvPath(`${__dirname}`));
 
 const ExpensesLogger = new LoggerMiddleware({
-  fileName: 'expenses.log',
+  directory: 'dist/apps/expenses-service/logs',
 });
 
 @Module({

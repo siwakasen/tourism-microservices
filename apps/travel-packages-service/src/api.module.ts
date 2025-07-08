@@ -13,7 +13,7 @@ const envFilePath: string = getEnvPath(`${__dirname}/common/helper`);
 console.log('envFilePath:', getEnvPath(`${__dirname}`));
 
 const TravelPackagesLogger = new LoggerMiddleware({
-  fileName: 'travel-packages.log',
+  directory: 'dist/apps/travel-packages-service/logs',
 });
 
 @Module({

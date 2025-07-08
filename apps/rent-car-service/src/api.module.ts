@@ -13,7 +13,7 @@ const envFilePath: string = getEnvPath(`${__dirname}/common/helper`);
 console.log('envFilePath:', getEnvPath(`${__dirname}`));
 
 const CarLogger = new LoggerMiddleware({
-  fileName: 'cars.log',
+  directory: 'dist/apps/rent-car-service/logs',
 });
 
 @Module({
