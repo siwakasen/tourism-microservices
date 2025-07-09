@@ -1,10 +1,26 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { Type } from "class-transformer";
-import {  IsBoolean, IsDate, IsEmail, IsEnum, IsIn, IsJSON, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
-import { AdjustmentStatus, Bookings, BookingStatus, Payment, PaymentMethod } from "libs/entities";
+import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import {
+  IsBoolean,
+  IsDate,
+  IsEmail,
+  IsEnum,
+  IsIn,
+  IsJSON,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import {
+  AdjustmentStatus,
+  Bookings,
+  BookingStatus,
+  Payment,
+  PaymentMethod,
+} from 'libs/entities';
 
-
-export class BookingReqDto{
+export class BookingReqDto {
   @ApiProperty({
     description: 'The package id of the booking',
     example: 6,
@@ -28,7 +44,6 @@ export class BookingReqDto{
   @IsBoolean()
   @IsOptional()
   public readonly with_driver: boolean;
-
 
   @ApiProperty({
     description: 'The number of persons of the booking',
@@ -78,7 +93,14 @@ export class BookingReqDto{
   @IsString()
   @IsOptional()
   public readonly pickup_time: string;
-  
+
+  @ApiProperty({
+    description: 'The additional notes of the booking',
+    example: 'Additional notes',
+  })
+  @IsString()
+  @IsOptional()
+  public readonly additional_notes: string;
 }
 
 export class RegisterCustomerDto {
@@ -166,8 +188,7 @@ export class BookingRegisterResDto {
     message: string;
     token: string;
     redirect_url: string;
-  };  
-
+  };
 }
 
 export class BookingWithoutRegisterResDto {
@@ -178,7 +199,6 @@ export class BookingWithoutRegisterResDto {
     token: string;
     redirect_url: string;
   };
-
 }
 export class PaginationDto {
   @ApiProperty({ default: 1 })
@@ -191,21 +211,39 @@ export class PaginationDto {
   @Type(() => Number)
   public readonly limit: number;
 
-  
-
   @ApiProperty({ default: '', required: false })
   @IsString()
   @IsOptional()
   public readonly search: string;
-
 }
 
 export class BookingResDto {
-  @ApiProperty({ default: { data: [], meta: { totalItems: 0, currentPage: 1, totalPages: 1, limit: 10, hasNextPage: false, hasPrevPage: false } } })
+  @ApiProperty({
+    default: {
+      data: [],
+      meta: {
+        totalItems: 0,
+        currentPage: 1,
+        totalPages: 1,
+        limit: 10,
+        hasNextPage: false,
+        hasPrevPage: false,
+      },
+    },
+  })
   @IsJSON()
   public readonly data: Bookings[];
 
-  @ApiProperty({ default: { totalItems: 0, currentPage: 1, totalPages: 1, limit: 10, hasNextPage: false, hasPrevPage: false } })
+  @ApiProperty({
+    default: {
+      totalItems: 0,
+      currentPage: 1,
+      totalPages: 1,
+      limit: 10,
+      hasNextPage: false,
+      hasPrevPage: false,
+    },
+  })
   @IsJSON()
   public readonly meta: {
     totalItems: number;
@@ -241,13 +279,13 @@ export class FinishBookingDto {
   @IsNumber()
   public readonly booking_id: number;
 
-  @ApiProperty({ 
+  @ApiProperty({
     enum: [BookingStatus.COMPLETED, BookingStatus.NO_SHOW],
     description: 'Status can only be COMPLETED or NO_SHOW',
-    example: BookingStatus.COMPLETED
+    example: BookingStatus.COMPLETED,
   })
   @IsIn([BookingStatus.COMPLETED, BookingStatus.NO_SHOW], {
-    message: 'Status must be either COMPLETED or NO_SHOW'
+    message: 'Status must be either COMPLETED or NO_SHOW',
   })
-  public readonly status: BookingStatus.COMPLETED | BookingStatus.NO_SHOW; 
+  public readonly status: BookingStatus.COMPLETED | BookingStatus.NO_SHOW;
 }

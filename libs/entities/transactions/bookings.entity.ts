@@ -1,7 +1,16 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany, JoinColumn } from "typeorm";
-import { Payment } from "./payment.entity";
-import { BookingAdjustments } from "./booking_adjustments.entity";
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
+import { Payment } from './payment.entity';
+import { BookingAdjustments } from './booking_adjustments.entity';
 
 export enum BookingStatus {
   WAITING_PAYMENT = 'WAITING_PAYMENT',
@@ -11,7 +20,7 @@ export enum BookingStatus {
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
   NO_SHOW = 'NO_SHOW',
-  PAYMENT_FAILED = 'PAYMENT_FAILED'
+  PAYMENT_FAILED = 'PAYMENT_FAILED',
 }
 
 @Entity('bookings')
@@ -35,7 +44,7 @@ class Bookings extends BaseEntity {
   @ApiProperty()
   @Column({ type: 'int', nullable: true })
   public employee_id: number;
- 
+
   @ApiProperty()
   @Column({ type: 'boolean', default: false })
   public with_driver: boolean;
@@ -60,7 +69,7 @@ class Bookings extends BaseEntity {
   @Column({
     type: 'enum',
     enum: BookingStatus,
-    default: BookingStatus.WAITING_PAYMENT
+    default: BookingStatus.WAITING_PAYMENT,
   })
   public status: BookingStatus;
 
@@ -73,6 +82,10 @@ class Bookings extends BaseEntity {
   public pickup_time: string;
 
   @ApiProperty()
+  @Column({ type: 'varchar', nullable: true })
+  public additional_notes: string;
+
+  @ApiProperty()
   @CreateDateColumn()
   public created_at: Date;
 
@@ -83,9 +96,11 @@ class Bookings extends BaseEntity {
   @OneToMany(() => Payment, (payment) => payment.booking)
   public payments: Payment[];
 
-  @OneToMany(() => BookingAdjustments, (booking_adjustment) => booking_adjustment.booking)
+  @OneToMany(
+    () => BookingAdjustments,
+    (booking_adjustment) => booking_adjustment.booking,
+  )
   public booking_adjustments: BookingAdjustments[];
-
 }
 
 export { Bookings };
