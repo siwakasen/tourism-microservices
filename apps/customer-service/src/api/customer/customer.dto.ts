@@ -1,5 +1,15 @@
-import { ApiProperty } from "@nestjs/swagger";
-import {  IsArray, IsBoolean, IsEmail, IsJSON, IsNumber, IsOptional, IsString, IsStrongPassword, MinLength } from "class-validator";
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  IsArray,
+  IsBoolean,
+  IsEmail,
+  IsJSON,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsStrongPassword,
+  MinLength,
+} from 'class-validator';
 
 export class RegisterCustomerDto {
   @ApiProperty({
@@ -12,6 +22,12 @@ export class RegisterCustomerDto {
   @ApiProperty({
     description: 'The password of the customer',
     example: 'Password12!@',
+  })
+  @MinLength(8)
+  @IsStrongPassword({
+    minLength: 8,
+    minNumbers: 1,
+    minSymbols: 1,
   })
   @IsString()
   public readonly password: string;
@@ -41,7 +57,9 @@ export class RegisterCustomerDto {
 }
 
 export class RegisterCustomerResDto {
-  @ApiProperty({ default: { message: 'Register success', token: 'token', id: 1 } })
+  @ApiProperty({
+    default: { message: 'Register success', token: 'token', id: 1 },
+  })
   @IsJSON()
   public readonly data: {
     message: string;
@@ -64,23 +82,23 @@ export class UploadIdentityFileDto {
 }
 
 export class LoginReqDto {
-    @ApiProperty({ default: 'example@gmail.com' })
-    @IsEmail()
-    public readonly email: string;
-  
-    @ApiProperty({ default: 'Password12!@' })
-    @IsString()
-    public readonly password: string;
-  }
+  @ApiProperty({ default: 'example@gmail.com' })
+  @IsEmail()
+  public readonly email: string;
 
-  export class LoginResDto {
-      @ApiProperty({ default: { message: 'Login success', token: 'token' } })
-      @IsJSON()
-      public readonly data: {
-        message: string;
-        token: string;
-      };  
-  }
+  @ApiProperty({ default: 'Password12!@' })
+  @IsString()
+  public readonly password: string;
+}
+
+export class LoginResDto {
+  @ApiProperty({ default: { message: 'Login success', token: 'token' } })
+  @IsJSON()
+  public readonly data: {
+    message: string;
+    token: string;
+  };
+}
 
 export class requestResetPasswordDto {
   @ApiProperty({ default: 'example@gmail.com' })
@@ -99,4 +117,3 @@ export class ResetPasswordDto {
   @IsStrongPassword()
   public readonly password: string;
 }
-

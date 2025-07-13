@@ -39,7 +39,6 @@ export class LoggerMiddleware implements NestMiddleware {
       },
       response: {
         statusCode: res.statusCode,
-        headers: res.getHeaders(),
       },
       timestamp,
     });
