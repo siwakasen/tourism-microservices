@@ -12,13 +12,13 @@ async function bootstrap() {
   const port: number = config.get<number>('PORT');
   const gRPCPort: number = config.get<number>('TRANSACTION_GRPC_PORT');
   app.set('trust proxy', 1);
-  app.enableCors(
-    {
+  app.enableCors({
     origin: [
       'http://localhost:3005',
       'https://client-web-app.vulpbox.com',
       'https://admin-web-app.vulpbox.com',
-      'https://vulpies.tail66dfd8.ts.net',  
+      'https://vulpies.tail66dfd8.ts.net',
+      'https://siwakasen.mole-mintaka.ts.net',
       'api.sandbox.midtrans.com',
       'app.sandbox.midtrans.com',
       'api.sandbox.veritrans.co.id',
@@ -28,10 +28,9 @@ async function bootstrap() {
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization','application/json'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'application/json'],
     maxAge: 600,
-  }
-);
+  });
 
   const appGRPC = await NestFactory.createMicroservice<MicroserviceOptions>(
     ApiModule,

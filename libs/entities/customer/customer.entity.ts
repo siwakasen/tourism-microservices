@@ -1,9 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
-import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
-export @Entity('customers')
- class Customer extends BaseEntity {
+export
+@Entity('customers')
+class Customer extends BaseEntity {
   @ApiProperty()
   @PrimaryGeneratedColumn()
   public id!: number;
@@ -23,6 +32,10 @@ export @Entity('customers')
   @ApiProperty()
   @Column({ type: 'varchar', nullable: false, unique: true })
   public email: string;
+
+  @ApiProperty()
+  @Column({ type: 'boolean', nullable: false, default: false })
+  public is_email_verified: boolean;
 
   @ApiProperty()
   @Exclude()

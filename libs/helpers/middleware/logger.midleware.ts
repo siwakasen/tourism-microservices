@@ -31,7 +31,6 @@ export class LoggerMiddleware implements NestMiddleware {
         method: req.method,
         url: req.originalUrl,
         ip: req.ip,
-        token: req.headers['authorization'],
         host: req.headers.host,
         userAgent: req.headers['user-agent'],
         referer: req.headers.referer,
