@@ -8,7 +8,7 @@ import {
   PaymentStatus,
 } from 'libs/entities';
 import { Snap } from 'midtrans-client';
-import { DataSource, QueryRunner, Repository } from 'typeorm';
+import { DataSource, Not, QueryRunner, Repository } from 'typeorm';
 import axios from 'axios';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -354,7 +354,7 @@ export class PaymentService {
 
   public async capturePaymentPaypal(orderId: string) {
     const payment = await this.paymentRepository.findOne({
-      where: { payment_gateway_id: orderId, status: PaymentStatus.PENDING },
+      where: { payment_gateway_id: orderId, status: Not(PaymentStatus.FAILED) },
       relations: ['booking'],
     });
     if (!payment) {
@@ -396,7 +396,10 @@ export class PaymentService {
   public async cancelPaymentPaypal(orderId: string) {
     try {
       const payment = await this.paymentRepository.findOne({
-        where: { payment_gateway_id: orderId },
+        where: {
+          payment_gateway_id: orderId,
+          status: PaymentStatus.PENDING,
+        },
         relations: ['booking'],
       });
       if (!payment) {
