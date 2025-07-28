@@ -1,5 +1,5 @@
 const resetPasswordTemplate = (url: string) => `<!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -73,27 +73,26 @@ const resetPasswordTemplate = (url: string) => `<!DOCTYPE html>
     <!-- Header Section -->
     <div class="header">
         <img src="cid:lockIcon" alt="Reset Password Icon" />
-        <h1>Reset Password Anda</h1>
+        <h1>Reset Your Password</h1>
     </div>
 
     <!-- Content Section -->
     <div class="content">
-        <p>Halo,</p>
-        <p>Anda telah meminta untuk mereset kata sandi akun Anda. Klik tombol di bawah ini untuk mengatur ulang kata sandi Anda:</p>
+        <p>Hello,</p>
+        <p>You have requested to reset your account password. Click the button below to reset your password:</p>
         <div class="cta">
         <a href="${url}" target="_blank">Reset Password</a>
         </div>
-        <p><strong>Catatan:</strong> Tautan ini bersifat rahasia dan hanya boleh digunakan oleh Anda. Jangan bagikan tautan ini kepada siapapun demi keamanan akun Anda.</p>
-        <p>Jika Anda tidak meminta reset kata sandi ini, abaikan email ini atau hubungi tim dukungan kami.</p>
+        <p><strong>Note:</strong> This email is confidential and should only be used by you. Do not share this link with anyone for your account security.</p>
+        <p>If you did not request this password reset, please ignore this email or contact our support team.</p>
     </div>
 
     <!-- Footer Section -->
     <div class="footer">
-        <p>TourWeb | <a href="https://example.com/privacy">Kebijakan Privasi</a> | <a href="https://example.com/help">Bantuan</a></p>
-        <p>&copy; 2024 TourWeb. Semua hak dilindungi.</p>
+        <p>&copy; 2025 Ride Bali Explore. All rights reserved.</p>
     </div>
     </div>
 </body>
-</html>`
+</html>`;
 
 export default resetPasswordTemplate;

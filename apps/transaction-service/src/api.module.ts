@@ -23,7 +23,7 @@ const TransactionLogger = new LoggerMiddleware({
     ConfigModule.forRoot({ envFilePath, isGlobal: true }),
     TypeOrmModule.forRootAsync({ useClass: TypeOrmConfigService }),
     ScheduleModule.forRoot(),
-    BookingModule, 
+    BookingModule,
     PaymentModule,
     BookingGrpcModule,
     BookingAdjustmentModule,
@@ -34,6 +34,6 @@ export class ApiModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(TransactionLogger.use.bind(TransactionLogger))
-      .forRoutes('bookings');
+      .forRoutes('bookings', 'payments', 'booking-adjustments', 'refunds');
   }
 }

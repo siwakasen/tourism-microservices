@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import resetPasswordTemplate from './mail-template/reset.password';
+import registrationTemplate from './mail-template/register';
 
 @Injectable()
 export class MailService {
@@ -33,5 +34,20 @@ export class MailService {
       console.error(`Error sending email to `, error);
       throw error;
     }
+  }
+
+  async sendRegisterCustomer(payload: {
+    email: string;
+    name: string;
+  }): Promise<void> {
+    const { email, name } = payload;
+
+    const htmlTemplate = `${registrationTemplate(name)}`;
+
+    this.mailerService.sendMail({
+      to: email,
+      subject: 'Account Registration',
+      html: htmlTemplate,
+    });
   }
 }

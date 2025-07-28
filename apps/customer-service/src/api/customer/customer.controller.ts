@@ -25,7 +25,8 @@ import {
   LoginResDto,
   RegisterCustomerDto,
   requestResetPasswordDto,
-  ResetPasswordDto,
+  ResetPasswordRequestDto,
+  ResetPasswordResponseDto,
   UploadIdentityFileDto,
 } from './customer.dto';
 import { GetCustomer } from '@app/helpers/auth/decorators/get-user.decorator';
@@ -143,9 +144,13 @@ export class CustomerController {
   }
 
   @Post('change-password')
-  @ApiResponse({ status: 200, description: 'Password changed successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Password changed successfully',
+    type: ResetPasswordResponseDto,
+  })
   @ApiBadRequestResponse({ description: 'Token Invalid' })
-  public async changePassword(@Body() body: ResetPasswordDto) {
+  public async changePassword(@Body() body: ResetPasswordRequestDto) {
     return this.customerService.changePassword(body);
   }
 }

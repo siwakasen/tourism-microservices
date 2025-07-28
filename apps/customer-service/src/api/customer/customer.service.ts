@@ -10,8 +10,7 @@ import {
   RegisterCustomerDto,
   RegisterCustomerResDto,
   requestResetPasswordDto,
-  ResetPasswordDto,
-  UploadIdentityFileDto,
+  ResetPasswordRequestDto,
 } from './customer.dto';
 import { Customer, CustomerToken, CustomerServiceClient } from 'libs/entities';
 import { DataSource, Repository } from 'typeorm';
@@ -73,6 +72,11 @@ export class CustomerService implements OnModuleInit {
       customer.name = name;
 
       await this.repository.save(customer);
+
+      this.mailService.sendRegisterCustomer({
+        email: email,
+        name: name,
+      });
 
       return {
         data: {
@@ -161,7 +165,8 @@ export class CustomerService implements OnModuleInit {
         );
       }
       const hashedEmail = this.helper.generateResetPwToken(email);
-      const url = `${process.env.FRONTEND_URL}/reset-password/` + hashedEmail;
+      const url =
+        `${process.env.CLIENT_URL}/forgot-password/execute/` + hashedEmail;
       this.mailService.requestResetPassword({
         email: email,
         url: url,
@@ -179,8 +184,9 @@ export class CustomerService implements OnModuleInit {
     }
   }
 
-  public async changePassword(payload: ResetPasswordDto) {
-    const { token, password }: ResetPasswordDto = payload;
+  public async changePassword(payload: ResetPasswordRequestDto) {
+    const { token, password }: ResetPasswordRequestDto = payload;
+    console.log(payload);
     try {
       const tokenData = await this.helper.decode(token);
       if (!tokenData) {
@@ -207,10 +213,7 @@ export class CustomerService implements OnModuleInit {
         where: { email: tokenData['email'] },
       });
       if (!user) {
-        throw new HttpException(
-          'Email or password may be incorrect',
-          HttpStatus.NOT_FOUND,
-        );
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
       }
       const hashedPassword = await this.helper.hashingPassword(password);
       user.password = hashedPassword;
@@ -223,7 +226,11 @@ export class CustomerService implements OnModuleInit {
         message: 'Password changed successfully',
       };
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      console.log(error.message);
+      throw new HttpException(
+        error.message,
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 

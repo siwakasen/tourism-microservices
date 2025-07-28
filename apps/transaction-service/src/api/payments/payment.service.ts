@@ -159,7 +159,7 @@ export class PaymentService {
           ) {
             await queryRunner.manager.update(
               Payment,
-              { booking_id: orderId },
+              { booking: { id: orderId } },
               { status: PaymentStatus.FAILED },
             );
             await this.updateStatusBookingMidtrans(
@@ -175,7 +175,7 @@ export class PaymentService {
           } else if (transactionStatus == 'pending') {
             await queryRunner.manager.update(
               Payment,
-              { booking_id: orderId },
+              { booking: { id: orderId } },
               { status: PaymentStatus.PENDING },
             );
             await this.updateStatusBookingMidtrans(
@@ -193,9 +193,10 @@ export class PaymentService {
       return statusResponse;
     } catch (error) {
       await queryRunner.rollbackTransaction();
+      console.log('erorr occure', error.message);
       throw new HttpException(
-        'Error processing payment notification',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        error.message || 'Error processing payment notification',
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     } finally {
       await queryRunner.release();
@@ -283,8 +284,8 @@ export class PaymentService {
                 shipping_preference: 'NO_SHIPPING',
                 landing_page: 'NO_PREFERENCE',
                 user_action: 'PAY_NOW',
-                cancel_url: `${this.configService.get('CLIENT_URL')}/payments/paypal-cancel`,
-                return_url: `${this.configService.get('CLIENT_URL')}/payments/paypal-complete`,
+                cancel_url: `${this.configService.get('CLIENT_URL')}/payments/paypal/cancel`,
+                return_url: `${this.configService.get('CLIENT_URL')}/payments/paypal/complete`,
                 payment_method_preference: 'IMMEDIATE_PAYMENT_REQUIRED',
               },
             },
@@ -372,7 +373,6 @@ export class PaymentService {
       });
       await this.updateStatusPaypal(response, orderId);
       return {
-        success: true,
         data: {
           message: 'Payment captured',
         },
@@ -383,7 +383,7 @@ export class PaymentService {
       if (error.status === 422) {
         throw new HttpException(
           error.response.data.details[0].issue,
-          error.status,
+          error.status || HttpStatus.BAD_REQUEST,
         );
       }
       throw new HttpException(

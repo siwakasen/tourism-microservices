@@ -3,7 +3,7 @@ import { PaymentService } from './payment.service';
 import { CapturePaymentPaypalDto, CancelPaymentPaypalDto } from './payment.dto';
 import { JwtAuthGuard } from '@app/helpers/auth/user/auth.guard';
 import { Roles, UserType } from '@app/helpers/auth/decorators/auth.decorator';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 
 @Controller('payments')
 @ApiBearerAuth()
@@ -18,6 +18,7 @@ export class PaymentController {
   }
 
   @Post('capture-paypal')
+  @ApiResponse({ status: 422, description: 'Unprocessable Entity' })
   async capturePaymentPaypal(@Body() body: CapturePaymentPaypalDto) {
     return await this.paymentService.capturePaymentPaypal(body.orderId);
   }

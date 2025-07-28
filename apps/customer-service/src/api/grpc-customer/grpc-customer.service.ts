@@ -51,7 +51,6 @@ export class GrpcCustomerService {
         jwtToken: token,
       };
     } catch (error) {
-      console.error('Error in registerCustomerGrpc:', error);
       throw new RpcException(error.message);
     }
   }

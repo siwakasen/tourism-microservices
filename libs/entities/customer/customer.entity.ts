@@ -34,10 +34,6 @@ class Customer extends BaseEntity {
   public email: string;
 
   @ApiProperty()
-  @Column({ type: 'boolean', nullable: false, default: false })
-  public is_email_verified: boolean;
-
-  @ApiProperty()
   @Exclude()
   @Column({ type: 'varchar', nullable: false })
   public password: string;

@@ -55,7 +55,7 @@ async function bootstrap() {
     .setVersion('1.0')
     .addBearerAuth()
     .addServer(`http://localhost:${port}`)
-    .addServer(`https://vulpies.tail66dfd8.ts.net`)
+    .addServer(`https://siwakasen.mole-mintaka.ts.net/api/`)
     .build();
   const document = SwaggerModule.createDocument(app, configSwagger);
   SwaggerModule.setup('api-docs', app, document);

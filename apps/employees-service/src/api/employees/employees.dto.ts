@@ -1,6 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsEmail, IsNumber, IsOptional, IsStrongPassword, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsNumber,
+  IsOptional,
+  IsStrongPassword,
+  MinLength,
+} from 'class-validator';
 import { IsString } from 'class-validator';
 import { Employee } from 'libs/entities';
 
@@ -15,11 +21,16 @@ export class LoginReqDto {
 }
 
 export class LoginResponseDto {
-  @ApiProperty()
+  @ApiProperty({
+    default: {
+      message: 'Login success',
+      token: 'token',
+    },
+  })
   public readonly data: {
     message: string;
     token: string;
-  }
+  };
 }
 
 export class DataEmployeeDto {
@@ -76,7 +87,6 @@ export class RegisterOwnerResponseDto {
   public readonly message: string;
 }
 
-
 export class requestResetPasswordDto {
   @ApiProperty({ default: 'test@gmail.com' })
   @IsEmail()
@@ -84,7 +94,6 @@ export class requestResetPasswordDto {
 }
 
 export class EmailResponseDto {
-
   @ApiProperty({
     example: 'Email sent successfully.',
     description: 'Optional message for additional context.',
@@ -101,7 +110,7 @@ export class PaginationEmployeeDto {
 
   @ApiProperty({ default: 10 })
   @IsNumber()
-  @Type(() => Number) 
+  @Type(() => Number)
   public readonly limit: number;
 
   @ApiProperty({ default: '', required: false })
@@ -170,17 +179,24 @@ export class UpdateEmployeeDto {
 }
 
 export class AvailableEmployeesDto extends PaginationEmployeeDto {
-  @ApiProperty({ default: new Date(new Date().setDate(new Date().getDate() + 1)).toISOString() })
+  @ApiProperty({
+    default: new Date(
+      new Date().setDate(new Date().getDate() + 1),
+    ).toISOString(),
+  })
   @IsString()
   public readonly start_date: string;
 
-  @ApiProperty({ default: new Date(new Date().setDate(new Date().getDate() + 2)).toISOString() })
+  @ApiProperty({
+    default: new Date(
+      new Date().setDate(new Date().getDate() + 2),
+    ).toISOString(),
+  })
   @IsString()
   public readonly end_date: string;
 
-  @ApiProperty({ default: 3})
+  @ApiProperty({ default: 3 })
   @IsNumber()
   @Type(() => Number)
   public readonly role_id: number;
-  
 }

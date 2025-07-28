@@ -106,14 +106,24 @@ export class requestResetPasswordDto {
   public readonly email: string;
 }
 
-export class ResetPasswordDto {
+export class ResetPasswordRequestDto {
   @ApiProperty()
   @IsString()
   public readonly token: string;
 
   @ApiProperty()
   @IsString()
-  @MinLength(8)
-  @IsStrongPassword()
+  @IsStrongPassword({
+    minLength: 8,
+    minNumbers: 1,
+    minLowercase: 1,
+    minSymbols: 1,
+    minUppercase: 1,
+  })
   public readonly password: string;
+}
+export class ResetPasswordResponseDto {
+  @ApiProperty({ default: { message: 'Password changed successfully' } })
+  @IsJSON()
+  message: string;
 }
