@@ -34,9 +34,13 @@ import {
 import { EmployeeService } from './employees.service';
 import { JwtAuthGuard } from '@app/helpers/auth/user/auth.guard';
 import { Roles, UserType } from '@app/helpers/auth/decorators/auth.decorator';
+import {
+  GetCustomer,
+  GetEmployee,
+} from '@app/helpers/auth/decorators/get-user.decorator';
 
 @ApiTags('Employee Controller')
-@ApiBearerAuth() 
+@ApiBearerAuth()
 @Controller('employees')
 export class EmployeeController {
   constructor(private readonly service: EmployeeService) {}
@@ -52,7 +56,7 @@ export class EmployeeController {
   @ApiBadRequestResponse({
     description: 'Token Invalid OR password not strong enough',
   })
-  @Post('reset-password')
+  @Post('change-password')
   private async resetPassword(@Body() body: ResetPasswordDto) {
     return await this.service.changePassword(body);
   }
@@ -69,13 +73,11 @@ export class EmployeeController {
     return response;
   }
 
-  
-  @Post('request-reset-password')
+  @Post('forget-password')
   async requestResetPasswords(@Body() body: requestResetPasswordDto) {
     await this.service.requestResetPassword(body);
     return { message: 'Email sent successfully!' };
   }
-
 
   @Get()
   @Roles(UserType.OWNER)
@@ -85,14 +87,19 @@ export class EmployeeController {
     return await this.service.getAllEmployees(query);
   }
 
+  @Get('me')
+  @Roles(UserType.OWNER, UserType.ADMIN)
+  @UseGuards(JwtAuthGuard)
+  public async getMyProfile(@GetEmployee() employee) {
+    return await this.service.getEmployeeById(employee.id);
+  }
+
   @Get('available')
   @Roles(UserType.OWNER, UserType.ADMIN)
   @UseGuards(JwtAuthGuard)
   public async getAvailableEmployees(@Query() query: AvailableEmployeesDto) {
     return await this.service.getAvailableEmployees(query);
   }
-
-  
 
   @Get(':id')
   @Roles(UserType.OWNER)
@@ -111,9 +118,15 @@ export class EmployeeController {
   @Patch(':id')
   @Roles(UserType.OWNER)
   @UseGuards(JwtAuthGuard)
-  public async updateEmployee(@Param('id') id: number, @Body() body: UpdateEmployeeDto) {
+  public async updateEmployee(
+    @Param('id') id: number,
+    @Body() body: UpdateEmployeeDto,
+  ) {
     if (Object.keys(body).length === 0) {
-      throw new HttpException('Request body cannot be empty', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Request body cannot be empty',
+        HttpStatus.BAD_REQUEST,
+      );
     }
     return await this.service.updateEmployee(id, body);
   }
@@ -130,4 +143,3 @@ export class EmployeeController {
     return await this.service.verifyToken(body.token);
   }
 }
-

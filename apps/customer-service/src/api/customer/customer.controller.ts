@@ -133,7 +133,7 @@ export class CustomerController {
     return this.customerService.getCustomerById(id);
   }
 
-  @Post('forgot-password')
+  @Post('forget-password')
   @ApiResponse({
     status: 200,
     description: 'Link to reset password has been sent to your email',

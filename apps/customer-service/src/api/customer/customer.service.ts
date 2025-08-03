@@ -166,7 +166,7 @@ export class CustomerService implements OnModuleInit {
       }
       const hashedEmail = this.helper.generateResetPwToken(email);
       const url =
-        `${process.env.CLIENT_URL}/forgot-password/execute/` + hashedEmail;
+        `${process.env.CLIENT_URL}/forget-password/execute/` + hashedEmail;
       this.mailService.requestResetPassword({
         email: email,
         url: url,

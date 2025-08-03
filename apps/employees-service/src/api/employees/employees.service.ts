@@ -18,7 +18,6 @@ import {
   RegisterOwnerResponseDto,
   requestResetPasswordDto,
   ResetPasswordDto,
-  PaginationEmployeeByRoleDto,
   AvailableEmployeesDto,
 } from './employees.dto';
 import { AuthRedisService } from './redis.service';
@@ -33,7 +32,6 @@ import { ClientGrpc } from '@nestjs/microservices';
 @UseInterceptors(FormatErrorInterceptor)
 export class EmployeeService implements OnModuleInit {
   constructor(
-    private readonly redisService: AuthRedisService,
     private readonly mailService: MailService,
     private readonly dataSource: DataSource,
   ) {}
@@ -51,10 +49,15 @@ export class EmployeeService implements OnModuleInit {
   private bookingsGrpcService: BookingsServiceClient;
 
   onModuleInit() {
-    this.bookingsGrpcService = this.clientBookings.getService<BookingsServiceClient>('BookingsGrpcService');
+    this.bookingsGrpcService =
+      this.clientBookings.getService<BookingsServiceClient>(
+        'BookingsGrpcService',
+      );
   }
 
-  public async registerOwner(body: RegisterOwnerDto): Promise<RegisterOwnerResponseDto> {
+  public async registerOwner(
+    body: RegisterOwnerDto,
+  ): Promise<RegisterOwnerResponseDto> {
     const { email, password, name, role_id }: RegisterOwnerDto = body;
     const user: Employee = await this.repository.findOne({
       where: { role: { id: 1 } },
@@ -75,14 +78,16 @@ export class EmployeeService implements OnModuleInit {
 
     await this.repository.save(owner);
 
-    return{
+    return {
       message: 'Owner registered successfully',
-    }
+    };
   }
 
   public login = async (body: LoginReqDto) => {
     const { email, password }: LoginReqDto = body;
-    Logger.log(`Login request received for email: ${email}, password: ${password}`);
+    Logger.log(
+      `Login request received for email: ${email}, password: ${password}`,
+    );
     const user = await this.repository.findOne({
       where: {
         email: email,
@@ -90,10 +95,7 @@ export class EmployeeService implements OnModuleInit {
     });
 
     if (!user) {
-      throw new HttpException(
-        `Email not registered or not verified`,
-        HttpStatus.NOT_FOUND,
-      );
+      throw new HttpException(`Email is not registered`, HttpStatus.NOT_FOUND);
     }
 
     const passwordMatched = await this.helper.isPasswordValid(
@@ -102,21 +104,19 @@ export class EmployeeService implements OnModuleInit {
     );
 
     if (!passwordMatched) {
-      throw new HttpException(
-        `Invalid Credentials`,
-        HttpStatus.UNAUTHORIZED,
-      );
+      throw new HttpException(`Invalid Credentials`, HttpStatus.UNAUTHORIZED);
     }
 
     // delete user.password;
     return {
-      data: { message: 'Login success', token: await this.helper.generateToken(user) },
+      data: {
+        message: 'Login success',
+        token: await this.helper.generateToken(user),
+      },
     };
   };
 
-  public async requestResetPassword(
-    payload: requestResetPasswordDto,
-  ) {
+  public async requestResetPassword(payload: requestResetPasswordDto) {
     const { email } = payload;
 
     const user = await this.repository.findOne({
@@ -130,8 +130,9 @@ export class EmployeeService implements OnModuleInit {
     }
 
     const hashedEmail = this.helper.generateResetPwToken(email);
-    
-    const url = `${process.env.FRONTEND_URL}/reset-password/` + hashedEmail;
+
+    const url =
+      `${process.env.FRONTEND_URL}/forget-password/execute/` + hashedEmail;
     this.mailService.requestResetPassword({
       email: email,
       url: url,
@@ -147,7 +148,6 @@ export class EmployeeService implements OnModuleInit {
     };
   }
 
-
   public async changePassword(payload: ResetPasswordDto) {
     const { token, password }: ResetPasswordDto = payload;
 
@@ -157,15 +157,17 @@ export class EmployeeService implements OnModuleInit {
         throw new HttpException('Token Invalid', HttpStatus.BAD_REQUEST);
       }
 
-      if(tokenData['exp'] < Math.floor(Date.now() / 1000)) {
+      if (tokenData['exp'] < Math.floor(Date.now() / 1000)) {
         throw new HttpException('Token Expired', HttpStatus.BAD_REQUEST);
       }
 
-      const checkToken = await this.EmployeeTokenRepo.findOne({ where: { token } });
+      const checkToken = await this.EmployeeTokenRepo.findOne({
+        where: { token },
+      });
       if (!checkToken) {
         throw new HttpException('Token Invalid', HttpStatus.BAD_REQUEST);
       }
-      if(checkToken.used) {
+      if (checkToken.used) {
         throw new HttpException('Token already used', HttpStatus.BAD_REQUEST);
       }
 
@@ -207,7 +209,7 @@ export class EmployeeService implements OnModuleInit {
         .leftJoinAndSelect('employees.role', 'role')
         .select([
           'employees.id',
-          'employees.name', 
+          'employees.name',
           'employees.email',
           'employees.salary',
           'employees.last_update_password',
@@ -215,7 +217,7 @@ export class EmployeeService implements OnModuleInit {
           'employees.updated_at',
           'employees.deleted_at',
           'role.id',
-          'role.role_name'
+          'role.role_name',
         ])
         .orderBy('employees.created_at', 'DESC');
 
@@ -251,7 +253,7 @@ export class EmployeeService implements OnModuleInit {
           limit,
           hasNextPage,
           hasPrevPage: page > 1,
-        }
+        },
       };
     } catch (error) {
       throw new HttpException(
@@ -269,25 +271,27 @@ export class EmployeeService implements OnModuleInit {
     try {
       const queryBuilder = this.repository.createQueryBuilder('employees');
 
-      const employee = await queryBuilder.where('employees.id = :id', { id })
-      .leftJoinAndSelect('employees.role', 'role')
-      .select([
-        'employees.id',
-        'employees.name',
-        'employees.email',
-        'employees.salary',
-        'employees.last_update_password',
-        'employees.created_at',
-        'employees.updated_at',
-        'employees.deleted_at',
-        'role.id',
-        'role.role_name'
-      ]).getOne();
+      const employee = await queryBuilder
+        .where('employees.id = :id', { id })
+        .leftJoinAndSelect('employees.role', 'role')
+        .select([
+          'employees.id',
+          'employees.name',
+          'employees.email',
+          'employees.salary',
+          'employees.last_update_password',
+          'employees.created_at',
+          'employees.updated_at',
+          'employees.deleted_at',
+          'role.id',
+          'role.role_name',
+        ])
+        .getOne();
 
       if (!employee) {
         throw new Error('Not Found');
       }
-      return{
+      return {
         data: employee,
         message: 'Successfully get data employee by id',
       };
@@ -315,29 +319,34 @@ export class EmployeeService implements OnModuleInit {
 
   public async getAvailableEmployees(payload: AvailableEmployeesDto) {
     const { page = 1, limit = 10, start_date, end_date, role_id } = payload;
-    const { employee_ids } = await this.bookingsGrpcService.getEmployeesByBookingDateRange({ start_date, end_date }).toPromise();
-    const queryBuilder = this.repository.createQueryBuilder('employees')
-    .leftJoinAndSelect('employees.role', 'role')
-    .select([
-      'employees.id',
-      'employees.name', 
-      'employees.email',
-      'employees.salary',
-      'employees.last_update_password',
-      'employees.created_at',
-      'employees.updated_at',
-      'employees.deleted_at',
-      'role.id',
-      'role.role_name'
-    ])
-    .orderBy('employees.created_at', 'DESC')
-    if(employee_ids && role_id){
+    const { employee_ids } = await this.bookingsGrpcService
+      .getEmployeesByBookingDateRange({ start_date, end_date })
+      .toPromise();
+    const queryBuilder = this.repository
+      .createQueryBuilder('employees')
+      .leftJoinAndSelect('employees.role', 'role')
+      .select([
+        'employees.id',
+        'employees.name',
+        'employees.email',
+        'employees.salary',
+        'employees.last_update_password',
+        'employees.created_at',
+        'employees.updated_at',
+        'employees.deleted_at',
+        'role.id',
+        'role.role_name',
+      ])
+      .orderBy('employees.created_at', 'DESC');
+    if (employee_ids && role_id) {
       queryBuilder
         .where('employees.id NOT IN (:...employee_ids)', { employee_ids })
         .andWhere('role.id = :roleId', { roleId: role_id });
-    } else if(employee_ids) {
-      queryBuilder.where('employees.id NOT IN (:...employee_ids)', { employee_ids });
-    } else if(role_id) {
+    } else if (employee_ids) {
+      queryBuilder.where('employees.id NOT IN (:...employee_ids)', {
+        employee_ids,
+      });
+    } else if (role_id) {
       queryBuilder.where('role.id = :roleId', { roleId: role_id });
     }
 
@@ -358,7 +367,7 @@ export class EmployeeService implements OnModuleInit {
         limit,
         hasNextPage,
         hasPrevPage: page > 1,
-      }
+      },
     };
   }
 
@@ -367,28 +376,34 @@ export class EmployeeService implements OnModuleInit {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      if(payload.role_id == 1) {
-        throw new HttpException('New Owner cannot be created', HttpStatus.BAD_REQUEST);
+      if (payload.role_id == 1) {
+        throw new HttpException(
+          'New Owner cannot be created',
+          HttpStatus.BAD_REQUEST,
+        );
       }
-      const role = await this.roleRepository.findOne({ where: { id: payload.role_id } });
-      const hashedPassword = await this.helper.hashingPassword(payload.password);
+      const role = await this.roleRepository.findOne({
+        where: { id: payload.role_id },
+      });
+      const hashedPassword = await this.helper.hashingPassword(
+        payload.password,
+      );
 
-      
       const user = await this.repository.findOne({
         where: { email: payload.email },
       });
-      
+
       if (user) {
         throw new HttpException(
           `Email already registered`,
           HttpStatus.BAD_REQUEST,
         );
       }
-      
+
       const employee: Employee = this.repository.create({
         ...payload,
         role: role,
-        password: hashedPassword
+        password: hashedPassword,
       });
       await queryRunner.manager.save(employee);
       await queryRunner.commitTransaction();
@@ -409,30 +424,38 @@ export class EmployeeService implements OnModuleInit {
     } finally {
       await queryRunner.release();
     }
-
   }
   public async updateEmployee(id: number, payload: UpdateEmployeeDto) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      if(payload.role_id == 1) {
-        throw new HttpException('Cannot change admin into owner', HttpStatus.BAD_REQUEST);
+      if (payload.role_id == 1) {
+        throw new HttpException(
+          'Cannot change admin into owner',
+          HttpStatus.BAD_REQUEST,
+        );
       }
-      const newRole = await this.roleRepository.findOne({ where: { id: payload.role_id } });
-      if(!newRole) {
+      const newRole = await this.roleRepository.findOne({
+        where: { id: payload.role_id },
+      });
+      if (!newRole) {
         throw new HttpException('Role not found', HttpStatus.NOT_FOUND);
       }
 
-      const employee = await this.repository.findOne({ where: { id }, relations: ['role'] });
+      const employee = await this.repository.findOne({
+        where: { id },
+        relations: ['role'],
+      });
       if (!employee) {
         throw new HttpException('Employee not found', HttpStatus.NOT_FOUND);
       }
 
-      
       this.repository.merge(employee, payload);
-      if(payload.role_id) {
-        const role = await this.roleRepository.findOne({ where: { id: payload.role_id } });
+      if (payload.role_id) {
+        const role = await this.roleRepository.findOne({
+          where: { id: payload.role_id },
+        });
         employee.role = role;
       }
       await queryRunner.manager.save(employee);
@@ -461,12 +484,15 @@ export class EmployeeService implements OnModuleInit {
     await queryRunner.startTransaction();
 
     try {
-      const employee = await this.repository.findOne({ where: { id }, relations: ['role'] });
+      const employee = await this.repository.findOne({
+        where: { id },
+        relations: ['role'],
+      });
 
-      if(!employee) {
+      if (!employee) {
         throw new HttpException('Employee not found', HttpStatus.NOT_FOUND);
       }
-      if(employee.role.id == 1) {
+      if (employee.role.id == 1) {
         throw new HttpException('Cannot delete owner', HttpStatus.BAD_REQUEST);
       }
       await queryRunner.manager.softDelete(Employee, id);

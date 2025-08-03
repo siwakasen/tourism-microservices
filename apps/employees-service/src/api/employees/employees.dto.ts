@@ -74,7 +74,7 @@ export class RegisterOwnerDto {
   @IsString()
   public readonly name: string;
 
-  @ApiProperty({ default: 'Password123!' })
+  @ApiProperty({ default: 'Password1!' })
   @IsString()
   @MinLength(8)
   @IsStrongPassword()
