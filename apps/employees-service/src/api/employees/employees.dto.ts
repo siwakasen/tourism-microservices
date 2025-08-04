@@ -152,6 +152,8 @@ export class CreateEmployeeDto {
 
   @ApiProperty()
   @IsString()
+  @MinLength(8)
+  @IsStrongPassword()
   public readonly password: string;
 
   @ApiProperty()

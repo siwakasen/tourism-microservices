@@ -391,14 +391,14 @@ export class EmployeeService implements OnModuleInit {
 
       const user = await this.repository.findOne({
         where: { email: payload.email },
+        withDeleted: true,
       });
 
       if (user) {
-        throw new HttpException(
-          `Email already registered`,
-          HttpStatus.BAD_REQUEST,
-        );
+        throw new HttpException(`Email already used`, HttpStatus.CONFLICT);
       }
+
+
 
       const employee: Employee = this.repository.create({
         ...payload,

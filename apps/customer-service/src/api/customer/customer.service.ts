@@ -55,6 +55,7 @@ export class CustomerService implements OnModuleInit {
 
       const user: Customer = await this.repository.findOne({
         where: { email },
+        withDeleted: true,
       });
 
       if (user) {

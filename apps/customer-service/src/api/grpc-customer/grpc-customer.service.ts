@@ -28,6 +28,7 @@ export class GrpcCustomerService {
     try {
       const customer: Customer = await this.repository.findOne({
         where: { email: body.email },
+        withDeleted: true,
       });
       if (customer) {
         throw new RpcException('Email already used');

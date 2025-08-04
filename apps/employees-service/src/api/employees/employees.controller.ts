@@ -9,7 +9,6 @@ import {
   Param,
   Patch,
   Post,
-  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -35,7 +34,6 @@ import { EmployeeService } from './employees.service';
 import { JwtAuthGuard } from '@app/helpers/auth/user/auth.guard';
 import { Roles, UserType } from '@app/helpers/auth/decorators/auth.decorator';
 import {
-  GetCustomer,
   GetEmployee,
 } from '@app/helpers/auth/decorators/get-user.decorator';
 
@@ -83,7 +81,6 @@ export class EmployeeController {
   @Roles(UserType.OWNER)
   @UseGuards(JwtAuthGuard)
   public async getAllEmployees(@Query() query: PaginationEmployeeDto) {
-    console.log(query);
     return await this.service.getAllEmployees(query);
   }
 
@@ -95,7 +92,7 @@ export class EmployeeController {
   }
 
   @Get('available')
-  @Roles(UserType.OWNER, UserType.ADMIN)
+  @Roles( UserType.ADMIN)
   @UseGuards(JwtAuthGuard)
   public async getAvailableEmployees(@Query() query: AvailableEmployeesDto) {
     return await this.service.getAvailableEmployees(query);
