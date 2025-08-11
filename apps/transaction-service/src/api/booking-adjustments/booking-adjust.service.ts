@@ -166,7 +166,7 @@ export class BookingAdjustmentService implements OnModuleInit {
         let additional_price = 0;
         if(new_range_days > old_range_days){
           if(booking.with_driver){
-            const pricePerDay = (booking.total_price / old_range_days) - 6;
+            const pricePerDay = (booking.total_price / old_range_days) - 10;
             const additional_days = new_range_days - old_range_days;
             additional_price = (pricePerDay + 6) * additional_days;
           }else{

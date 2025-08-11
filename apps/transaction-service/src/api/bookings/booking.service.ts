@@ -143,8 +143,6 @@ export class BookingService implements OnModuleInit {
     if (!car_id) return;
     const startDate = new Date(new_start_date);
     const endDate = new Date(new_end_date);
-    startDate.setHours(0, 0, 0, 0);
-    endDate.setHours(23, 59, 59, 999);
     // Check for CONFIRMED or ONGOING
     const car_conflict = await queryRunner.manager.findOne(Bookings, {
       where: [
@@ -265,9 +263,10 @@ export class BookingService implements OnModuleInit {
 
         const startDate = new Date(payload.start_date);
         const endDate = new Date(payload.end_date);
-        const days =
+        let days =
           (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
-        if (days < 1) {
+
+        if (days <= 0) {
           throw new HttpException(
             'End date must be greater than start date',
             HttpStatus.BAD_REQUEST,
@@ -275,7 +274,7 @@ export class BookingService implements OnModuleInit {
         }
         let driverPrice = 0;
         if (payload.with_driver) {
-          driverPrice = 6;
+          driverPrice = 10;
         }
         total_price = (pricePerDay + driverPrice) * Number(days.toFixed(0));
 
