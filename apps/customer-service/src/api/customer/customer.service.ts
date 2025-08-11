@@ -20,6 +20,7 @@ import { ClientGrpc } from '@nestjs/microservices';
 import { MailService } from '@app/helpers/mail/mail.service';
 import * as path from 'path';
 import * as fs from 'fs';
+import { Response } from 'express';
 
 @Injectable()
 export class CustomerService implements OnModuleInit {
@@ -249,18 +250,18 @@ export class CustomerService implements OnModuleInit {
       }
       if (user.identity_file) {
         const distPath = path.join(
-          './dist/apps/customer-service/public/identity-files',
+          './dist/apps/customer-service/private/identity-files',
           user.identity_file[0],
         );
         const distPath2 = path.join(
-          './dist/apps/customer-service/public/identity-files',
+          './dist/apps/customer-service/private/identity-files',
           user.identity_file[1].toString(),
         );
         console.log(distPath2);
         if (fs.existsSync(distPath) || fs.existsSync(distPath2)) {
           fs.unlinkSync(distPath);
           fs.unlinkSync(distPath2);
-          console.log(`Deleted public image: ${distPath} and ${distPath2}`);
+          console.log(`Deleted private image: ${distPath} and ${distPath2}`);
         }
       }
 
@@ -306,6 +307,53 @@ export class CustomerService implements OnModuleInit {
       };
     } catch (error) {
       throw new HttpException(error.details, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+  public async getIdentityFile(
+    customerId: number,
+    filename: string,
+    res: Response,
+  ) {
+    try {
+      // Verify customer exists
+      const customer = await this.repository.findOne({
+        where: { id: customerId },
+      });
+
+      if (!customer) {
+        throw new HttpException('Customer not found', HttpStatus.NOT_FOUND);
+      }
+
+      // Verify the filename belongs to this customer
+      if (!customer.identity_file || !customer.identity_file.includes(filename)) {
+        throw new HttpException(
+          'File not found or does not belong to this customer',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      // Construct the file path
+      const filePath = path.join(
+        './dist/apps/customer-service/private/identity-files',
+        filename,
+      );
+
+      // Check if file exists
+      if (!fs.existsSync(filePath)) {
+        throw new HttpException('File not found on server', HttpStatus.NOT_FOUND);
+      }
+
+      // Set appropriate headers
+      res.setHeader('Content-Type', 'image/jpeg');
+      res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+      
+      // Send the file
+      res.sendFile(path.resolve(filePath));
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Unable to retrieve file',
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

@@ -8,6 +8,7 @@ import {
   Param,
   Post,
   Query,
+  Res,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -35,6 +36,8 @@ import { JwtAuthGuard } from '@app/helpers/auth/user/auth.guard';
 import { Roles, UserType } from '@app/helpers/auth/decorators/auth.decorator';
 import { diskStorage } from 'multer';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { Response } from 'express';
+import * as fs from 'fs';
 
 @Controller('customers')
 @ApiBearerAuth()
@@ -59,7 +62,7 @@ export class CustomerController {
   @UseInterceptors(
     FilesInterceptor('identity-file', 2, {
       storage: diskStorage({
-        destination: './dist/apps/customer-service/public/identity-files',
+        destination: './dist/apps/customer-service/private/identity-files',
         filename: (req, file, cb) => {
           const uniqueSuffix =
             Date.now() + '-' + Math.round(Math.random() * 1e9);
@@ -92,11 +95,9 @@ export class CustomerController {
     @UploadedFiles() files: Express.Multer.File[],
   ) {
     if (files.length < 2) {
-      return {
-        message: 'Please upload both the driver license and identity card',
-        error: 'Bad Request',
-        statusCode: HttpStatus.BAD_REQUEST,
-      };
+        fs.unlinkSync(files[0].path);
+        console.log(`Deleted private image: ${files[0].path}`);
+      throw new HttpException('Please upload both the driver license and identity card', HttpStatus.BAD_REQUEST);
     }
     return this.customerService.uploadIdentityFile(files, customer.id);
   }
@@ -153,4 +154,25 @@ export class CustomerController {
   public async changePassword(@Body() body: ResetPasswordRequestDto) {
     return this.customerService.changePassword(body);
   }
+
+  @Get(':customerId/identity-files/:filename')
+  @ApiResponse({
+    status: 200,
+    description: 'Identity file retrieved successfully',
+  })
+  @ApiBadRequestResponse({ description: 'File not found or access denied' })
+  @UseGuards(JwtAuthGuard)
+  @Roles(UserType.ADMIN, UserType.CUSTOMER)
+  public async getIdentityFile(
+    @GetCustomer() customer: Customer,
+    @Param('customerId') customerId: number,
+    @Param('filename') filename: string,
+    @Res() res: Response,
+  ) {
+    if ((customer instanceof Customer) && customer.id !== customerId) {
+      throw new HttpException('File not found or does not belong to this customer', HttpStatus.FORBIDDEN);
+    }
+    return this.customerService.getIdentityFile(customerId, filename, res);
+  }
+  
 }
