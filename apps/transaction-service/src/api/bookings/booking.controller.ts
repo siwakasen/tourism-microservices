@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { BookingService } from './booking.service';
 import { AssignEmployeeDto, BookingRegisterReqDto, BookingRegisterResDto, BookingReqDto, BookingResDto, FinishBookingDto, PaginationDto } from './booking.dto';
 import { GetCustomer } from '@app/helpers/auth/decorators/get-user.decorator';
@@ -42,7 +42,13 @@ export class BookingController {
     if(payload.package_id && !payload.number_of_persons){
       throw new HttpException('Number of persons is required', HttpStatus.BAD_REQUEST);
     }
+  }
 
+  @Get('/:id')
+  @UseGuards(JwtAuthGuard)
+  @Roles(UserType.CUSTOMER)
+  async getBookingById(@GetCustomer() customer: Customer,@Param('id') id: number) {
+    return this.bookingService.getBookingById(id, customer.id);
   }
 
   @Post()

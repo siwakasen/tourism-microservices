@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Expenses } from 'libs/entities';
 import { Repository } from 'typeorm';
 import { DataSource } from 'typeorm';
-import { CreateUpdateExpensesDto, PaginationDto } from './expenses.dto';
+import { CreateUpdateExpensesDto, PaginationExpensesDto } from './expenses.dto';
 
 @Injectable()
 export class ExpensesService {
@@ -13,26 +13,51 @@ export class ExpensesService {
     private readonly dataSource: DataSource,
   ) {}
 
-  public async getAllExpensess(paginationDto: PaginationDto) {
+  private formatDate = (dateStr: string) => {
+    if (!dateStr) return undefined;
+    const d = new Date(dateStr);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  public async getAllExpensess(paginationDto: PaginationExpensesDto) {
     try {
-      const { page = 1, limit = 10, search = '' } = paginationDto;
+      const { page = 1, limit = 200, search = '', start_date, end_date } = paginationDto;
       const queryBuilder = this.repository
         .createQueryBuilder('expenses')
         .orderBy('expenses.created_at', 'DESC');
         
-      const conditions:string[] = [];
       const parameters: Record<string, any> = {};
+      const searchConditions: string[] = [];
+      const andConditions: string[] = [];
 
       if (search) {
-        conditions.push(`expenses.expense_name ILIKE :search`);
-        conditions.push(`CAST(expenses.expense_amount AS TEXT) ILIKE :search`);
-        conditions.push(`CAST(expenses.created_by AS TEXT) ILIKE :search`);
-        conditions.push(`CAST(expenses.expense_date AS TEXT) ILIKE :search`);
+        searchConditions.push(`expenses.expense_name ILIKE :search`);
+        searchConditions.push(`CAST(expenses.expense_amount AS TEXT) ILIKE :search`);
+        searchConditions.push(`CAST(expenses.created_by AS TEXT) ILIKE :search`);
         parameters['search'] = `%${search}%`;
       }
 
-      if (conditions.length) {
-        queryBuilder.where(conditions.join(' OR '), parameters);
+      if (start_date && end_date) {
+        const formattedStartDate = this.formatDate(start_date);
+        const formattedEndDate = this.formatDate(end_date);
+        andConditions.push(`expenses.expense_date BETWEEN :start_date AND :end_date`);
+        parameters['start_date'] = formattedStartDate;
+        parameters['end_date'] = formattedEndDate;
+      }
+
+      const whereParts: string[] = [];
+      if (searchConditions.length) {
+        whereParts.push(`(${searchConditions.join(' OR ')})`);
+      }
+      if (andConditions.length) {
+        whereParts.push(andConditions.join(' AND '));
+      }
+
+      if (whereParts.length) {
+        queryBuilder.where(whereParts.join(' AND '), parameters);
       }
       
       const [result, total] = await queryBuilder
@@ -58,7 +83,6 @@ export class ExpensesService {
       throw new HttpException(
         {
           message: [error.message || 'Internal Server Error'],
-          error: 'Internal Server Error',
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -94,7 +118,6 @@ export class ExpensesService {
       throw new HttpException(
         {
           message: [error.message || 'Internal Server Error'],
-          error: 'Internal Server Error',
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -125,7 +148,6 @@ export class ExpensesService {
       throw new HttpException(
         {
           message: [error.message || 'Internal Server Error'],
-          error: 'Internal Server Error',
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -161,7 +183,6 @@ export class ExpensesService {
       throw new HttpException(
         {
           message: [error.message || 'Internal Server Error'],
-          error: 'Internal Server Error',
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -204,7 +225,6 @@ export class ExpensesService {
       throw new HttpException(
         {
           message: [error.message || 'Internal Server Error'],
-          error: 'Internal Server Error',
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         },
         HttpStatus.INTERNAL_SERVER_ERROR,

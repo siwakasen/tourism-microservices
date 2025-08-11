@@ -2,6 +2,7 @@ import { HttpException, HttpStatus } from "@nestjs/common";
 import axios from "axios";
 
 export async function convertUSDToIDR(usdAmount: number): Promise<number> {
+    console.log(usdAmount)
     try {
         const response = await axios.get(process.env.EXCHANGE_RATE_API);
         const rate = response.data.rates.IDR;

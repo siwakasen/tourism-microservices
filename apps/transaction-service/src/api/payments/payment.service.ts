@@ -438,6 +438,23 @@ export class PaymentService {
     return response.data;
   }
 
+  public async getPaymentByBookingId(booking_id: number, customer_id: number) {
+    try {
+    const payment = await this.paymentRepository.findOne({
+      where: { booking: { id: booking_id, customer_id: customer_id } },
+    });
+    if (!payment) {
+      throw new HttpException('Payment not found', HttpStatus.NOT_FOUND);
+    }
+    return {
+      data: payment,
+        message: 'Payment fetched successfully',
+      };
+    } catch (error) {
+      throw new HttpException(error.message, error.status);
+    }
+  }
+
   private async generateAccessToken() {
     let access_token = await this.redisService.getValue('access_token');
     if (!access_token) {
@@ -450,3 +467,4 @@ export class PaymentService {
     return access_token;
   }
 }
+

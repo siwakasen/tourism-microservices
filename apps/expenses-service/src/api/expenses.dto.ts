@@ -1,8 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsNumber, IsString, IsOptional, IsDate } from "class-validator";
+import { IsNumber, IsString, IsOptional } from "class-validator";
 
-export class PaginationDto {
+export class PaginationExpensesDto {
     @ApiProperty({ default: 1 })
     @IsNumber()
     @Type(() => Number)
@@ -17,6 +17,16 @@ export class PaginationDto {
     @IsString()
     @IsOptional()
     public readonly search: string;
+
+    @ApiProperty({ default: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(), required: false })
+    @IsString()
+    @IsOptional()
+    public readonly start_date: string;
+
+    @ApiProperty({ default: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString(), required: false })
+    @IsString()
+    @IsOptional()
+    public readonly end_date: string;
 }
 
 export class CreateUpdateExpensesDto {
@@ -31,5 +41,6 @@ export class CreateUpdateExpensesDto {
     @ApiProperty({ description: 'The date of the expenses', example: '2025-01-14' })
     @IsString()
     public readonly expense_date: string;
+
 }
 

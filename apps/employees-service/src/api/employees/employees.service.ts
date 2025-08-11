@@ -95,7 +95,7 @@ export class EmployeeService implements OnModuleInit {
     });
 
     if (!user) {
-      throw new HttpException(`Email is not registered`, HttpStatus.NOT_FOUND);
+      throw new HttpException(`Email or password may be incorrect`, HttpStatus.BAD_REQUEST);
     }
 
     const passwordMatched = await this.helper.isPasswordValid(
@@ -430,12 +430,7 @@ export class EmployeeService implements OnModuleInit {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      if (payload.role_id == 1) {
-        throw new HttpException(
-          'Cannot change admin into owner',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
+      
       const newRole = await this.roleRepository.findOne({
         where: { id: payload.role_id },
       });
@@ -449,6 +444,12 @@ export class EmployeeService implements OnModuleInit {
       });
       if (!employee) {
         throw new HttpException('Employee not found', HttpStatus.NOT_FOUND);
+      }
+      if (payload.role_id == 1 && employee.role.id != 1) {
+        throw new HttpException(
+          'Cannot change admin into owner',
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
       this.repository.merge(employee, payload);

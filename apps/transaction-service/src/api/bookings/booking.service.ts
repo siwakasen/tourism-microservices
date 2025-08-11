@@ -406,6 +406,26 @@ export class BookingService implements OnModuleInit {
       await queryRunner.release();
     }
   }
+  public async getBookingById(booking_id: number, customer_id: number) {
+    try {
+    const queryBuilder = this.dataSource.manager
+      .createQueryBuilder(Bookings, 'bookings')
+      .leftJoinAndSelect('bookings.payments', 'payments')
+      .where('bookings.id = :booking_id', { booking_id })
+      .andWhere('bookings.customer_id = :customer_id', { customer_id });
+    const booking = await queryBuilder.getOne();
+
+    if (!booking) {
+      throw new HttpException('Booking not found', HttpStatus.NOT_FOUND);
+    }
+    return {
+      data: booking,
+        message: 'Booking fetched successfully',
+      };
+    } catch (error) {
+      throw new HttpException(error.message, error.status);
+    }
+  }
 
   public async getBookings(
     customer_id: number,

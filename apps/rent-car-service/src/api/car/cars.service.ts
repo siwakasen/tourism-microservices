@@ -84,14 +84,16 @@ export class CarsService implements OnModuleInit {
   }
 
   public async getAvailableCars(query: AvailableCarsDto) {
-    const { page = 1, limit = 10, start_date, end_date } =  query;
+    const { page = 1, limit = 10, search = '', start_date, end_date } =  query;
     try{
       const {car_ids} =  await this.bookingsGrpcService.getCarIdsByBookingDateRange({ start_date, end_date }).toPromise();
       const queryBuilder = this.repository.createQueryBuilder('cars').orderBy('cars.created_at', 'DESC');
       if(car_ids){
         queryBuilder.where('cars.id NOT IN (:...car_ids)', { car_ids });
       }
-      
+      if(search){
+        queryBuilder.where('cars.car_name ILIKE :search', { search: `%${search}%` });
+      }
       const [result, total] = await queryBuilder
         .skip((page - 1) * limit)
         .take(limit)

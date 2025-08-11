@@ -161,8 +161,8 @@ export class CustomerService implements OnModuleInit {
       const user = await this.repository.findOne({ where: { email } });
       if (!user) {
         throw new HttpException(
-          { email: 'Email not registered' },
-          HttpStatus.NOT_FOUND,
+          { email: 'Email or password may be incorrect' },
+          HttpStatus.BAD_REQUEST,
         );
       }
       const hashedEmail = this.helper.generateResetPwToken(email);

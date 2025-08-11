@@ -1,9 +1,11 @@
-import { Controller, Body, Post, UseGuards, Patch } from '@nestjs/common';
+import { Controller, Body, Post, UseGuards, Patch, Param, Get } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { CapturePaymentPaypalDto, CancelPaymentPaypalDto } from './payment.dto';
 import { JwtAuthGuard } from '@app/helpers/auth/user/auth.guard';
 import { Roles, UserType } from '@app/helpers/auth/decorators/auth.decorator';
 import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
+import { GetCustomer } from '@app/helpers/auth/decorators/get-user.decorator';
+import { Customer } from 'libs/entities'; 
 
 @Controller('payments')
 @ApiBearerAuth()
@@ -34,6 +36,15 @@ export class PaymentController {
   @ApiBearerAuth()
   async checkOrderPaypal(@Body() body: CapturePaymentPaypalDto) {
     const data = await this.paymentService.checkOrderPaypal(body.orderId);
+    return data;
+  }
+
+  @Get('/:booking_id')
+  @UseGuards(JwtAuthGuard)
+  @Roles(UserType.CUSTOMER)
+  @ApiBearerAuth()
+  async getPaymentByBookingId(@GetCustomer() customer: Customer, @Param('booking_id') booking_id: number) {
+    const data = await this.paymentService.getPaymentByBookingId(booking_id, customer.id);
     return data;
   }
 }

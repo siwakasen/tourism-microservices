@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Inject, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ExpensesService } from './expenses.service';
-import { CreateUpdateExpensesDto, PaginationDto } from './expenses.dto';
+import { CreateUpdateExpensesDto, PaginationExpensesDto } from './expenses.dto';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Roles, UserType } from '@app/helpers/auth/decorators/auth.decorator';
 import { JwtAuthGuard } from '@app/helpers/auth/user/auth.guard';
@@ -19,8 +19,9 @@ export class ExpensesController {
     description: 'Successfuly get data expenses',
   })
   @Get()
-  public async getAllExpensess(@Query() query: PaginationDto) {
-    console.log(query);
+  @UseGuards(JwtAuthGuard)
+  @Roles(UserType.ADMIN)
+  public async getAllExpensess(@Query() query: PaginationExpensesDto) {
     return this.expenseService.getAllExpensess(query);
   }
 
@@ -29,6 +30,8 @@ export class ExpensesController {
     description: 'Successfuly get data expenses by id',
   })
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  @Roles(UserType.ADMIN)
   public async getExpensesById(@Param('id') id: number) {
     return this.expenseService.getExpensesById(id);
   }
