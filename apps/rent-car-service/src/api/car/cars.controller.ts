@@ -50,6 +50,17 @@ export class CarsController {
     return await this.carsService.getAllCars(query);
   }
 
+  @ApiResponse({
+    status: 200,
+    description: 'Successfuly get data cars with deleted',
+  })
+  @UseGuards(JwtAuthGuard)
+  @Roles(UserType.ADMIN)
+  @Get('/history')
+  public async getAllCarsHistory(@Query() query: PaginationDto) {
+    return await this.carsService.getAllCarsWithDeleted(query);
+  }
+
   @Get('available')
   public async getAvailableCars( @Query() query: AvailableCarsDto) {
     return await this.carsService.getAvailableCars( query);
@@ -62,6 +73,15 @@ export class CarsController {
   @Get('/:id')
   public async getCarsById(@Param('id') id: number) {
     return await this.carsService.getCarById(id);
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'Successfuly get data cars by id with deleted',
+  })
+  @Get('/:id/history')
+  public async getCarHistoryById(@Param('id') id: number) {
+    return await this.carsService.getCarHistoryById(id);
   }
 
   @ApiResponse({

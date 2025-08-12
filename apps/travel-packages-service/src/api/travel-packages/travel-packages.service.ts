@@ -73,6 +73,45 @@ export class TravelPackagesService {
     }
   }
 
+  public async getAllTravelPackagesWithDeleted(paginationDto: PaginationDto) {
+    try {
+      const { page = 1, limit = 10 } = paginationDto;
+      const queryBuilder = this.repository
+        .createQueryBuilder('travel_packages')
+        .orderBy('travel_packages.created_at', 'DESC')
+        .withDeleted();
+
+    const [result, total] = await queryBuilder
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
+
+    const totalPages = Math.ceil(total / limit);
+    const hasNextPage = page < totalPages;
+
+    return {
+      data: result,
+      meta: {
+        totalItems: total,
+        currentPage: page,
+        totalPages,
+        limit,
+        hasNextPage,
+        hasPrevPage: page > 1,
+      },
+    };
+    } catch (error) {
+      throw new HttpException(
+        {
+          message: [error.message || 'Internal Server Error'],
+          error: 'Internal Server Error',
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   public async getTravelPackageById(id: number) {
     try {
     const travelPackage: TravelPackages = await this.repository.findOneBy({ id });
@@ -96,6 +135,28 @@ export class TravelPackagesService {
           HttpStatus.NOT_FOUND,
         );
       }
+      throw new HttpException(
+        {
+          message: [error.message || 'Internal Server Error'],
+          error: 'Internal Server Error',
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+      }
+    }
+
+  public async getTravelPackageHistoryById(id: number) {
+    try {
+      const travelPackage: TravelPackages = await this.repository.findOne({ where: { id }, withDeleted: true });
+      if (travelPackage) {
+        return {
+          data: travelPackage,
+          message: 'Successfully get data travel package by id',
+        };
+      }
+      throw new Error('Travel Package not found');
+    } catch (error) {
       throw new HttpException(
         {
           message: [error.message || 'Internal Server Error'],
@@ -270,18 +331,10 @@ export class TravelPackagesService {
       if (!image) {
         throw new Error('Image not found');
       }
-      const filePath = path.join(
-        './apps/travel-packages-service/public/travel-images',
-        image,
-      );
       const distPath = path.join(
         './dist/apps/travel-packages-service/public/travel-images',
         image,
       );
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-        console.log(`Deleted storage image: ${filePath}`);
-      }
       if (fs.existsSync(distPath)) {
         fs.unlinkSync(distPath);
         console.log(`Deleted public image: ${distPath}`);
@@ -390,6 +443,19 @@ export class TravelPackagesService {
 
       if (!travelPackage) {
         throw new Error('Travel Package not found');
+      }
+
+      if (travelPackage.images) {
+        for(const image of travelPackage.images) {
+          const distPath = path.join(
+            './dist/apps/travel-packages-service/public/travel-images',
+            image,
+          );
+          if (fs.existsSync(distPath)) {
+            fs.unlinkSync(distPath);
+            console.log(`Deleted public image: ${distPath}`);
+          }
+        }
       }
 
       await queryRunner.manager.softDelete(TravelPackages, id);

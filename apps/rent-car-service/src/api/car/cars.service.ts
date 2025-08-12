@@ -83,6 +83,45 @@ export class CarsService implements OnModuleInit {
     }
   }
 
+  public async getAllCarsWithDeleted(paginationDto: PaginationDto) {
+    try {
+    const { page = 1, limit = 10 } = paginationDto;
+    const queryBuilder = this.repository
+      .createQueryBuilder('cars')
+      .orderBy('cars.created_at', 'DESC')
+      .withDeleted();
+
+    const [result, total] = await queryBuilder
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
+
+    const totalPages = Math.ceil(total / limit);
+    const hasNextPage = page < totalPages;
+
+    return {
+      data: result,
+      meta: {
+        totalItems: total,
+        currentPage: page,
+        totalPages,
+        limit,
+        hasNextPage,
+        hasPrevPage: page > 1,
+        },
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          message: [error.message || 'Failed to fetch data cars'],
+          error: error.message || 'Internal server error',
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   public async getAvailableCars(query: AvailableCarsDto) {
     const { page = 1, limit = 10, search = '', start_date, end_date } =  query;
     try{
@@ -153,6 +192,28 @@ export class CarsService implements OnModuleInit {
           HttpStatus.NOT_FOUND,
         );
       }
+      throw new HttpException(
+        {
+          message: [error.message || 'Failed to fetch car'],
+          error: error.message || 'Internal server error',
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  public async getCarHistoryById(id: number) {
+    try {
+      const car: Cars = await this.repository.findOne({ where: { id }, withDeleted: true });
+      if (car) {
+        return {
+          data: car,
+          message: 'Successfully get data car by id',
+        };
+      }
+      throw new Error('Car not found');
+    } catch (error) {
       throw new HttpException(
         {
           message: [error.message || 'Failed to fetch car'],

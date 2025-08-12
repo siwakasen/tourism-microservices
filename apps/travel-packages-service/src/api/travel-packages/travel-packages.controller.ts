@@ -51,11 +51,31 @@ export class TravelPackagesController {
 
   @ApiResponse({
     status: 200,
+    description: 'Successfuly get data travel package with deleted',
+  })
+  @UseGuards(JwtAuthGuard)
+  @Roles(UserType.ADMIN)
+  @Get('/history')
+  public async getTravelPackagesHistory(@Query() query: PaginationDto) {
+    return await this.travelPackagesService.getAllTravelPackagesWithDeleted(query);
+  }
+
+  @ApiResponse({
+    status: 200,
     description: 'Successfuly get data travel package by id',
   })
   @Get('/:id')
   public async getTravelPackageById(@Param('id') id: number) {
     return await this.travelPackagesService.getTravelPackageById(id);
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'Successfuly get data travel package by id with deleted',
+  })
+  @Get('/:id/history')
+  public async getTravelPackageHistoryById(@Param('id') id: number) {
+    return await this.travelPackagesService.getTravelPackageHistoryById(id);
   }
 
   @ApiResponse({
