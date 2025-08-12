@@ -336,6 +336,34 @@ export class BookingService implements OnModuleInit {
     }
   }
 
+  public async confirmCarBookingWithoutDriver(booking_id: number) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const booking = await queryRunner.manager.findOne(Bookings, {
+        where: { id: booking_id, status: BookingStatus.WAITING_CONFIRMATION, with_driver: false, package_id: null },
+      });
+      if (!booking) {
+        throw new HttpException('Booking not found', HttpStatus.NOT_FOUND);
+      }
+      await queryRunner.manager.update(Bookings, { id: booking_id }, { status: BookingStatus.CONFIRMED });
+      await queryRunner.commitTransaction();
+      const updatedBooking = await queryRunner.manager.findOne(Bookings, {
+        where: { id: booking_id },
+      });
+      return {
+        data: updatedBooking,
+        message: 'Booking confirmed successfully',
+      };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(error.message, error.status);
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
   public async assignEmployee(booking_id: number, employee_id: number) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();

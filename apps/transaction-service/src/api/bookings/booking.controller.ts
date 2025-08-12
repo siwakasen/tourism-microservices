@@ -80,17 +80,24 @@ export class BookingController {
       }
     }
 
-  @Post('/assign-employee')
+  @Patch('/assign-employee/:id')
   @UseGuards(JwtAuthGuard)
   @Roles(UserType.ADMIN)
-  async assignEmployee(@Body() body: AssignEmployeeDto) {
-    return this.bookingService.assignEmployee(body.booking_id, body.employee_id);
+  async assignEmployee(@Param('id') id: number, @Body() body: AssignEmployeeDto) {
+    return this.bookingService.assignEmployee(id, body.employee_id);
   }
 
-  @Patch('/finish')
+  @Patch('/finish/:id')
   @UseGuards(JwtAuthGuard)
   @Roles(UserType.ADMIN)
-  async finishBooking(@Body() body: FinishBookingDto) {
-    return this.bookingService.finishBooking(body.booking_id, body.status);
+  async finishBooking(@Param('id') id: number, @Body() body: FinishBookingDto) {
+    return this.bookingService.finishBooking(id, body.status);
+  }
+
+  @Patch('/confirm-without-driver/:id')
+  @UseGuards(JwtAuthGuard)
+  @Roles(UserType.ADMIN)
+  async confirmCarBookingWithoutDriver(@Param('id') id: number) {
+    return this.bookingService.confirmCarBookingWithoutDriver(id);
   }
 }

@@ -260,24 +260,11 @@ export class AssignEmployeeDto {
     description: 'The employee id of the booking',
     example: 1,
   })
-  @IsNumber()
-  public readonly employee_id: number;
-
-  @ApiProperty({
-    description: 'The booking id of the booking',
-    example: 1,
-  })
-  @IsNumber()
-  public readonly booking_id: number;
+    @IsNumber()
+    public readonly employee_id: number;
 }
 
 export class FinishBookingDto {
-  @ApiProperty({
-    description: 'The booking id of the booking',
-    example: 1,
-  })
-  @IsNumber()
-  public readonly booking_id: number;
 
   @ApiProperty({
     enum: [BookingStatus.COMPLETED, BookingStatus.NO_SHOW],

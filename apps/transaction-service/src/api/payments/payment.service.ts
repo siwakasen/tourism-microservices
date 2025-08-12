@@ -97,7 +97,7 @@ export class PaymentService {
     }
   }
 
-  public async paymentNotificationHandler(notificationJson: any): Promise<{}> {
+  public async capturePaymentMidtrans(notificationJson: any): Promise<{}> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -314,7 +314,7 @@ export class PaymentService {
     }
   }
 
-  public async updateStatusPaypal(response: any, orderId: string) {
+  private async updateStatusPaypal(response: any, orderId: string) {
     if (response.status === 404) {
       throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
     }
@@ -335,15 +335,9 @@ export class PaymentService {
         net_amount: seller_receivable_breakdown.net_amount.value,
         payment_date: new Date(),
       });
-      if (!payment.booking.with_driver) {
-        await this.bookingRepository.update(payment.booking.id, {
-          status: BookingStatus.CONFIRMED,
-        });
-      } else {
-        await this.bookingRepository.update(payment.booking.id, {
-          status: BookingStatus.WAITING_CONFIRMATION,
-        });
-      }
+      await this.bookingRepository.update(payment.booking.id, {
+        status: BookingStatus.WAITING_CONFIRMATION,
+      });
       return {
         success: true,
         data: {
