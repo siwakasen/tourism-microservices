@@ -1,20 +1,22 @@
-import { AdjustmentStatus, BookingAdjustments,  Payment, PaymentStatus, Refunds, RequestType } from "libs/entities/transactions";
-import { Between, DataSource, In, LessThanOrEqual, MoreThanOrEqual, QueryRunner, Repository } from "typeorm";
+import { AdjustmentStatus, BookingAdjustments,  Payment, PaymentMethod, PaymentStatus, Refunds, RequestType } from "libs/entities/transactions";
+import { Between, DataSource, In, LessThanOrEqual, MoreThanOrEqual, QueryRunner, RemoveOptions, Repository, SaveOptions } from "typeorm";
 import { HttpException, HttpStatus, Inject, Injectable, OnModuleInit } from "@nestjs/common";
 import { Bookings, BookingStatus } from "libs/entities/transactions/bookings.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import {   ApprovementRescheduleDto, PaginationDto, RescheduleBookingReqDto } from "./booking-adjust.dto";
 import { RefundService } from "../refunds/refund.service";
 import { ClientGrpc } from "@nestjs/microservices";
-import {  CustomerServiceClient, EmployeeServiceClient } from "libs/entities";
+import {  Customer, CustomerServiceClient, EmployeeServiceClient } from "libs/entities";
 import { ApiTags } from "@nestjs/swagger";
 import { MailService } from "libs/helpers/src/mail/mail.service";
+import { PaymentService } from "../payments/payment.service";
 
 @Injectable()
 export class BookingAdjustmentService implements OnModuleInit {
     constructor(
       private readonly dataSource: DataSource,
       private readonly refundService: RefundService,
+      private readonly paymentService: PaymentService
       
     ) {}
     @InjectRepository(Bookings)
@@ -51,6 +53,7 @@ export class BookingAdjustmentService implements OnModuleInit {
 
     }
     
+    // FROM CONTROLLER ACCESS
     public async  cancelBooking(booking_id: number, customer_id : number, reason: string) {
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
@@ -114,6 +117,7 @@ export class BookingAdjustmentService implements OnModuleInit {
         }
     }
 
+    // FROM CONTROLLER ACCESS
     public async rescheduleBooking(booking_id:number, customer_id:number, payload: RescheduleBookingReqDto){
       const queryRunner = this.dataSource.createQueryRunner();
       await queryRunner.connect();
@@ -131,10 +135,10 @@ export class BookingAdjustmentService implements OnModuleInit {
             throw new HttpException('Booking cannot be rescheduled within 24 hours of the start date', HttpStatus.BAD_REQUEST);
           }
           if(booking.package_id){
-            const old_start_date = new Date(booking.start_date).setHours(0,0,0,0);
+            const now = new Date().setHours(0,0,0,0);
             const new_start_date = new Date(payload.new_start_date).setHours(0,0,0,0);
-            if(new_start_date <= old_start_date){
-              throw new HttpException('New start date must be greater than old start date', HttpStatus.BAD_REQUEST);
+            if(new_start_date <= now){
+              throw new HttpException('New start date must be greater than today', HttpStatus.BAD_REQUEST);
             }
           }else{
             const startDate = new Date(payload.new_start_date);
@@ -228,6 +232,7 @@ export class BookingAdjustmentService implements OnModuleInit {
 
     }
 
+    // FROM CONTROLLER ACCESS
     public async getAdjustments(paginationDto: PaginationDto) {
       console.log(paginationDto);
       const { page = 1, limit = 10, search = '' } = paginationDto;
@@ -271,6 +276,7 @@ export class BookingAdjustmentService implements OnModuleInit {
     }
   }
 
+  // FROM CONTROLLER ACCESS
   public async approvementCancellation(id: number, status: AdjustmentStatus.APPROVED | AdjustmentStatus.REJECTED) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -410,6 +416,7 @@ export class BookingAdjustmentService implements OnModuleInit {
   }
 
 
+  // FROM CONTROLLER ACCESS
   public async approvementReschedule(id: number, payload: ApprovementRescheduleDto) {
     const { status, employee_id } = payload;
     const queryRunner = this.dataSource.createQueryRunner();
@@ -417,6 +424,7 @@ export class BookingAdjustmentService implements OnModuleInit {
     await queryRunner.startTransaction();
     
     try {
+      console.log('id', id);
       const adjustment = await this.findAdjustmentForReschedule(queryRunner, id);
       
       if (status === AdjustmentStatus.REJECTED) {
@@ -443,10 +451,11 @@ export class BookingAdjustmentService implements OnModuleInit {
       where: {
         id,
         request_type: RequestType.RESCHEDULE,
-        status: In([AdjustmentStatus.PENDING, AdjustmentStatus.WAITING_PAYMENT]),
+        status: In([AdjustmentStatus.PENDING, AdjustmentStatus.WAITING_REASSIGNMENT]),
       },
       relations: ['booking'],
     });
+
     
     if (!adjustment) {
       throw new HttpException('Booking adjustment not found', HttpStatus.NOT_FOUND);
@@ -520,7 +529,9 @@ export class BookingAdjustmentService implements OnModuleInit {
         new_start_date, 
         new_end_date
       );
-    } else if (adjustment.status === AdjustmentStatus.WAITING_PAYMENT) {
+
+      // AFTER PAYMENT APPROVAL/REAPPROVE 
+    } else if (adjustment.status === AdjustmentStatus.WAITING_REASSIGNMENT) {
       return await this.handleWaitingPaymentWithDriverReschedule(
         queryRunner, 
         adjustment, 
@@ -530,6 +541,7 @@ export class BookingAdjustmentService implements OnModuleInit {
         new_end_date
       );
     }
+    throw new HttpException('Invalid adjustment status', HttpStatus.BAD_REQUEST);
   }
 
   private async handlePendingWithDriverReschedule(
@@ -544,14 +556,39 @@ export class BookingAdjustmentService implements OnModuleInit {
     await this.checkEmployeeConflict(queryRunner, employee_id, true, new_start_date, new_end_date);
     await this.checkCarConflict(queryRunner, booking.car_id, new_start_date, new_end_date);
 
+    // WITH PAYMENT
     if (adjustment.additional_price > 0) {
+      // CREATE PAYMENT HERE
       adjustment.status = AdjustmentStatus.WAITING_PAYMENT;
       await queryRunner.manager.save(adjustment);
+
+      const payment = await queryRunner.manager.findOne(Payment, {
+        where: {
+          booking: { id: booking.id },
+        },
+      });
+      if(payment.payment_method === PaymentMethod.MIDTRANS) {
+      await this.paymentService.createTransactionMidtransAdjustment(
+        booking, 
+        `Reschedule booking #${booking.id}`, 
+        adjustment.additional_price, 
+        adjustment,
+        queryRunner);
+      }else{
+        await this.paymentService.createOrderPaypalAdjustment(
+          booking, 
+          `Reschedule booking #${booking.id}`, 
+          adjustment.additional_price, 
+          adjustment,
+          queryRunner);
+      }
       await queryRunner.commitTransaction();
       
       return this.createSuccessResponse(adjustment, AdjustmentStatus.WAITING_PAYMENT);
     }
 
+
+    // WITHOUT PAYMENT
     await this.updateBookingForApproval(queryRunner, adjustment, employee_id);
     return this.createSuccessResponse(adjustment, AdjustmentStatus.APPROVED);
   }
@@ -591,7 +628,8 @@ export class BookingAdjustmentService implements OnModuleInit {
         new_start_date, 
         new_end_date
       );
-    } else if (adjustment.status === AdjustmentStatus.WAITING_PAYMENT) {
+      // AFTER PAYMENT APPROVAL/REAPPROVE
+    } else if (adjustment.status === AdjustmentStatus.WAITING_REASSIGNMENT) {
       return await this.handleWaitingPaymentWithoutDriverReschedule(
         queryRunner, 
         adjustment, 
@@ -600,6 +638,7 @@ export class BookingAdjustmentService implements OnModuleInit {
         new_end_date
       );
     }
+    throw new HttpException('Invalid adjustment status', HttpStatus.BAD_REQUEST);
   }
 
   private async handlePendingWithoutDriverReschedule(
@@ -611,14 +650,37 @@ export class BookingAdjustmentService implements OnModuleInit {
   ) {
     await this.checkCarConflict(queryRunner, booking.car_id, new_start_date, new_end_date);
 
+    // WITH PAYMENT
     if (adjustment.additional_price > 0) {
+      // CREATE PAYMENT HERE
       adjustment.status = AdjustmentStatus.WAITING_PAYMENT;
       await queryRunner.manager.save(adjustment);
+      const payment = await queryRunner.manager.findOne(Payment, {
+        where: {
+          booking: { id: booking.id },
+        },
+      });
+      if(payment.payment_method === PaymentMethod.MIDTRANS) {
+      await this.paymentService.createTransactionMidtransAdjustment(
+        booking, 
+        `Reschedule booking #${booking.id}`, 
+        adjustment.additional_price, 
+        adjustment,
+        queryRunner);
+      }else{
+        await this.paymentService.createOrderPaypalAdjustment(
+          booking, 
+          `Reschedule booking #${booking.id}`, 
+          adjustment.additional_price, 
+          adjustment,
+          queryRunner);
+      }
       await queryRunner.commitTransaction();
       
       return this.createSuccessResponse(adjustment, AdjustmentStatus.WAITING_PAYMENT);
     }
 
+    // WITHOUT PAYMENT
     await this.updateBookingForApproval(queryRunner, adjustment);
     return this.createSuccessResponse(adjustment, AdjustmentStatus.APPROVED);
   }

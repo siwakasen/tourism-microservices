@@ -11,6 +11,8 @@ import { AuthHelper } from "@app/helpers/auth/user/auth.helper";
 import { JwtStrategy } from "@app/helpers/auth/user/auth.strategy";
 import { RefundService } from "../refunds/refund.service";
 import { MailModule } from "libs/helpers/src/mail/mail.module";
+import { PaymentService } from "../payments/payment.service";
+import { AuthRedisService } from "../payments/redis.service";
 
 
 @Module({
@@ -59,7 +61,7 @@ import { MailModule } from "libs/helpers/src/mail/mail.module";
     ],
     
     controllers: [BookingAdjustmentController],
-    providers: [BookingAdjustmentService,  RefundService,JwtStrategy,{
+    providers: [BookingAdjustmentService, RefundService, PaymentService,JwtStrategy, AuthRedisService,{
         provide: AuthHelper,
         useFactory: (jwt: JwtService, cusAuthClient: ClientGrpc,  empAuthClient: ClientGrpc ) => {
           return new AuthHelper(jwt, empAuthClient, cusAuthClient);

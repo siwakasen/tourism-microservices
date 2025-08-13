@@ -57,6 +57,7 @@ export class BookingService implements OnModuleInit {
   @Inject(DataSource)
   private readonly dataSource: DataSource;
   onModuleInit() {
+    
     this.customerGrpcService = this.clientCus.getService<CustomerServiceClient>(
       'CustomerGrpcService',
     );

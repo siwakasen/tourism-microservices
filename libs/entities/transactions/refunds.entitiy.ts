@@ -9,7 +9,7 @@ export enum RefundStatus {
   FAILED = 'FAILED'
 }
 
-export enum RefundMetod {
+export enum RefundMethod {
   BANK_TRANSFER = 'BANK_TRANSFER',
   PAYPAL = 'PAYPAL',
 }
@@ -35,11 +35,11 @@ class Refunds extends BaseEntity {
   @ApiProperty()
   @Column({
     type: 'enum',
-    enum: RefundMetod,
-    default: RefundMetod.BANK_TRANSFER,
+    enum: RefundMethod,
+    default: RefundMethod.BANK_TRANSFER,
     nullable: true
   })
-  public method?: RefundMetod;
+  public method?: RefundMethod;
 
   @ApiProperty()
   @Column({ type: 'text', nullable: true })

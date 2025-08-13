@@ -2,7 +2,7 @@ import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { PaymentController } from "./payment.controller";
 import { PaymentService } from "./payment.service";
-import { Bookings, Payment } from "libs/entities";
+import { Bookings, Payment, BookingAdjustments } from "libs/entities";
 import { ConfigService } from "@nestjs/config";
 import { ClientGrpc, ClientsModule, Transport } from "@nestjs/microservices";
 import { AuthHelper } from "@app/helpers/auth/user/auth.helper";
@@ -13,7 +13,7 @@ import { AuthRedisService } from "./redis.service";
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([Payment, Bookings]),
+        TypeOrmModule.forFeature([Payment, Bookings,BookingAdjustments]),
         PassportModule.register({ defaultStrategy: 'user', property: 'user' }),
         JwtModule.registerAsync({
         inject: [ConfigService],
@@ -89,7 +89,7 @@ import { AuthRedisService } from "./redis.service";
         ]),
     ],
     controllers: [PaymentController],
-    providers: [PaymentService, AuthRedisService,  JwtStrategy,{
+    providers: [PaymentService, AuthRedisService,  JwtStrategy,{    
         provide: AuthHelper,
         useFactory: (jwt: JwtService, cusAuthClient: ClientGrpc, empAuthClient: ClientGrpc  ) => {
           return new AuthHelper(jwt, empAuthClient, cusAuthClient);

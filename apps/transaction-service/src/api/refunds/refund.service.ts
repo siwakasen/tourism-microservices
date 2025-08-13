@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";    
-import { Bookings, Payment, PaymentMethod, RefundMetod, Refunds, RefundStatus } from "libs/entities";
+import { Bookings, Payment, PaymentMethod, RefundMethod, Refunds, RefundStatus } from "libs/entities";
 import { DataSource, In, QueryRunner } from "typeorm";
 import { AddFormDto, PaginationDto } from "./refund.dto";
 
@@ -21,7 +21,7 @@ import { AddFormDto, PaginationDto } from "./refund.dto";
         const refund = queryRunner.manager.create(Refunds, {
             booking: booking,
             amount: refund_amount,
-            method: payment[0].payment_method === PaymentMethod.PAYPAL ? RefundMetod.PAYPAL : RefundMetod.BANK_TRANSFER,
+            method: payment[0].payment_method === PaymentMethod.PAYPAL ? RefundMethod.PAYPAL : RefundMethod.BANK_TRANSFER,
             reason,
             status: RefundStatus.WAITING_FORM,
         });
@@ -34,10 +34,11 @@ import { AddFormDto, PaginationDto } from "./refund.dto";
             const queryBuilder = this.dataSource.manager.createQueryBuilder(Refunds, 'refunds')
             .leftJoinAndSelect('refunds.booking', 'bookings')
             .where('bookings.customer_id = :customer_id', { customer_id })
-            .andWhere('refunds.id = :refund_id', { refund_id })
+            .andWhere('bookings.id = :refund_id', { refund_id })
             
 
             const result = await queryBuilder.getOne();
+            
             return {
                 data: result,
                 message: 'Refund fetched successfully',
@@ -111,10 +112,12 @@ import { AddFormDto, PaginationDto } from "./refund.dto";
             if(!refund){
                 throw new HttpException('Refund not found', HttpStatus.NOT_FOUND);
             }
-            if(refund.method !== payload.method){
-                throw new HttpException(`Your refund method for this booking is ${refund.method}`, HttpStatus.BAD_REQUEST);
+            if(refund.method === RefundMethod.BANK_TRANSFER){
+                if(!payload.bank_name || !payload.account_number || !payload.account_name){
+                    throw new HttpException('Bank name, account number, and account name are required', HttpStatus.BAD_REQUEST);
+                }
             }
-            if(refund.method === RefundMetod.BANK_TRANSFER){
+            if(refund.method === RefundMethod.BANK_TRANSFER){
                 refund.bank_name = payload.bank_name;
                 refund.account_number = payload.account_number; 
                 refund.account_name = payload.account_name;

@@ -6,7 +6,7 @@ import { JwtAuthGuard } from "@app/helpers/auth/user/auth.guard";
 import { Roles, UserType } from "@app/helpers/auth/decorators/auth.decorator";
 import { GetCustomer } from "@app/helpers/auth/decorators/get-user.decorator";
 import { Customer } from "libs/entities/customer/customer.entity";
-import { RefundMetod } from "libs/entities/transactions/refunds.entitiy";
+import { RefundMethod } from "libs/entities/transactions/refunds.entitiy";
 
 
 @Controller('refunds')
@@ -20,13 +20,13 @@ export class RefundController {
     @UseGuards(JwtAuthGuard)
     @Roles(UserType.CUSTOMER)
     @ApiBearerAuth()
-    async getRefund(@Param('id') id: number, @GetCustomer() customer: Customer) {
+    async getRefundByIdBooking(@Param('id') id: number, @GetCustomer() customer: Customer) {
         return this.refundService.getRefundById(customer.id, id);
     }
 
-    @Get('all')
+    @Get('data/all')
     @UseGuards(JwtAuthGuard)
-    @Roles(UserType.ADMIN, UserType.OWNER)
+    @Roles(UserType.OWNER)
     @ApiBearerAuth()
     async getAllRefund(@Query() query: PaginationDto) {
         return this.refundService.getAllRefund(query);
@@ -37,11 +37,6 @@ export class RefundController {
     @Roles(UserType.CUSTOMER)
     @ApiBearerAuth()
     async saveFormCustomer(@Param('id') id: number, @Body() body: AddFormDto, @GetCustomer() customer: Customer) {
-        if(body.method === RefundMetod.BANK_TRANSFER){
-            if(!body.bank_name || !body.account_number || !body.account_name){
-                throw new HttpException('Bank name, account number, and account name are required', HttpStatus.BAD_REQUEST);
-            }
-        }
         return this.refundService.saveForm(body, customer.id, id);
     }
 

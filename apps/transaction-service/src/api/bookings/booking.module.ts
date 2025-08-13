@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { BookingController } from './booking.controller';
 import { BookingService } from './booking.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Bookings, Payment } from 'libs/entities';
+import { Bookings, Payment, BookingAdjustments } from 'libs/entities';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -14,7 +14,7 @@ import { AuthRedisService } from '../payments/redis.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Bookings, Payment]),
+    TypeOrmModule.forFeature([Bookings, Payment, BookingAdjustments]),
     PassportModule.register({ defaultStrategy: 'user', property: 'user' }),
     JwtModule.registerAsync({
       inject: [ConfigService],

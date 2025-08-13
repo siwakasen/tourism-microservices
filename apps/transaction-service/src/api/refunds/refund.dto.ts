@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
-import { RefundMetod } from "libs/entities/transactions/refunds.entitiy";
+import { RefundMethod } from "libs/entities/transactions/refunds.entitiy";
 
 export class PaginationDto {
     @ApiProperty({ default: 1 })
@@ -21,10 +21,6 @@ export class PaginationDto {
 }
 
 export class AddFormDto {
-    @ApiProperty({ enum: RefundMetod })
-    @IsEnum(RefundMetod)
-    public readonly method: RefundMetod;
-
     @ApiProperty()
     @IsString()
     @IsOptional()
