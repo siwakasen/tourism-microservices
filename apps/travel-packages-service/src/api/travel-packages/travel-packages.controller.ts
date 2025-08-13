@@ -54,7 +54,7 @@ export class TravelPackagesController {
     description: 'Successfuly get data travel package with deleted',
   })
   @UseGuards(JwtAuthGuard)
-  @Roles(UserType.ADMIN)
+  @Roles(UserType.ADMIN, UserType.OWNER)
   @Get('/history')
   public async getTravelPackagesHistory(@Query() query: PaginationDto) {
     return await this.travelPackagesService.getAllTravelPackagesWithDeleted(query);

@@ -31,25 +31,22 @@ export class RescheduleBookingReqDto{
   @IsNotEmpty()
   public readonly new_end_date: Date;
 }
+export class PaginationDto {
+  @ApiProperty({ default: 1 })
+  @IsNumber()
+  @Type(() => Number)
+  public readonly page: number;
 
+  @ApiProperty({ default: 10 })
+  @IsNumber()
+  @Type(() => Number)
+  public readonly limit: number;
 
-
-  export class PaginationDto {
-    @ApiProperty({ default: 1 })
-    @IsNumber()
-    @Type(() => Number)
-    public readonly page: number;
-  
-    @ApiProperty({ default: 10 })
-    @IsNumber()
-    @Type(() => Number)
-    public readonly limit: number;
-  
-    @ApiProperty({ default: '', required: false })
-    @IsString()
-    @IsOptional()
-    public readonly search: string;
-  }
+  @ApiProperty({ default: '', required: false })
+  @IsString()
+  @IsOptional()
+  public readonly search: string;
+}
 
   export class ApproveRejectCancellationDto {
     @ApiProperty({ 

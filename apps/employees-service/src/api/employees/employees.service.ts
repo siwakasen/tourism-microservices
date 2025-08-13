@@ -318,7 +318,7 @@ export class EmployeeService implements OnModuleInit {
   }
 
   public async getAvailableEmployees(payload: AvailableEmployeesDto) {
-    const { page = 1, limit = 10, start_date, end_date, role_id } = payload;
+    const { start_date, end_date, role_id } = payload;
     const { employee_ids } = await this.bookingsGrpcService
       .getEmployeesByBookingDateRange({ start_date, end_date })
       .toPromise();
@@ -350,24 +350,11 @@ export class EmployeeService implements OnModuleInit {
       queryBuilder.where('role.id = :roleId', { roleId: role_id });
     }
 
-    const [result, total] = await queryBuilder
-      .skip((page - 1) * limit)
-      .take(limit)
-      .getManyAndCount();
-
-    const totalPages = Math.ceil(total / limit);
-    const hasNextPage = page < totalPages;
+    const [result] = await queryBuilder.getManyAndCount();
 
     return {
-      data: result,
-      meta: {
-        totalItems: total,
-        currentPage: page,
-        totalPages,
-        limit,
-        hasNextPage,
-        hasPrevPage: page > 1,
-      },
+      data: Array.isArray(result) ? result : [result],
+      message: 'Successfully get available employees',
     };
   }
 

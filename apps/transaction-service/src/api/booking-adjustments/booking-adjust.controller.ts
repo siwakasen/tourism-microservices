@@ -7,8 +7,8 @@ import { GetCustomer } from "@app/helpers/auth/decorators/get-user.decorator";
 import { Customer } from "libs/entities";
 import { ApprovementRescheduleDto, ApproveRejectCancellationDto, CancelBookingReqDto, PaginationDto, RescheduleBookingReqDto } from "./booking-adjust.dto";
 
-@ApiTags('Booking Controller')
 @ApiBearerAuth()
+@ApiTags('Booking Controller')
 @Controller('bookings')
 export class BookingAdjustmentController {
     constructor(private readonly bookingAdjustmentService: BookingAdjustmentService) {}
@@ -20,11 +20,11 @@ export class BookingAdjustmentController {
       return this.bookingAdjustmentService.cancelBooking(booking_id, customer.id, body.reason);
     }
 
-    @Get('/adjustments')
+    @Get('/adjustments/all')
     @UseGuards(JwtAuthGuard)
     @Roles(UserType.ADMIN)
-    async getAdjustment(@Query() paginationDto: PaginationDto) {
-      return this.bookingAdjustmentService.getAdjustments(paginationDto);
+    async getAdjustment(@Query() query: PaginationDto) {
+      return this.bookingAdjustmentService.getAdjustments(query);
     }
 
     @Patch('/aprrovement-cancellation/:id')

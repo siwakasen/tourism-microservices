@@ -141,6 +141,7 @@ export class CustomerService implements OnModuleInit {
     try {
       const user: Customer = await this.repository.findOne({
         where: { id },
+        withDeleted: true,
       });
 
       if (!user) {
@@ -150,6 +151,7 @@ export class CustomerService implements OnModuleInit {
       delete user.password;
       return {
         data: user,
+        message: 'Customer data retrieved successfully',
       };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);

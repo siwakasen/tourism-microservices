@@ -99,7 +99,7 @@ export class EmployeeController {
   }
 
   @Get(':id')
-  @Roles(UserType.OWNER)
+  @Roles(UserType.OWNER, UserType.ADMIN)
   @UseGuards(JwtAuthGuard)
   public async getEmployeeById(@Param('id') id: number) {
     return await this.service.getEmployeeById(id);

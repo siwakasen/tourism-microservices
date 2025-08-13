@@ -180,7 +180,7 @@ export class UpdateEmployeeDto {
   public readonly salary: number;
 }
 
-export class AvailableEmployeesDto extends PaginationEmployeeDto {
+export class AvailableEmployeesDto {
   @ApiProperty({
     default: new Date(
       new Date().setDate(new Date().getDate() + 1),

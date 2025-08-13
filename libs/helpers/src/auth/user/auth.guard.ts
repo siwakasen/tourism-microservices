@@ -31,6 +31,8 @@ export class JwtAuthGuard extends Guard('user') implements IAuthGuard {
 
     const request = context.switchToHttp().getRequest();
     const user = request.user;
+    console.log(user);
+    console.log(requiredRoles);
     if (!user) {
       throw new UnauthorizedException('User not found');
     }

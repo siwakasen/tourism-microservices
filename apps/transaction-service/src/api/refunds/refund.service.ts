@@ -29,43 +29,18 @@ import { AddFormDto, PaginationDto } from "./refund.dto";
         return refund;
     }
     
-    public async getRefund(paginationDto: PaginationDto, customer_id: number) {
+    public async getRefundById( customer_id: number, refund_id: number) {
         try {
-            const { page, limit, search } = paginationDto;
             const queryBuilder = this.dataSource.manager.createQueryBuilder(Refunds, 'refunds')
             .leftJoinAndSelect('refunds.booking', 'bookings')
-            .leftJoinAndSelect('bookings.booking_adjustments', 'booking_adjustments')
             .where('bookings.customer_id = :customer_id', { customer_id })
-            .orderBy('refunds.created_at', 'DESC');
+            .andWhere('refunds.id = :refund_id', { refund_id })
+            
 
-            const conditions = [];
-            const parameters: Record<string, any> = {};
-
-            if(search){
-                conditions.push('CAST(refunds.status AS TEXT) ILIKE :search');
-                conditions.push('CAST(refunds.method AS TEXT) ILIKE :search');
-                conditions.push('refunds.reason ILIKE :search');
-                parameters['search'] = `%${search}%`;
-            }
-
-            if(conditions.length){
-                queryBuilder.where(conditions.join(' OR '), parameters);
-            }
-
-            const [result, total] = await queryBuilder.skip((page - 1) * limit).take(limit).getManyAndCount();
-            const totalPages = Math.ceil(total / limit);
-            const hasNextPage = page < totalPages;
-
+            const result = await queryBuilder.getOne();
             return {
                 data: result,
-                meta: {
-                    totalItems: total,
-                    currentPage: page,
-                    totalPages,
-                    limit,
-                    hasNextPage,
-                    hasPrevPage: page > 1,
-                },
+                message: 'Refund fetched successfully',
             };
         } catch (error) {
             throw new HttpException(

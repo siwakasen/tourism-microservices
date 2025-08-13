@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import resetPasswordTemplate from './mail-template/reset.password';
 import registrationTemplate from './mail-template/register';
+import cancelApprovedTemplate from './mail-template/cancel-approved';
 
 @Injectable()
 export class MailService {
@@ -47,6 +48,20 @@ export class MailService {
     this.mailerService.sendMail({
       to: email,
       subject: 'Account Registration',
+      html: htmlTemplate,
+    });
+  }
+
+  async sendCancelApproved(payload: {
+    email: string;
+    name: string;
+    url: string;
+  }): Promise<void> {
+    const { email, name, url } = payload;
+    const htmlTemplate = `${cancelApprovedTemplate(name, url)}`;
+    this.mailerService.sendMail({
+      to: email,
+      subject: 'Booking Cancellation Approved',
       html: htmlTemplate,
     });
   }

@@ -16,7 +16,10 @@ export class GrpcCustomerService {
 
   public getCustomerGrpc = async (id: number) => {
     try {
-      const customer = await this.repository.findOne({ where: { id } });
+      const customer = await this.repository.findOne({ where: { id }, withDeleted: true });
+      if (!customer) {
+        throw new RpcException('Customer not found');
+      }
       return customer;
     } catch (error) {
       console.error(error);

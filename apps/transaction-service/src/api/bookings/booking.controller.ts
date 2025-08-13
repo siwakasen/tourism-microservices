@@ -19,13 +19,13 @@ export class BookingController {
   @Get()
   @UseGuards(JwtAuthGuard)
   @Roles(UserType.CUSTOMER)
-  async getBookings(@GetCustomer() customer: Customer, @Query() query: PaginationDto) : Promise<BookingResDto>  {
-   return this.bookingService.getBookings(customer.id, query);
+  async getBookingsByCustomer(@GetCustomer() customer: Customer, @Query() query: PaginationDto) : Promise<BookingResDto>  {
+   return this.bookingService.getBookingsByCustomer(customer.id, query);
   }
 
   @Get('/all')
   @UseGuards(JwtAuthGuard)
-  @Roles(UserType.ADMIN)
+  @Roles(UserType.ADMIN, UserType.OWNER)
   async getAllBookings(@Query() query: PaginationDto) : Promise<BookingResDto> {
     return this.bookingService.getAllBookings(query);
   }
@@ -42,6 +42,13 @@ export class BookingController {
     if(payload.package_id && !payload.number_of_persons){
       throw new HttpException('Number of persons is required', HttpStatus.BAD_REQUEST);
     }
+  }
+
+  @Get('/emp/:id')
+  @UseGuards(JwtAuthGuard)
+  @Roles(UserType.ADMIN)
+  async getBookingAsEmployeeById  (@Param('id') id: number) {
+    return this.bookingService.getBookingAsEmployeeById(id);
   }
 
   @Get('/:id')

@@ -10,6 +10,7 @@ import { ClientGrpc, ClientsModule, Transport } from "@nestjs/microservices";
 import { AuthHelper } from "@app/helpers/auth/user/auth.helper";
 import { JwtStrategy } from "@app/helpers/auth/user/auth.strategy";
 import { RefundService } from "../refunds/refund.service";
+import { MailModule } from "libs/helpers/src/mail/mail.module";
 
 
 @Module({
@@ -40,15 +41,30 @@ import { RefundService } from "../refunds/refund.service";
                 }),
             },
         ]),
+        ClientsModule.registerAsync([
+            {
+              inject: [ConfigService],
+              name: 'CUS_AUTH_CLIENT',
+              useFactory: (config: ConfigService) => ({
+                transport: Transport.GRPC,
+                options: {
+                  package: 'authcus',
+                  protoPath: 'contract/auth-customer-api.proto',
+                  url: config.get<string>('CUS_AUTH_CLIENT'),
+                },
+              }),
+            },
+          ]),
+          MailModule,
     ],
     
     controllers: [BookingAdjustmentController],
-    providers: [BookingAdjustmentService, JwtStrategy, RefundService,{
+    providers: [BookingAdjustmentService,  RefundService,JwtStrategy,{
         provide: AuthHelper,
-        useFactory: (jwt: JwtService,  empAuthClient: ClientGrpc) => {
-          return new AuthHelper(jwt, empAuthClient  );
+        useFactory: (jwt: JwtService, cusAuthClient: ClientGrpc,  empAuthClient: ClientGrpc ) => {
+          return new AuthHelper(jwt, empAuthClient, cusAuthClient);
         },
-        inject: [JwtService, 'EMP_AUTH_CLIENT'],
+        inject: [JwtService, 'CUS_AUTH_CLIENT', 'EMP_AUTH_CLIENT'],
       }],
 })
 export class BookingAdjustmentModule {}

@@ -16,12 +16,12 @@ export class RefundController {
     constructor(private readonly refundService: RefundService) {}
 
 
-    @Get('')
+    @Get(':id')
     @UseGuards(JwtAuthGuard)
     @Roles(UserType.CUSTOMER)
     @ApiBearerAuth()
-    async getRefund(@Query() query: PaginationDto, @GetCustomer() customer: Customer) {
-        return this.refundService.getRefund(query, customer.id);
+    async getRefund(@Param('id') id: number, @GetCustomer() customer: Customer) {
+        return this.refundService.getRefundById(customer.id, id);
     }
 
     @Get('all')

@@ -6,7 +6,9 @@ import { InjectRepository } from "@nestjs/typeorm";
 import {   ApprovementRescheduleDto, PaginationDto, RescheduleBookingReqDto } from "./booking-adjust.dto";
 import { RefundService } from "../refunds/refund.service";
 import { ClientGrpc } from "@nestjs/microservices";
-import {  EmployeeServiceClient } from "libs/entities";
+import {  CustomerServiceClient, EmployeeServiceClient } from "libs/entities";
+import { ApiTags } from "@nestjs/swagger";
+import { MailService } from "libs/helpers/src/mail/mail.service";
 
 @Injectable()
 export class BookingAdjustmentService implements OnModuleInit {
@@ -23,9 +25,30 @@ export class BookingAdjustmentService implements OnModuleInit {
     @Inject('EMP_AUTH_CLIENT')
     private clientEmp: ClientGrpc;
     private employeeGrpcService: EmployeeServiceClient;
+
+    @Inject('CUS_AUTH_CLIENT')
+    private clientCus: ClientGrpc;
+    private customerGrpcService: CustomerServiceClient;
+
+    @Inject(MailService)
+
+  private readonly mailService: MailService;
     
     onModuleInit() {
         this.employeeGrpcService = this.clientEmp.getService<EmployeeServiceClient>('EmployeeGrpcService');
+        this.customerGrpcService = this.clientCus.getService<CustomerServiceClient>('CustomerGrpcService');
+    }
+
+    private async getCustomerGrpc(customer_id: number) {
+      console.log('requesting customer', customer_id);
+        const response = await this.customerGrpcService
+          .getCustomer({
+            id: customer_id,
+          })
+          .toPromise();
+        console.log('response grpc get customer', response);
+        return response;
+
     }
     
     public async  cancelBooking(booking_id: number, customer_id : number, reason: string) {
@@ -46,9 +69,12 @@ export class BookingAdjustmentService implements OnModuleInit {
             if(booking.status === BookingStatus.WAITING_PAYMENT){
         
               // ada case untuk report-service : status cancelled dengan payment PENDING tidak dihitung
+              // auto cancel on booking
               await this.dataSource.manager.update(Bookings, { id: booking_id }, { status: BookingStatus.CANCELLED });
+              await this.dataSource.manager.update(Payment, { booking: { id: booking_id }, status: PaymentStatus.PENDING }, { status: PaymentStatus.FAILED });
               return {
-                message: 'Booking cancellation request created successfully',
+                data: booking,
+                message: 'Booking cancelled successfully',
               };
             }
             
@@ -203,6 +229,7 @@ export class BookingAdjustmentService implements OnModuleInit {
     }
 
     public async getAdjustments(paginationDto: PaginationDto) {
+      console.log(paginationDto);
       const { page = 1, limit = 10, search = '' } = paginationDto;
       try {
         const queryBuilder = this.repository.createQueryBuilder('booking_adjustments')
@@ -261,11 +288,18 @@ export class BookingAdjustmentService implements OnModuleInit {
       let refund_data : Refunds;
       // approve cancellation
       if(status === AdjustmentStatus.APPROVED){
-        // update booking status to cancelled
+          // update booking status to cancelled
         // then refund the customer
         const booking = await this.bookingRepository.findOne({ where: { id: adjustment.booking.id } });
         booking.status = BookingStatus.CANCELLED;
+
+        const customer = await this.getCustomerGrpc(booking.customer_id);
         await this.bookingRepository.save(booking);
+        await this.mailService.sendCancelApproved({
+          email: customer.email,
+          name: customer.name,
+          url: `${process.env.FRONTEND_URL}/history-order/${booking.id}`,
+        });
         // refund the customer
          refund_data = await this.refundService.createRefund(booking, adjustment.reason, queryRunner);
 

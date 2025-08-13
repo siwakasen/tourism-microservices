@@ -433,28 +433,9 @@ export class BookingService implements OnModuleInit {
       await queryRunner.release();
     }
   }
-  public async getBookingById(booking_id: number, customer_id: number) {
-    try {
-    const queryBuilder = this.dataSource.manager
-      .createQueryBuilder(Bookings, 'bookings')
-      .leftJoinAndSelect('bookings.payments', 'payments')
-      .where('bookings.id = :booking_id', { booking_id })
-      .andWhere('bookings.customer_id = :customer_id', { customer_id });
-    const booking = await queryBuilder.getOne();
+  
 
-    if (!booking) {
-      throw new HttpException('Booking not found', HttpStatus.NOT_FOUND);
-    }
-    return {
-      data: booking,
-        message: 'Booking fetched successfully',
-      };
-    } catch (error) {
-      throw new HttpException(error.message, error.status);
-    }
-  }
-
-  public async getBookings(
+  public async getBookingsByCustomer(
     customer_id: number,
     paginationDto: PaginationDto,
   ): Promise<BookingResDto> {
@@ -465,6 +446,7 @@ export class BookingService implements OnModuleInit {
       const queryBuilder = this.dataSource.manager
         .createQueryBuilder(Bookings, 'bookings')
         .leftJoinAndSelect('bookings.payments', 'payments')
+        .leftJoinAndSelect('bookings.booking_adjustments', 'booking_adjustments')
         .where('bookings.customer_id = :customer_id', { customer_id })
         .orderBy('bookings.created_at', 'DESC')
         .addOrderBy('payments.created_at', 'DESC');
@@ -490,6 +472,28 @@ export class BookingService implements OnModuleInit {
       };
     } catch (error) {
       throw new HttpException(error.details, error.status);
+    }
+  }
+
+  public async getBookingById(booking_id: number, customer_id: number) {
+    try {
+    const queryBuilder = this.dataSource.manager
+      .createQueryBuilder(Bookings, 'bookings')
+      .leftJoinAndSelect('bookings.payments', 'payments')
+      .leftJoinAndSelect('bookings.booking_adjustments', 'booking_adjustments')
+      .where('bookings.id = :booking_id', { booking_id })
+      .andWhere('bookings.customer_id = :customer_id', { customer_id });
+    const booking = await queryBuilder.getOne();
+
+    if (!booking) {
+      throw new HttpException('Booking not found', HttpStatus.NOT_FOUND);
+    }
+    return {
+      data: booking,
+        message: 'Booking fetched successfully',
+      };
+    } catch (error) {
+      throw new HttpException(error.message, error.status);
     }
   }
 
@@ -540,6 +544,22 @@ export class BookingService implements OnModuleInit {
     } catch (error) {
       throw new HttpException(error.message, error.status);
     }
+  }
+
+  public async getBookingAsEmployeeById(booking_id: number) {
+    const queryBuilder = this.dataSource.manager
+      .createQueryBuilder(Bookings, 'bookings')
+      .leftJoinAndSelect('bookings.payments', 'payments')
+      .leftJoinAndSelect('bookings.booking_adjustments', 'booking_adjustments')
+      .where('bookings.id = :booking_id', { booking_id });
+    const booking = await queryBuilder.getOne();
+    if (!booking) {
+      throw new HttpException('Booking not found', HttpStatus.NOT_FOUND);
+    }
+    return {
+      data: booking,
+      message: 'Booking fetched successfully',
+    };
   }
 
   public async finishBooking(

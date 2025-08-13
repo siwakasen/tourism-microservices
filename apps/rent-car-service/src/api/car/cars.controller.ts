@@ -55,7 +55,7 @@ export class CarsController {
     description: 'Successfuly get data cars with deleted',
   })
   @UseGuards(JwtAuthGuard)
-  @Roles(UserType.ADMIN)
+  @Roles(UserType.ADMIN, UserType.OWNER)
   @Get('/history')
   public async getAllCarsHistory(@Query() query: PaginationDto) {
     return await this.carsService.getAllCarsWithDeleted(query);
