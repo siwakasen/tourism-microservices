@@ -1,8 +1,9 @@
-version: '3.8'
+
 
 services:
   # Customer Service
   customer-service:
+    container_name: customer-service
     build:
       context: .
       dockerfile: Dockerfile.customer
@@ -17,6 +18,7 @@ services:
 
   # Employees Service
   employees-service:
+    container_name: employees-service
     build:
       context: .
       dockerfile: Dockerfile.employees
@@ -30,6 +32,7 @@ services:
 
   # Expenses Service
   expenses-service:
+    container_name: expenses-service
     build:
       context: .
       dockerfile: Dockerfile.expenses
@@ -43,6 +46,7 @@ services:
 
   # Rent Car Service
   rent-car-service:
+    container_name: rent-car-service
     build:
       context: .
       dockerfile: Dockerfile.rent-car
@@ -57,6 +61,7 @@ services:
 
   # Travel Packages Service
   travel-packages-service:
+    container_name: travel-packages-service
     build:
       context: .
       dockerfile: Dockerfile.travel-packages
@@ -71,11 +76,13 @@ services:
 
   # Transaction Service
   transaction-service:
+    container_name: transaction-service
     build:
       context: .
       dockerfile: Dockerfile.transaction
     environment:
       - NODE_ENV=production
+      - SERVICE_INSTANCE=2
     volumes:
       - ./contract:/app/contract
     networks:
