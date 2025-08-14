@@ -1,0 +1,116 @@
+version: '3.8'
+
+services:
+  # Customer Service
+  customer-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.customer
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./contract:/app/contract
+    networks:
+      - tourism-network
+    restart: unless-stopped
+
+  # Employees Service
+  employees-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.employees
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./contract:/app/contract
+    networks:
+      - tourism-network
+    restart: unless-stopped
+
+  # Expenses Service
+  expenses-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.expenses
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./contract:/app/contract
+    networks:
+      - tourism-network
+    restart: unless-stopped
+
+  # Rent Car Service
+  rent-car-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.rent-car
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./contract:/app/contract
+    networks:
+      - tourism-network
+    restart: unless-stopped
+
+  # Travel Packages Service
+  travel-packages-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.travel-packages
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./contract:/app/contract
+    networks:
+      - tourism-network
+    restart: unless-stopped
+
+  # Transaction Service
+  transaction-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.transaction
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./contract:/app/contract
+    networks:
+      - tourism-network
+    restart: unless-stopped
+
+  # Live Chat Service (using base Dockerfile pattern)
+  # live-chat-service:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.live-chat
+  #   environment:
+  #     - NODE_ENV=production
+  #   volumes:
+  #     - ./contract:/app/contract
+  #   networks:
+  #     - tourism-network
+  #   restart: unless-stopped
+
+  # Report Service (using base Dockerfile pattern)
+  # report-service:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.report
+  #   environment:
+  #     - NODE_ENV=production
+  #   volumes:
+  #     - ./contract:/app/contract
+  #   networks:
+  #     - tourism-network
+  #   restart: unless-stopped
+
+networks:
+  cloudflare-network:
+    external: true
+  travel-network:
+    external: true
+
+volumes:
+  travel-volume:
+    external: true    
