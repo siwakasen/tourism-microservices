@@ -16,9 +16,9 @@ RUN apk add --no-cache bash
 
 WORKDIR /app
 COPY --from=builder tmp/node_modules ./node_modules
-COPY --from=builder tmp/dist/apps/transaction-service ./transaction-service
-COPY /contract /app/contract
+COPY --from=builder tmp/dist ./dist
+COPY --from=builder tmp/contract ./contract
 RUN rm -rf /tmp
 
 EXPOSE 3000
-CMD ["node", "transaction-service/src/main"]
+CMD ["node", "dist/apps/transaction-service/src/main"]
