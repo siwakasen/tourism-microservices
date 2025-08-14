@@ -21,4 +21,4 @@ COPY --from=builder tmp/contract ./contract
 RUN rm -rf /tmp
 
 EXPOSE 3000
-CMD ["node", "dist/apps/rent-car-service/src/main"]
+CMD ["node", "dist/apps/rent-car-service/src/main.js"]

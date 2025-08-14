@@ -150,41 +150,6 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
 
-## STRUKTUR FOLDER
-
-```
-apps/
-└── travel-packages-service/
-    ├── src/
-    │   ├── api/
-    │   │   ├── auth/
-    │   │   ├── rental-car/
-    │   │   └── travel-packages/
-    │   │       ├── travel-packages.controller.ts
-    │   │       ├── travel-packages.dto.ts
-    │   │       ├── travel-packages.module.ts
-    │   │       └── travel-packages.service.ts
-    │   ├── weeding/
-    │   ├── common/
-    │   │   ├── envs/
-    │   │   │   └── development.env
-    │   │   └── helper/
-    │   │       └── env.helper.ts
-    │   ├── shared/
-    │   │   └── typeorm/
-    │   ├── api.module.ts
-    │   └── main.ts
-    ├── test/
-    │   └── tsconfig.app.json
-libs/
-└── entities/
-    ├── tours/
-    │   ├── travel-packages.entity.ts
-    │   ├── weeding.entity.ts
-    │   └── index.ts
-    └── helper/
-        └── auth/
-            └── auth.helper.ts
 dist/
 node_modules/
 .eslintrc.js

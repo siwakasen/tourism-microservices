@@ -18,6 +18,10 @@ async function bootstrap() {
       'https://travel.vulpbox.com',
       'https://admin.vulpbox.com',
     ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    maxAge: 600,
+    credentials: true,
   });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   //   app.useGlobalInterceptors(new FormatErrorInterceptor());
