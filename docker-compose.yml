@@ -18,14 +18,13 @@ services:
 
   # Customer Service
   customer-service:
-    profiles: ["customer"]
     build:
       context: .
       dockerfile: Dockerfile.customer
     environment:
       - NODE_ENV=production
     volumes:
-      - travel-volume/private:/app/dist/apps/customer-service/private
+      - travel-volume:/app/dist/apps/customer-service/private
     networks:
       - travel-network
     restart: unless-stopped
@@ -34,7 +33,6 @@ services:
 
   # Employees Service
   employees-service:
-    profiles: ["employees"]
     build:
       context: .
       dockerfile: Dockerfile.employees
@@ -48,7 +46,6 @@ services:
 
   # Expenses Service
   expenses-service:
-    profiles: ["expenses"]
     build:
       context: .
       dockerfile: Dockerfile.expenses
@@ -62,14 +59,13 @@ services:
 
   # Rent Car Service
   rent-car-service:
-    profiles: ["rent-car"]
     build:
       context: .
       dockerfile: Dockerfile.rent-car
     environment:
       - NODE_ENV=production
     volumes:
-      - travel-volume/public:/app/dist/apps/rent-car-service/public
+      - travel-volume:/app/dist/apps/rent-car-service/public
     networks:
       - travel-network
     restart: unless-stopped
@@ -78,14 +74,13 @@ services:
 
   # Travel Packages Service
   travel-packages-service:
-    profiles: ["travel-packages"]
     build:
       context: .
       dockerfile: Dockerfile.travel-packages
     environment:
       - NODE_ENV=production
     volumes:
-      - travel-volume/public:/app/dist/apps/travel-packages-service/public
+      - travel-volume:/app/dist/apps/travel-packages-service/public
     networks:
       - travel-network
     restart: unless-stopped
@@ -94,7 +89,6 @@ services:
 
   # Transaction Service
   transaction-service:
-    profiles: ["transaction"]
     build:
       context: .
       dockerfile: Dockerfile.transaction
@@ -104,7 +98,7 @@ services:
       - travel-network
     restart: unless-stopped
     deploy:
-      replicas: 1
+      replicas: 3
 
 networks:
   cloudflare-network:
