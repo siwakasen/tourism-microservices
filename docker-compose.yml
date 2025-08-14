@@ -3,7 +3,6 @@
 services:
   # Customer Service
   customer-service:
-    container_name: customer-service
     build:
       context: .
       dockerfile: Dockerfile.customer
@@ -15,10 +14,11 @@ services:
     networks:
       - travel-network
     restart: unless-stopped
+    deploy:
+      replicas: 1
 
   # Employees Service
   employees-service:
-    container_name: employees-service
     build:
       context: .
       dockerfile: Dockerfile.employees
@@ -29,10 +29,11 @@ services:
     networks:
       - travel-network
     restart: unless-stopped
+    deploy:
+      replicas: 1
 
   # Expenses Service
   expenses-service:
-    container_name: expenses-service
     build:
       context: .
       dockerfile: Dockerfile.expenses
@@ -43,10 +44,11 @@ services:
     networks:
       - travel-network
     restart: unless-stopped
+    deploy:
+      replicas: 1
 
   # Rent Car Service
   rent-car-service:
-    container_name: rent-car-service
     build:
       context: .
       dockerfile: Dockerfile.rent-car
@@ -58,10 +60,11 @@ services:
     networks:
       - travel-network
     restart: unless-stopped
+    deploy:
+      replicas: 1
 
   # Travel Packages Service
   travel-packages-service:
-    container_name: travel-packages-service
     build:
       context: .
       dockerfile: Dockerfile.travel-packages
@@ -73,21 +76,23 @@ services:
     networks:
       - travel-network
     restart: unless-stopped
+    deploy:
+      replicas: 1
 
   # Transaction Service
   transaction-service:
-    container_name: transaction-service
     build:
       context: .
       dockerfile: Dockerfile.transaction
     environment:
       - NODE_ENV=production
-      - SERVICE_INSTANCE=2
     volumes:
       - ./contract:/app/contract
     networks:
       - travel-network
     restart: unless-stopped
+    deploy:
+      replicas: 1
 
 networks:
   cloudflare-network:
