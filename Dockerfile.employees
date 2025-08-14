@@ -22,3 +22,4 @@ RUN rm -rf /tmp
 
 EXPOSE 3000
 CMD ["node", "employees-service/src/main"]
+

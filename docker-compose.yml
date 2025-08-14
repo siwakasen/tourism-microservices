@@ -1,6 +1,7 @@
 
 
 services:
+
   # Customer Service
   customer-service:
     build:
@@ -9,8 +10,7 @@ services:
     environment:
       - NODE_ENV=production
     volumes:
-      - ./contract:/app/contract
-      - ./apps/customer-service/private:/app/customer-service/private
+      - ./dist/apps/customer-service/private:/private
     networks:
       - travel-network
     restart: unless-stopped
@@ -24,8 +24,6 @@ services:
       dockerfile: Dockerfile.employees
     environment:
       - NODE_ENV=production
-    volumes:
-      - ./contract:/app/contract
     networks:
       - travel-network
     restart: unless-stopped
@@ -39,8 +37,6 @@ services:
       dockerfile: Dockerfile.expenses
     environment:
       - NODE_ENV=production
-    volumes:
-      - ./contract:/app/contract
     networks:
       - travel-network
     restart: unless-stopped
@@ -55,8 +51,7 @@ services:
     environment:
       - NODE_ENV=production
     volumes:
-      - ./contract:/app/contract
-      - ./apps/rent-car-service/public:/app/rent-car-service/public
+      - ./dist/apps/rent-car-service/public:/public
     networks:
       - travel-network
     restart: unless-stopped
@@ -71,8 +66,7 @@ services:
     environment:
       - NODE_ENV=production
     volumes:
-      - ./contract:/app/contract
-      - ./apps/travel-packages-service/public:/app/travel-packages-service/public
+      - ./dist/apps/travel-packages-service/public:/public
     networks:
       - travel-network
     restart: unless-stopped
@@ -86,8 +80,6 @@ services:
       dockerfile: Dockerfile.transaction
     environment:
       - NODE_ENV=production
-    volumes:
-      - ./contract:/app/contract
     networks:
       - travel-network
     restart: unless-stopped

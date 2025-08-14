@@ -20,7 +20,7 @@ export class LoggerMiddleware implements NestMiddleware {
 
     // Create logs directory if it doesn't exist
     if (!fs.existsSync(this.logDir)) {
-      fs.mkdirSync(this.logDir);
+      fs.mkdirSync(this.logDir, { recursive: true });
     }
   }
 
