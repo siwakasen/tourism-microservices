@@ -8,6 +8,9 @@
 # Down scale: docker compose --profile transaction down --scale transaction-service=1 --detach
 
 
+# Start all services (if you want them all)
+# docker compose --profile customer --profile employees --profile expenses --profile rent-car --profile travel-packages --profile transaction up --detach
+
 services:
 
   # Customer Service
