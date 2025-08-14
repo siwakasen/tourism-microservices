@@ -1,4 +1,3 @@
-
 # Stage 1: Build dependencies
 FROM node:22-alpine AS builder
 
@@ -6,20 +5,20 @@ WORKDIR /tmp
 COPY . .
 RUN npm install -g pnpm
 RUN pnpm install
-RUN pnpm build:travel-packages-service:prod
+RUN pnpm build:transaction-service:prod
 
 # Stage 2: Final runtime image
 FROM node:22-alpine
 
+
 # Install bash
 RUN apk add --no-cache bash
 
-ENV SHELL=/bin/bash
-
 WORKDIR /app
 COPY --from=builder tmp/node_modules ./node_modules
-COPY --from=builder  /tmp/dist ./dist
-COPY /contract ./contract
+COPY --from=builder tmp/dist/apps/transaction-service ./transaction-service
+COPY /contract /app/contract
+RUN rm -rf /tmp
 
-EXPOSE 3002
-CMD ["node", "dist/apps/travel-packages-service/src/main"]
+EXPOSE 3000
+CMD ["node", "transaction-service/src/main"]
