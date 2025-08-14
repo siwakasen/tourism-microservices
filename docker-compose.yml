@@ -10,8 +10,9 @@ services:
       - NODE_ENV=production
     volumes:
       - ./contract:/app/contract
+      - ./apps/customer-service/private:/app/customer-service/private
     networks:
-      - tourism-network
+      - travel-network
     restart: unless-stopped
 
   # Employees Service
@@ -24,7 +25,7 @@ services:
     volumes:
       - ./contract:/app/contract
     networks:
-      - tourism-network
+      - travel-network
     restart: unless-stopped
 
   # Expenses Service
@@ -37,7 +38,7 @@ services:
     volumes:
       - ./contract:/app/contract
     networks:
-      - tourism-network
+      - travel-network
     restart: unless-stopped
 
   # Rent Car Service
@@ -49,8 +50,9 @@ services:
       - NODE_ENV=production
     volumes:
       - ./contract:/app/contract
+      - ./apps/rent-car-service/public:/app/rent-car-service/public
     networks:
-      - tourism-network
+      - travel-network
     restart: unless-stopped
 
   # Travel Packages Service
@@ -62,8 +64,9 @@ services:
       - NODE_ENV=production
     volumes:
       - ./contract:/app/contract
+      - ./apps/travel-packages-service/public:/app/travel-packages-service/public
     networks:
-      - tourism-network
+      - travel-network
     restart: unless-stopped
 
   # Transaction Service
@@ -76,34 +79,8 @@ services:
     volumes:
       - ./contract:/app/contract
     networks:
-      - tourism-network
+      - travel-network
     restart: unless-stopped
-
-  # Live Chat Service (using base Dockerfile pattern)
-  # live-chat-service:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.live-chat
-  #   environment:
-  #     - NODE_ENV=production
-  #   volumes:
-  #     - ./contract:/app/contract
-  #   networks:
-  #     - tourism-network
-  #   restart: unless-stopped
-
-  # Report Service (using base Dockerfile pattern)
-  # report-service:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.report
-  #   environment:
-  #     - NODE_ENV=production
-  #   volumes:
-  #     - ./contract:/app/contract
-  #   networks:
-  #     - tourism-network
-  #   restart: unless-stopped
 
 networks:
   cloudflare-network:
