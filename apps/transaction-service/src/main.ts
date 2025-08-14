@@ -14,18 +14,12 @@ async function bootstrap() {
   app.set('trust proxy', 1);
   app.enableCors({
     origin: [
-      'http://localhost:3005',
-      'https://client-web-app.vulpbox.com',
-      'https://admin-web-app.vulpbox.com',
-      'https://vulpies.tail66dfd8.ts.net',
-      'https://siwakasen.mole-mintaka.ts.net',
+      'https://travel.vulpbox.com',
+      'https://admin.vulpbox.com',
       'api.sandbox.midtrans.com',
       'app.sandbox.midtrans.com',
       'api.sandbox.veritrans.co.id',
       'simulator.sandbox.midtrans.com',
-      'http://localhost:5173',
-      'http://localhost:3000',
-      'http://localhost:3010',
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -55,8 +49,7 @@ async function bootstrap() {
     .setDescription('API for Transaction')
     .setVersion('1.0')
     .addBearerAuth()
-    .addServer(`http://localhost:${port}`)
-    .addServer(`https://siwakasen.mole-mintaka.ts.net/api/`)
+    .addServer(`https://transaction-service.vulpbox.com`)
     .build();
   const document = SwaggerModule.createDocument(app, configSwagger);
   SwaggerModule.setup('api-docs', app, document);

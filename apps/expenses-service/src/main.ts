@@ -14,11 +14,8 @@ async function bootstrap() {
   app.set('trust proxy', 1);
   app.enableCors({
     origin: [
-      'http://localhost:3000',
-      'https://client-web-app.vulpbox.com',
-      'https://admin-web-app.vulpbox.com',
-      'http://localhost:5173',
-      'http://localhost:3000',
+      'https://travel.vulpbox.com',
+      'https://admin.vulpbox.com',
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -32,7 +29,6 @@ async function bootstrap() {
     .setDescription('API for Expenses')
     .setVersion('1.0')
     .addBearerAuth()
-    .addServer(`http://localhost:${port}`)
     .addServer(`https://expenses-service.vulpbox.com`)
     .build();
   const document = SwaggerModule.createDocument(app, configSwagger);

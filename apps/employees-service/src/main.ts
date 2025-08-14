@@ -14,10 +14,8 @@ async function bootstrap() {
   app.set('trust proxy', 1);
   app.enableCors({
     origin: [
-      'http://localhost:3000',
-      'http://localhost:5173',
-      'https://client-web-app.vulpbox.com',
-      'https://admin-web-app.vulpbox.com',
+      'https://travel.vulpbox.com',
+      'https://admin.vulpbox.com',
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -44,8 +42,7 @@ async function bootstrap() {
     .setDescription('API for Employees data CRUD')
     .setVersion('1.0')
     .addBearerAuth()
-    .addServer(`http://localhost:${port}`)
-    .addServer(`https://employees.vulpbox.com`)
+    .addServer(`https://employees-service.vulpbox.com`)
     .build();
   const document = SwaggerModule.createDocument(app, configSwagger);
   SwaggerModule.setup('api-docs', app, document);

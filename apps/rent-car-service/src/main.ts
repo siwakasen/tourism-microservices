@@ -15,10 +15,8 @@ async function bootstrap() {
   app.set('trust proxy', 1);
   app.enableCors({
     origin: [
-      'https://client-web-app.vulpbox.com',
-      'https://admin-web-app.vulpbox.com',
-      'http://localhost:3000',
-      'http://localhost:5173',
+      'https://travel.vulpbox.com',
+      'https://admin.vulpbox.com',
     ],
   });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
@@ -29,7 +27,6 @@ async function bootstrap() {
     .setDescription('API for Rent Car')
     .setVersion('1.0')
     .addBearerAuth()
-    .addServer(`http://localhost:${port}`)
     .addServer(`https://rent-car-service.vulpbox.com`)
     .build();
   const document = SwaggerModule.createDocument(app, configSwagger);

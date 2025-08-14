@@ -14,10 +14,8 @@ async function bootstrap() {
   app.set('trust proxy', 1);
   app.enableCors({
     origin: [
-      'https://client-web-app.vulpbox.com',
-      'https://admin-web-app.vulpbox.com',
-      'http://localhost:3000',
-      'http://localhost:5173',
+      'https://travel.vulpbox.com',
+      'https://admin.vulpbox.com',
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -44,7 +42,6 @@ async function bootstrap() {
     .setDescription('API for Travel Package')
     .setVersion('1.0')
     .addBearerAuth()
-    .addServer(`http://localhost:${port}`)
     .addServer(`https://travel-packages-service.vulpbox.com`)
     .build();
   const document = SwaggerModule.createDocument(app, configSwagger);
