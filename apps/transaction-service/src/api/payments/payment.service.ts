@@ -265,7 +265,6 @@ export class PaymentService {
       return statusResponse;
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      console.log('erorr occure', error.message);
       throw new HttpException(
         error.message || 'Error processing payment notification',
         error.status || HttpStatus.INTERNAL_SERVER_ERROR,
@@ -494,7 +493,6 @@ export class PaymentService {
         net_amount: seller_receivable_breakdown.net_amount.value,
         payment_date: new Date(),
       });
-      console.log( 'is payment has modification',payment.modification);
       if(payment.modification) {
         await this.bookingAdjustmentRepository.update(
           { id: payment.modification.id },
@@ -541,7 +539,6 @@ export class PaymentService {
       };
     } catch (error) {
       console.error(error.response.data.details[0].issue);
-      console.log(error.status);
       if (error.status === 422) {
         throw new HttpException(
           error.response.data.details[0].issue,

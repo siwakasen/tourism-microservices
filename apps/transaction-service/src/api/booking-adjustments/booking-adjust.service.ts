@@ -42,13 +42,11 @@ export class BookingAdjustmentService implements OnModuleInit {
     }
 
     private async getCustomerGrpc(customer_id: number) {
-      console.log('requesting customer', customer_id);
         const response = await this.customerGrpcService
           .getCustomer({
             id: customer_id,
           })
           .toPromise();
-        console.log('response grpc get customer', response);
         return response;
 
     }
@@ -234,7 +232,6 @@ export class BookingAdjustmentService implements OnModuleInit {
 
     // FROM CONTROLLER ACCESS
     public async getAdjustments(paginationDto: PaginationDto) {
-      console.log(paginationDto);
       const { page = 1, limit = 10, search = '' } = paginationDto;
       try {
         const queryBuilder = this.repository.createQueryBuilder('booking_adjustments')
@@ -424,7 +421,6 @@ export class BookingAdjustmentService implements OnModuleInit {
     await queryRunner.startTransaction();
     
     try {
-      console.log('id', id);
       const adjustment = await this.findAdjustmentForReschedule(queryRunner, id);
       
       if (status === AdjustmentStatus.REJECTED) {

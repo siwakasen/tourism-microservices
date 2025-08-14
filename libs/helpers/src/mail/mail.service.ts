@@ -30,7 +30,6 @@ export class MailService {
         ],
       });
 
-      console.log(`Email sent to ${email}`);
     } catch (error) {
       console.error(`Error sending email to `, error);
       throw error;

@@ -84,7 +84,6 @@ export class BookingService implements OnModuleInit {
         })
         .toPromise();
 
-      console.log('id', id);
       return {
         token: jwtToken,
         customer_id: id,
@@ -315,7 +314,6 @@ export class BookingService implements OnModuleInit {
           );
         redirect_url = paypal_redirect_url;
       }
-      console.log('redirect_url', redirect_url);
       await queryRunner.commitTransaction();
       return {
         data: {

@@ -8,7 +8,6 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { TypeOrmConfigService } from "./shared/typeorm/typeorm.service";
 
 const envFilePath: string = getEnvPath(`${__dirname}/common/helper`);
-console.log('envFilePath:', getEnvPath(`${__dirname}`));
 
 const CustomersLogger = new LoggerMiddleware({
   directory: 'dist/apps/customer-service/logs',
