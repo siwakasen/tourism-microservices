@@ -1,9 +1,18 @@
 
 
+# EXAMPLE WORKFLOW USE CASE:
+# Start with core services: docker compose --profile transaction --profile customer up --detach
+# Later add more: docker compose --profile employees up --detach
+# Scale existing: docker compose --profile transaction up --scale transaction-service=3 --detach
+# Add final service: docker compose --profile travel-packages up --detach
+# Down scale: docker compose --profile transaction down --scale transaction-service=1 --detach
+
+
 services:
 
   # Customer Service
   customer-service:
+    profiles: ["customer"]
     build:
       context: .
       dockerfile: Dockerfile.customer
@@ -19,6 +28,7 @@ services:
 
   # Employees Service
   employees-service:
+    profiles: ["employees"]
     build:
       context: .
       dockerfile: Dockerfile.employees
@@ -32,6 +42,7 @@ services:
 
   # Expenses Service
   expenses-service:
+    profiles: ["expenses"]
     build:
       context: .
       dockerfile: Dockerfile.expenses
@@ -45,6 +56,7 @@ services:
 
   # Rent Car Service
   rent-car-service:
+    profiles: ["rent-car"]
     build:
       context: .
       dockerfile: Dockerfile.rent-car
@@ -60,6 +72,7 @@ services:
 
   # Travel Packages Service
   travel-packages-service:
+    profiles: ["travel-packages"]
     build:
       context: .
       dockerfile: Dockerfile.travel-packages
@@ -75,6 +88,7 @@ services:
 
   # Transaction Service
   transaction-service:
+    profiles: ["transaction"]
     build:
       context: .
       dockerfile: Dockerfile.transaction
