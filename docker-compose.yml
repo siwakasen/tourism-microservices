@@ -25,6 +25,7 @@ services:
       - NODE_ENV=production
     volumes:
       - travel-volume:/app/dist/apps/customer-service/private
+      - travel-volume:/app/dist/apps/customer-service/logs
     networks:
       - travel-network
     restart: unless-stopped
@@ -38,6 +39,8 @@ services:
       dockerfile: Dockerfile.employees
     environment:
       - NODE_ENV=production
+    volumes:
+      - travel-volume:/app/dist/apps/employees-service/logs
     networks:
       - travel-network
     restart: unless-stopped
@@ -51,6 +54,8 @@ services:
       dockerfile: Dockerfile.expenses
     environment:
       - NODE_ENV=production
+    volumes:
+      - travel-volume:/app/dist/apps/expenses-service/logs
     networks:
       - travel-network
     restart: unless-stopped
@@ -66,6 +71,7 @@ services:
       - NODE_ENV=production
     volumes:
       - travel-volume:/app/dist/apps/rent-car-service/public
+      - travel-volume:/app/dist/apps/rent-car-service/logs
     networks:
       - travel-network
     restart: unless-stopped
@@ -81,6 +87,7 @@ services:
       - NODE_ENV=production
     volumes:
       - travel-volume:/app/dist/apps/travel-packages-service/public
+      - travel-volume:/app/dist/apps/travel-packages-service/logs
     networks:
       - travel-network
     restart: unless-stopped
@@ -94,6 +101,8 @@ services:
       dockerfile: Dockerfile.transaction
     environment:
       - NODE_ENV=production
+    volumes:
+      - travel-volume:/app/dist/apps/transaction-service/logs
     networks:
       - travel-network
     restart: unless-stopped

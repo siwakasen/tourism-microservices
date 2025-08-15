@@ -9,11 +9,11 @@ import { join } from 'path';
 import { LoggerMiddleware } from 'libs/helpers/middleware/logger.midleware';
 import { GrpcTravelPackagesModule } from './api/grpc-travel-packages/grpc-travel.module';
 
-const envFilePath: string = getEnvPath(`${__dirname}/common/helper`);
+const envFilePath: string = getEnvPath(`${__dirname}`);
 console.log('envFilePath:', getEnvPath(`${__dirname}`));
 
 const TravelPackagesLogger = new LoggerMiddleware({
-  directory: 'dist/apps/travel-packages-service/logs',
+  directory: 'dist/apps/travel-packages-service/logs/travel-packages-logs',
 });
 
 @Module({

@@ -12,16 +12,28 @@ async function bootstrap() {
   const port: number = config.get<number>('PORT');
   const gRPCPort: number = config.get<number>('CUS_AUTH_GRPC_PORT');
   app.set('trust proxy', 1);
-  app.enableCors({
-    origin: [
-      'https://travel.vulpbox.com',
-      'https://admin.vulpbox.com',
-    ],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'application/json'],
-    maxAge: 600,
-  });
+  // Check if running in development environment
+  if (config.get<string>('NODE_ENV') === 'development') {
+    app.enableCors({
+      origin: '*',
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'application/json'],
+      maxAge: 600,
+    });
+  } else {
+    app.enableCors({
+      origin: [
+        'https://travel.vulpbox.com',
+        'https://admin.vulpbox.com',
+      ],
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'application/json'],
+      maxAge: 600,
+    });
+  }
+
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   // GRPC
@@ -42,7 +54,8 @@ async function bootstrap() {
     .setDescription('API for Customer data CRUD')
     .setVersion('1.0')
     .addBearerAuth()
-    .addServer(`https://customers-service.vulpbox.com`)
+    .addServer(`http://localhost:${port}`)
+    .addServer(`https://customer-service.vulpbox.com`)
     .build();
   const document = SwaggerModule.createDocument(app, configSwagger);
   SwaggerModule.setup('api-docs', app, document);

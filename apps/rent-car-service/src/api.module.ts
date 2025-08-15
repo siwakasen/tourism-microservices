@@ -9,11 +9,11 @@ import { CarsModule } from './api/car/cars.module';
 import { LoggerMiddleware } from 'libs/helpers/middleware/logger.midleware';
 import { GrpcCarModule } from './api/grpc-car/grpc-car.module';
 
-const envFilePath: string = getEnvPath(`${__dirname}/common/helper`);
+const envFilePath: string = getEnvPath(`${__dirname}`);
 console.log('envFilePath:', getEnvPath(`${__dirname}`));
 
 const CarLogger = new LoggerMiddleware({
-  directory: 'dist/apps/rent-car-service/logs',
+  directory: 'dist/apps/rent-car-service/logs/rent-car-logs',
 });
 
 @Module({

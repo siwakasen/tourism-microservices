@@ -12,20 +12,26 @@ async function bootstrap() {
   const port: number = config.get<number>('PORT');
   const gRPCPort: number = config.get<number>('TRANSACTION_GRPC_PORT');
   app.set('trust proxy', 1);
-  app.enableCors({
-    origin: [
-      'https://travel.vulpbox.com',
-      'https://admin.vulpbox.com',
-      'api.sandbox.midtrans.com',
-      'app.sandbox.midtrans.com',
-      'api.sandbox.veritrans.co.id',
-      'simulator.sandbox.midtrans.com',
-    ],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'application/json'],
-    maxAge: 600,
-  });
+  if (config.get<string>('NODE_ENV') === 'development') {
+    app.enableCors({
+      origin: '*',
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'application/json'],
+      maxAge: 600,
+    });
+  } else {
+    app.enableCors({
+      origin: [
+        'https://travel.vulpbox.com',
+        'https://admin.vulpbox.com',
+      ],
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'application/json'],
+      maxAge: 600,
+    });
+  }
 
   const appGRPC = await NestFactory.createMicroservice<MicroserviceOptions>(
     ApiModule,
@@ -49,6 +55,7 @@ async function bootstrap() {
     .setDescription('API for Transaction')
     .setVersion('1.0')
     .addBearerAuth()
+    .addServer(`http://localhost:${port}`)
     .addServer(`https://transaction-service.vulpbox.com`)
     .build();
   const document = SwaggerModule.createDocument(app, configSwagger);

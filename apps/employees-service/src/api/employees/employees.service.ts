@@ -85,9 +85,6 @@ export class EmployeeService implements OnModuleInit {
 
   public login = async (body: LoginReqDto) => {
     const { email, password }: LoginReqDto = body;
-    Logger.log(
-      `Login request received for email: ${email}, password: ${password}`,
-    );
     const user = await this.repository.findOne({
       where: {
         email: email,
@@ -104,7 +101,7 @@ export class EmployeeService implements OnModuleInit {
     );
 
     if (!passwordMatched) {
-      throw new HttpException(`Invalid Credentials`, HttpStatus.UNAUTHORIZED);
+      throw new HttpException(`Email or password may be incorrect`, HttpStatus.UNAUTHORIZED);
     }
 
     // delete user.password;

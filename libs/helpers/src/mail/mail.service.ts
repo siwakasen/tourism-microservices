@@ -24,7 +24,7 @@ export class MailService {
         attachments: [
           {
             filename: 'lock-icon.png',
-            path: 'apps/employees-service/images/email/image-1.png',
+            path: 'dist/apps/employees-service/images/email/image-1.png',
             cid: 'lockIcon',
           },
         ],

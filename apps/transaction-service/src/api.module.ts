@@ -11,11 +11,11 @@ import { BookingAdjustmentModule } from './api/booking-adjustments/booking-adjus
 import { RefundModule } from './api/refunds/refund.module';
 import { ScheduleModule } from '@nestjs/schedule';
 
-const envFilePath: string = getEnvPath(`${__dirname}/common/helper`);
+const envFilePath: string = getEnvPath(`${__dirname}`);
 console.log('envFilePath:', getEnvPath(`${__dirname}`));
 
 const TransactionLogger = new LoggerMiddleware({
-  directory: 'dist/apps/transaction-service/logs',
+  directory: 'dist/apps/transaction-service/logs/transaction-logs',
 });
 
 @Module({

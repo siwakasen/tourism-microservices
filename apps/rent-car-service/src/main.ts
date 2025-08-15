@@ -13,16 +13,26 @@ async function bootstrap() {
   const port: number = config.get<number>('PORT');
   const gRPCPort: number = config.get<number>('CAR_GRPC_PORT');
   app.set('trust proxy', 1);
-  app.enableCors({
-    origin: [
-      'https://travel.vulpbox.com',
-      'https://admin.vulpbox.com',
-    ],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    maxAge: 600,
-    credentials: true,
-  });
+  if (config.get<string>('NODE_ENV') === 'development') {
+    app.enableCors({
+      origin: '*',
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'application/json'],
+      maxAge: 600,
+    });
+  } else {
+    app.enableCors({
+      origin: [
+        'https://travel.vulpbox.com',
+        'https://admin.vulpbox.com',
+      ],
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'application/json'],
+      maxAge: 600,
+    });
+  }
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   //   app.useGlobalInterceptors(new FormatErrorInterceptor());
 
@@ -31,6 +41,7 @@ async function bootstrap() {
     .setDescription('API for Rent Car')
     .setVersion('1.0')
     .addBearerAuth()
+    .addServer(`http://localhost:${port}`)
     .addServer(`https://rent-car-service.vulpbox.com`)
     .build();
   const document = SwaggerModule.createDocument(app, configSwagger);

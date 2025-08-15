@@ -12,16 +12,26 @@ async function bootstrap() {
   const gRPCPort: number = config.get<number>('TRAVEL_PACKAGE_GRPC_PORT');
 
   app.set('trust proxy', 1);
-  app.enableCors({
-    origin: [
-      'https://travel.vulpbox.com',
-      'https://admin.vulpbox.com',
-    ],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    maxAge: 600,
-    credentials: true,
-  });
+  if (config.get<string>('NODE_ENV') === 'development') {
+    app.enableCors({
+      origin: '*',
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'application/json'],
+      maxAge: 600,
+    });
+  } else {
+    app.enableCors({
+      origin: [
+        'https://travel.vulpbox.com',
+        'https://admin.vulpbox.com',
+      ],
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'application/json'],
+      maxAge: 600,
+    });
+  }
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   // GRPC
@@ -42,6 +52,7 @@ async function bootstrap() {
     .setDescription('API for Travel Package')
     .setVersion('1.0')
     .addBearerAuth()
+    .addServer(`http://localhost:${port}`)
     .addServer(`https://travel-packages-service.vulpbox.com`)
     .build();
   const document = SwaggerModule.createDocument(app, configSwagger);

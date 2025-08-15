@@ -20,7 +20,7 @@
         "assets": [
           {
             "include": "common/envs/*.env",
-            "outDir": "dist/apps/travel-packages-service/src/common/helper"
+            "outDir": "dist/apps/travel-packages-service/src/"
           }
         ]
       }
@@ -35,7 +35,11 @@
         "assets": [
           {
             "include": "common/envs/*.env",
-            "outDir": "dist/apps/employees-service/src/common/helper"
+            "outDir": "dist/apps/employees-service/src/"
+          },
+          {
+            "include": "../images",
+            "outDir": "dist/apps/employees-service/images/"
           }
         ]
       }
@@ -59,7 +63,7 @@
         "assets": [
           {
             "include": "common/envs/*.env",
-            "outDir": "dist/apps/rent-car-service/src/common/helper"
+            "outDir": "dist/apps/rent-car-service/src/"
           }
         ]
       }
@@ -74,7 +78,7 @@
         "assets": [
           {
             "include": "common/envs/*.env",
-            "outDir": "dist/apps/expenses-service/src/common/helper"
+            "outDir": "dist/apps/expenses-service/src/"
           }
         ]
       }
@@ -89,7 +93,7 @@
         "assets": [
           {
             "include": "common/envs/*.env",
-            "outDir": "dist/apps/customer-service/src/common/helper"
+            "outDir": "dist/apps/customer-service/src/"
           }
         ]
       }
@@ -104,7 +108,7 @@
         "assets": [
           {
             "include": "common/envs/*.env",
-            "outDir": "dist/apps/transaction-service/src/common/helper"
+            "outDir": "dist/apps/transaction-service/src/"
           }
         ]
       }
@@ -119,7 +123,7 @@
         "assets": [
           {
             "include": "common/envs/*.env",
-            "outDir": "dist/apps/report-service/src/common/helper"
+            "outDir": "dist/apps/report-service/src/"
           }
         ]
       }
@@ -134,7 +138,7 @@
         "assets": [
           {
             "include": "common/envs/*.env",
-            "outDir": "dist/apps/live-chat-service/src/common/helper"
+            "outDir": "dist/apps/live-chat-service/src/"
           }
         ]
       }

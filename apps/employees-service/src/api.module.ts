@@ -7,11 +7,11 @@ import { EmployeeModule } from './api/employees/employees.module';
 import { GrpcModule } from './api/grpc-employees/grpc-employees.module';
 import { LoggerMiddleware } from 'libs/helpers/middleware/logger.midleware';
 
-const envFilePath: string = getEnvPath(`${__dirname}/common/helper`);
+const envFilePath: string = getEnvPath(`${__dirname}`);
 console.log('envFilePath:', getEnvPath(`${__dirname}`));
 
 const EmployeesLogger = new LoggerMiddleware({
-  directory: 'dist/apps/employees-service/logs',
+  directory: 'dist/apps/employees-service/logs/employees-logs',
 });
 
 @Module({

@@ -32,7 +32,7 @@ import { Employee, EmployeeToken, Roles } from 'libs/entities';
           transport: Transport.GRPC,
           options: {
             package: 'authemp',
-            protoPath: 'contract/auth-employee-api.proto', // Ensure this path is correct
+            protoPath: 'contract/auth-employee-api.proto', 
             url: config.get<string>('EMP_AUTH_CLIENT'),
             loader: {
               keepCase: true,
