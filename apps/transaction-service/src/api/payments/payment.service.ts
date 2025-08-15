@@ -619,7 +619,6 @@ export class PaymentService {
   private async generateAccessToken() {
     let access_token = await this.redisService.getValue('access_token');
     if (!access_token) {
-      console.log('Generating new access token');
       access_token = await generateTokenAccess(
         this.configService,
         this.redisService,

@@ -89,6 +89,9 @@ export class EmployeeService implements OnModuleInit {
       where: {
         email: email,
       },
+      relations: {
+        role: true,
+      },
     });
 
     if (!user) {

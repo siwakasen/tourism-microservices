@@ -62,12 +62,12 @@ export class AuthHelper implements OnModuleInit {
   // Get User by User ID we get from decode()
   public async validateUser(decoded: any): Promise<Employee | Customer> {
     try {
-      if (this.employeeService && decoded.type === 'emp') {
-        const employee = await this.employeeService.getEmployee({ id: decoded.sub }).toPromise();
-        return employee;
-      }else{
+      if (this.employeeService && decoded.type === 'c') {
         const customer = await this.customerService.getCustomer({ id: decoded.sub }).toPromise();
         return customer;
+      }else{
+        const employee = await this.employeeService.getEmployee({ id: decoded.sub }).toPromise();
+        return employee;
       }
     } catch (error) {
       return null;
@@ -97,7 +97,7 @@ export class AuthHelper implements OnModuleInit {
   public async generateToken(user: Employee | Customer): Promise<string> {
     return this.jwt.signAsync({
       sub: user.id.toString(), // subject claim for user ID
-      type: user instanceof Employee ? 'emp' : 'cus',
+      type: user instanceof Employee ? user.role.id == 1? 'o' : 'e' : 'c',
       jti: crypto.randomUUID(), // unique token ID
       iat: Math.floor(Date.now() / 1000), // issued at timestamp
     },{

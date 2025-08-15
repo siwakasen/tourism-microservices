@@ -87,7 +87,6 @@ export class CustomerService implements OnModuleInit {
         },
       };
     } catch (error) {
-      console.log(error);
       throw new HttpException(
         error.response,
         error.status || HttpStatus.INTERNAL_SERVER_ERROR,
@@ -190,7 +189,6 @@ export class CustomerService implements OnModuleInit {
 
   public async changePassword(payload: ResetPasswordRequestDto) {
     const { token, password }: ResetPasswordRequestDto = payload;
-    console.log(payload);
     try {
       const tokenData = await this.helper.decode(token);
       if (!tokenData) {
@@ -230,7 +228,6 @@ export class CustomerService implements OnModuleInit {
         message: 'Password changed successfully',
       };
     } catch (error) {
-      console.log(error.message);
       throw new HttpException(
         error.message,
         error.status || HttpStatus.INTERNAL_SERVER_ERROR,
@@ -259,7 +256,6 @@ export class CustomerService implements OnModuleInit {
           './dist/apps/customer-service/private/identity-files',
           user.identity_file[1].toString(),
         );
-        console.log(distPath2);
         if (fs.existsSync(distPath) || fs.existsSync(distPath2)) {
           fs.unlinkSync(distPath);
           fs.unlinkSync(distPath2);
