@@ -10,7 +10,7 @@ async function bootstrap() {
   const config: ConfigService = app.get(ConfigService);
   const port: number = config.get<number>('PORT');
   app.set('trust proxy', 1);
-  
+  console.log('Running on', config.get<string>('NODE_ENV'));
   if (config.get<string>('NODE_ENV') === 'development') {
     app.enableCors({
       origin: '*',

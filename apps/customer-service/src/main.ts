@@ -12,6 +12,8 @@ async function bootstrap() {
   const port: number = config.get<number>('PORT');
   const gRPCPort: number = config.get<number>('CUS_AUTH_GRPC_PORT');
   app.set('trust proxy', 1);
+  console.log('Running on', config.get<string>('NODE_ENV'));
+
   // Check if running in development environment
   if (config.get<string>('NODE_ENV') === 'development') {
     app.enableCors({

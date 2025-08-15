@@ -13,6 +13,8 @@ async function bootstrap() {
   const port: number = config.get<number>('PORT');
   const gRPCPort: number = config.get<number>('CAR_GRPC_PORT');
   app.set('trust proxy', 1);
+  console.log('Running on', config.get<string>('NODE_ENV'));
+
   if (config.get<string>('NODE_ENV') === 'development') {
     app.enableCors({
       origin: '*',
