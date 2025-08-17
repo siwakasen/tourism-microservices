@@ -56,7 +56,7 @@ export class BookingService implements OnModuleInit {
 
   @Inject(DataSource)
   private readonly dataSource: DataSource;
-  onModuleInit() {
+    onModuleInit() {
     
     this.customerGrpcService = this.clientCus.getService<CustomerServiceClient>(
       'CustomerGrpcService',
@@ -64,12 +64,15 @@ export class BookingService implements OnModuleInit {
     this.travelPackageGrpcService =
       this.clientTravelPackage.getService<TravelPackageServiceClient>(
         'TravelPackageGrpcService',
-      );
+    );
     this.carGrpcService =
       this.clientCar.getService<CarServiceClient>('CarGrpcService');
     this.employeeGrpcService = this.clientEmp.getService<EmployeeServiceClient>(
       'EmployeeGrpcService',
     );
+
+    // Run the booking status update job on app startup
+    this.handleUpdateConfirmedBookingToOngoing();
   }
 
   public async registerCustomerGrpc(payload: RegisterCustomerDto) {
@@ -441,7 +444,6 @@ export class BookingService implements OnModuleInit {
     try {
       const { page, limit } = paginationDto;
 
-      // Use a single query with left join to fetch bookings and payments
       const queryBuilder = this.dataSource.manager
         .createQueryBuilder(Bookings, 'bookings')
         .leftJoinAndSelect('bookings.payments', 'payments')

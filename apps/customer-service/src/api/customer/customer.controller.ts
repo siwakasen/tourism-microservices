@@ -7,7 +7,6 @@ import {
   HttpStatus,
   Param,
   Post,
-  Query,
   Res,
   UploadedFiles,
   UseGuards,
