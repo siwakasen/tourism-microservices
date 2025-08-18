@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { RpcException } from "@nestjs/microservices";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Bookings, BookingStatus } from "libs/entities";
 import { Between, In, IsNull, LessThanOrEqual, MoreThanOrEqual, Not, Repository } from "typeorm";
@@ -13,6 +14,7 @@ export class BookingGrpcService {
     public async getCarIdsByBookingDateRange(start_date: string, end_date: string): Promise<{ car_ids: number[] }> {
         const startDate = new Date(start_date);
         const endDate = new Date(end_date);
+        try {
         const bookings = await this.repository.find({
             where: {
                 car_id: Not(IsNull()),
@@ -44,6 +46,9 @@ export class BookingGrpcService {
             return { car_ids: [] };
         }
         return { car_ids };
+        } catch (error: any) {
+            throw new RpcException('Error getting car ids by booking date range:' + error.message);
+        }
     }
 
     public async getEmployeesByBookingDateRange(start_date: string, end_date: string): Promise<{ employee_ids: number[] }> {
@@ -51,6 +56,7 @@ export class BookingGrpcService {
         const endDate = new Date(end_date);
         startDate.setHours(0, 0, 0, 0);
         endDate.setHours(23, 59, 59, 999);
+        try {
         const bookings = await this.repository.find({
             where: {
                 start_date: Between(startDate, endDate),
@@ -62,5 +68,8 @@ export class BookingGrpcService {
         }
         const employee_ids = bookings.map(b => b.employee_id);
         return { employee_ids };
+        } catch (error: any) {
+            throw new RpcException('Error getting employees by booking date range:' + error.message);
+        }
     }
 }
