@@ -20,7 +20,6 @@ import {
   ResetPasswordDto,
   AvailableEmployeesDto,
 } from './employees.dto';
-import { AuthRedisService } from './redis.service';
 import { AuthHelper } from '@app/helpers/auth/user/auth.helper';
 import { MailService } from '@app/helpers/mail/mail.service';
 import { FormatErrorInterceptor } from 'libs/helpers/interceptors/exeption.interceptor';

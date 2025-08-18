@@ -40,6 +40,9 @@ export class BookingGrpcService {
             ...waitingConfirmedCarIds
         ]));
         console.log('car_ids', car_ids);
+        if(car_ids.length === 0) {
+            return { car_ids: [] };
+        }
         return { car_ids };
     }
 
@@ -54,6 +57,9 @@ export class BookingGrpcService {
                 status: In([BookingStatus.CONFIRMED, BookingStatus.ONGOING])
             }
         });
+        if(bookings.length === 0) {
+            return { employee_ids: [] };
+        }
         const employee_ids = bookings.map(b => b.employee_id);
         return { employee_ids };
     }
