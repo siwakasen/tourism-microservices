@@ -201,4 +201,9 @@ export class AvailableEmployeesDto {
   @IsNumber()
   @Type(() => Number)
   public readonly role_id: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @Type(() => Number)
+  public readonly booking_id: number;
 }

@@ -317,9 +317,9 @@ export class EmployeeService implements OnModuleInit {
   }
 
   public async getAvailableEmployees(payload: AvailableEmployeesDto) {
-    const { start_date, end_date, role_id } = payload;
+    const { start_date, end_date, role_id, booking_id } = payload;
     const { employee_ids } = await this.bookingsGrpcService
-      .getEmployeesByBookingDateRange({ start_date, end_date })
+      .getEmployeesByBookingDateRange({ start_date, end_date, booking_id })
       .toPromise();
     const queryBuilder = this.repository
       .createQueryBuilder('employees')
