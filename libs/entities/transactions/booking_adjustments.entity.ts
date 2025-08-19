@@ -59,7 +59,7 @@ class BookingAdjustments extends BaseEntity {
   public new_end_date: Date;
 
   @ApiProperty()
-  @Column({ type: 'int', nullable: true })
+  @Column({ type: 'float', nullable: true })
   public additional_price: number;
 
   @ApiProperty()

@@ -21,7 +21,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       migrationsTableName: 'typeorm_migrations',
       logger: 'advanced-console',
         // logging: ['query', 'error'],
-      // logging: ['error'],
+      logging: ['error'],
       synchronize: this.config.get<boolean>('SYNCHRONIZE'), // NEVER USE TRUE IN PRODUCTION
     };
   }

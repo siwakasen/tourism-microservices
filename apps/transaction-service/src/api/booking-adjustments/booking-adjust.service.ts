@@ -1,5 +1,5 @@
 import { AdjustmentStatus, BookingAdjustments,  Payment, PaymentMethod, PaymentStatus, Refunds, RequestType } from "libs/entities/transactions";
-import { Between, DataSource, In, LessThanOrEqual, MoreThanOrEqual, QueryRunner, RemoveOptions, Repository, SaveOptions } from "typeorm";
+import { Between, DataSource, In, LessThanOrEqual, MoreThanOrEqual, Not, QueryRunner, RemoveOptions, Repository, SaveOptions } from "typeorm";
 import { HttpException, HttpStatus, Inject, Injectable, OnModuleInit } from "@nestjs/common";
 import { Bookings, BookingStatus } from "libs/entities/transactions/bookings.entity";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -120,6 +120,7 @@ export class BookingAdjustmentService implements OnModuleInit {
       const queryRunner = this.dataSource.createQueryRunner();
       await queryRunner.connect();
       await queryRunner.startTransaction();
+
       try{
           const booking = await this.dataSource.manager.findOne(Bookings, { where: { id: booking_id, 
             customer_id,
@@ -196,7 +197,7 @@ export class BookingAdjustmentService implements OnModuleInit {
           if(booking.with_driver){
             const pricePerDay = (booking.total_price / old_range_days) - 10;
             const additional_days = new_range_days - old_range_days;
-            additional_price = (pricePerDay + 6) * additional_days;
+            additional_price = (pricePerDay + 10) * additional_days;
           }else{
             const pricePerDay = (booking.total_price / old_range_days);
             const additional_days = new_range_days - old_range_days;
@@ -353,7 +354,7 @@ export class BookingAdjustmentService implements OnModuleInit {
     return employee;
   }
 
-  private async checkEmployeeConflict(queryRunner : QueryRunner, employee_id: number, with_driver: boolean, new_start_date: Date, new_end_date: Date) {
+  private async checkEmployeeConflict(queryRunner : QueryRunner, employee_id: number, with_driver: boolean, new_start_date: Date, new_end_date: Date, booking_id: number) {
     const employee_conflict = await queryRunner.manager.findOne(Bookings, {
       where: [
         {
@@ -361,6 +362,7 @@ export class BookingAdjustmentService implements OnModuleInit {
           with_driver,
           start_date: Between(new_start_date, new_end_date),
           status: In([BookingStatus.CONFIRMED, BookingStatus.ONGOING]),
+          id: Not(booking_id),
         },
       ],
       select: ['id', 'status', 'car_id', 'package_id'],
@@ -370,7 +372,7 @@ export class BookingAdjustmentService implements OnModuleInit {
     }
   }
 
-  private async checkCarConflict(queryRunner : QueryRunner, car_id: number, new_start_date: Date, new_end_date: Date) {
+  private async checkCarConflict(queryRunner : QueryRunner, booking_id: number, car_id: number, new_start_date: Date, new_end_date: Date) {
     if (!car_id) return;
     // Check for CONFIRMED or ONGOING
     const car_conflict = await queryRunner.manager.findOne(Bookings, {
@@ -380,6 +382,7 @@ export class BookingAdjustmentService implements OnModuleInit {
           start_date: LessThanOrEqual(new_end_date),
           end_date: MoreThanOrEqual(new_start_date),
           status: In([BookingStatus.CONFIRMED, BookingStatus.ONGOING]),
+          id: Not(booking_id),
         },
       ],
       select: ['id', 'status', 'car_id', 'package_id'],
@@ -395,6 +398,7 @@ export class BookingAdjustmentService implements OnModuleInit {
           start_date: LessThanOrEqual(new_end_date),
           end_date: MoreThanOrEqual(new_start_date),
           status: BookingStatus.WAITING_CONFIRMATION,
+          id: Not(booking_id),
         },
       ],
       select: ['id', 'status', 'car_id', 'package_id'],
@@ -419,15 +423,22 @@ export class BookingAdjustmentService implements OnModuleInit {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
-    
+
     try {
       const adjustment = await this.findAdjustmentForReschedule(queryRunner, id);
+
+      if(!adjustment){
+        throw new HttpException('Reschedule request not found', HttpStatus.NOT_FOUND);
+      }
       
       if (status === AdjustmentStatus.REJECTED) {
         return await this.handleRejection(queryRunner, adjustment);
       }
 
       if (adjustment.booking.package_id) {
+        if (!employee_id) {
+          throw new HttpException('Employee ID is required', HttpStatus.BAD_REQUEST);
+        }
         return await this.handleTravelPackageReschedule(queryRunner, adjustment, employee_id);
       } else if (adjustment.booking.with_driver) {
         return await this.handleCarWithDriverReschedule(queryRunner, adjustment, employee_id);
@@ -487,14 +498,12 @@ export class BookingAdjustmentService implements OnModuleInit {
   ) {
     const { booking } = adjustment;
     
-    if (!employee_id && booking.status === BookingStatus.WAITING_CONFIRMATION) {
-      throw new HttpException('Employee ID is required', HttpStatus.BAD_REQUEST);
-    }
+    
     
     const effective_employee_id = employee_id || booking.employee_id;
     
     await this.validateEmployee(effective_employee_id, 3);
-    await this.checkEmployeeConflict(queryRunner, effective_employee_id, false, adjustment.new_start_date, adjustment.new_end_date);
+    await this.checkEmployeeConflict(queryRunner, effective_employee_id, false, adjustment.new_start_date, adjustment.new_end_date, booking.id);
 
     await this.updateBookingForApproval(queryRunner, adjustment, effective_employee_id);
     
@@ -504,13 +513,9 @@ export class BookingAdjustmentService implements OnModuleInit {
   private async handleCarWithDriverReschedule(
     queryRunner: QueryRunner, 
     adjustment: BookingAdjustments, 
-    employee_id: number
+    employee_id?: number
   ) {
     const { booking } = adjustment;
-    
-    if (!employee_id && booking.status === BookingStatus.WAITING_CONFIRMATION) {
-      throw new HttpException('Employee ID is required', HttpStatus.BAD_REQUEST);
-    }
     
     const effective_employee_id = employee_id || booking.employee_id;
     const new_start_date = adjustment.new_start_date;
@@ -521,14 +526,17 @@ export class BookingAdjustmentService implements OnModuleInit {
         queryRunner, 
         adjustment, 
         booking, 
-        effective_employee_id, 
         new_start_date, 
-        new_end_date
+        new_end_date,
+        effective_employee_id, 
       );
 
       // AFTER PAYMENT APPROVAL/REAPPROVE 
     } else if (adjustment.status === AdjustmentStatus.WAITING_REASSIGNMENT) {
-      return await this.handleWaitingPaymentWithDriverReschedule(
+      if (!employee_id) {
+        throw new HttpException('Employee ID is required', HttpStatus.BAD_REQUEST);
+      }
+      return await this.handleWaitingReassignWithDriverReschedule(
         queryRunner, 
         adjustment, 
         booking, 
@@ -544,13 +552,11 @@ export class BookingAdjustmentService implements OnModuleInit {
     queryRunner: QueryRunner,
     adjustment: BookingAdjustments,
     booking: Bookings,
-    employee_id: number,
     new_start_date: Date,
-    new_end_date: Date
+    new_end_date: Date,
+    employee_id?: number,
   ) {
-    await this.validateEmployee(employee_id, 4);
-    await this.checkEmployeeConflict(queryRunner, employee_id, true, new_start_date, new_end_date);
-    await this.checkCarConflict(queryRunner, booking.car_id, new_start_date, new_end_date);
+    
 
     // WITH PAYMENT
     if (adjustment.additional_price > 0) {
@@ -582,14 +588,21 @@ export class BookingAdjustmentService implements OnModuleInit {
       
       return this.createSuccessResponse(adjustment, AdjustmentStatus.WAITING_PAYMENT);
     }
-
+    if (!employee_id) {
+      throw new HttpException('Employee ID is required', HttpStatus.BAD_REQUEST);
+    }
+    await this.validateEmployee(employee_id, 4);
+    await this.checkEmployeeConflict(queryRunner, employee_id, true, new_start_date, new_end_date, booking.id);
+    await this.checkCarConflict(queryRunner, booking.id, booking.car_id, new_start_date, new_end_date);
 
     // WITHOUT PAYMENT
     await this.updateBookingForApproval(queryRunner, adjustment, employee_id);
+    await queryRunner.commitTransaction();
+
     return this.createSuccessResponse(adjustment, AdjustmentStatus.APPROVED);
   }
 
-  private async handleWaitingPaymentWithDriverReschedule(
+  private async handleWaitingReassignWithDriverReschedule(
     queryRunner: QueryRunner,
     adjustment: BookingAdjustments,
     booking: Bookings,
@@ -599,8 +612,8 @@ export class BookingAdjustmentService implements OnModuleInit {
   ) {
     await this.validatePaymentSuccess(queryRunner, adjustment.id);
     await this.validateEmployee(employee_id, 4);
-    await this.checkEmployeeConflict(queryRunner, employee_id, true, new_start_date, new_end_date);
-    await this.checkCarConflict(queryRunner, booking.car_id, new_start_date, new_end_date);
+    await this.checkEmployeeConflict(queryRunner, employee_id, true, new_start_date, new_end_date, booking.id);
+    await this.checkCarConflict(queryRunner, booking.id, booking.car_id, new_start_date, new_end_date);
 
     const new_total_price = await this.calculateNewTotalPrice(queryRunner, booking.id);
     
@@ -644,7 +657,7 @@ export class BookingAdjustmentService implements OnModuleInit {
     new_start_date: Date,
     new_end_date: Date
   ) {
-    await this.checkCarConflict(queryRunner, booking.car_id, new_start_date, new_end_date);
+    await this.checkCarConflict(queryRunner, booking.id, booking.car_id, new_start_date, new_end_date);
 
     // WITH PAYMENT
     if (adjustment.additional_price > 0) {
@@ -689,7 +702,7 @@ export class BookingAdjustmentService implements OnModuleInit {
     new_end_date: Date
   ) {
     await this.validatePaymentSuccess(queryRunner, adjustment.id);
-    await this.checkCarConflict(queryRunner, booking.car_id, new_start_date, new_end_date);
+    await this.checkCarConflict(queryRunner, booking.id, booking.car_id, new_start_date, new_end_date);
 
     const new_total_price = await this.calculateNewTotalPrice(queryRunner, booking.id);
     

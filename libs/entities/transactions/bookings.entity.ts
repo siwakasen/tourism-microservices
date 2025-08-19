@@ -62,7 +62,7 @@ class Bookings extends BaseEntity {
   public end_date: Date;
 
   @ApiProperty()
-  @Column({ type: 'int', nullable: true })
+  @Column({ type: 'float', nullable: true })
   public total_price: number;
 
   @ApiProperty({ enum: BookingStatus })

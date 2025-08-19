@@ -10,6 +10,7 @@ service BookingsGrpcService {
 message BookingDateRangeRequest {
   string start_date = 1;
   string end_date = 2;
+  int32 booking_id = 3;
 }
 
 message CarIdsResponse {

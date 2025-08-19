@@ -41,34 +41,31 @@ export class BookingGrpcService {
             ...bookings.map(b => b.car_id),
             ...waitingConfirmedCarIds
         ]));
-        console.log('car_ids', car_ids);
-        if(car_ids.length === 0) {
-            return { car_ids: [] };
-        }
         return { car_ids };
         } catch (error: any) {
             throw new RpcException('Error getting car ids by booking date range:' + error.message);
         }
     }
 
-    public async getEmployeesByBookingDateRange(start_date: string, end_date: string): Promise<{ employee_ids: number[] }> {
+    public async getEmployeesByBookingDateRange(start_date: string, end_date: string, booking_id: number): Promise<{ employee_ids: number[] }> {
         const startDate = new Date(start_date);
         const endDate = new Date(end_date);
         startDate.setHours(0, 0, 0, 0);
         endDate.setHours(23, 59, 59, 999);
         try {
+            console.log('booking_id', booking_id);
         const bookings = await this.repository.find({
             where: {
                 start_date: Between(startDate, endDate),
-                status: In([BookingStatus.CONFIRMED, BookingStatus.ONGOING])
+                status: In([BookingStatus.CONFIRMED, BookingStatus.ONGOING]),
+                id: Not(booking_id)
             }
         });
-        if(bookings.length === 0) {
-            return { employee_ids: [] };
-        }
+        console.log('bookings', bookings);
         const employee_ids = bookings.map(b => b.employee_id);
         return { employee_ids };
         } catch (error: any) {
+            console.log('error', error);
             throw new RpcException('Error getting employees by booking date range:' + error.message);
         }
     }

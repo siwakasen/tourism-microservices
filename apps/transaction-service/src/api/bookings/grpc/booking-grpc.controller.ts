@@ -14,7 +14,7 @@ export class BookingGrpcController {
     }
 
     @GrpcMethod('BookingsGrpcService', 'GetEmployeesByBookingDateRange')
-    async getEmployeesByBookingDateRange(data: { start_date: string, end_date: string }) {
-        return await this.bookingGrpcService.getEmployeesByBookingDateRange(data.start_date, data.end_date);
+    async getEmployeesByBookingDateRange(data: { start_date: string, end_date: string, booking_id: number }) {
+        return await this.bookingGrpcService.getEmployeesByBookingDateRange(data.start_date, data.end_date, data.booking_id);
     }
 }
