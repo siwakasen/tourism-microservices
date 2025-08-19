@@ -30,10 +30,16 @@ import {
 import { CarServiceClient, TravelPackageServiceClient } from 'libs/entities';
 import { PaymentService } from '../payments/payment.service';
 import { Cron } from '@nestjs/schedule';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class BookingService implements OnModuleInit {
-  constructor(private readonly paymentService: PaymentService) {}
+  constructor(
+    private readonly paymentService: PaymentService,
+    @InjectRepository(Bookings)
+    private readonly bookingRepository: Repository<Bookings>,
+  ) {}
 
   @Inject('CUS_AUTH_CLIENT')
   private clientCus: ClientGrpc;
@@ -502,11 +508,11 @@ export class BookingService implements OnModuleInit {
     paginationDto: PaginationDto,
   ): Promise<BookingResDto> {
     try {
-      const { page, limit, search } = paginationDto;
+      const { page = 1, limit = 10, search = '' } = paginationDto;
 
       // Use a single query with left join to fetch bookings and payments
-      const queryBuilder = this.dataSource.manager
-        .createQueryBuilder(Bookings, 'bookings')
+      const queryBuilder = this.bookingRepository
+        .createQueryBuilder('bookings')
         .leftJoinAndSelect('bookings.payments', 'payments')
         .orderBy('bookings.created_at', 'DESC')
         .addOrderBy('payments.created_at', 'DESC');

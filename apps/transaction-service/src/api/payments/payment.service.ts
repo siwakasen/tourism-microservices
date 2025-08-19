@@ -290,7 +290,7 @@ export class PaymentService {
           await queryRunner.manager.update(
             BookingAdjustments,
             { id: adjustment.id },
-            { status: AdjustmentStatus.WAITING_REASSIGNMENT },
+            { status: AdjustmentStatus.WAITING_RECONFIRMATION },
           );
           return;
         }
@@ -496,7 +496,7 @@ export class PaymentService {
       if(payment.modification) {
         await this.bookingAdjustmentRepository.update(
           { id: payment.modification.id },
-          { status: AdjustmentStatus.WAITING_REASSIGNMENT },
+          { status: AdjustmentStatus.WAITING_RECONFIRMATION },
         );
       }else{
         await this.bookingRepository.update(payment.booking.id, {

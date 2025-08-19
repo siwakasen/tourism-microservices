@@ -458,7 +458,7 @@ export class BookingAdjustmentService implements OnModuleInit {
       where: {
         id,
         request_type: RequestType.RESCHEDULE,
-        status: In([AdjustmentStatus.PENDING, AdjustmentStatus.WAITING_REASSIGNMENT]),
+        status: In([AdjustmentStatus.PENDING, AdjustmentStatus.WAITING_RECONFIRMATION]),
       },
       relations: ['booking'],
     });
@@ -532,7 +532,7 @@ export class BookingAdjustmentService implements OnModuleInit {
       );
 
       // AFTER PAYMENT APPROVAL/REAPPROVE 
-    } else if (adjustment.status === AdjustmentStatus.WAITING_REASSIGNMENT) {
+    } else if (adjustment.status === AdjustmentStatus.WAITING_RECONFIRMATION) {
       if (!employee_id) {
         throw new HttpException('Employee ID is required', HttpStatus.BAD_REQUEST);
       }
@@ -638,7 +638,7 @@ export class BookingAdjustmentService implements OnModuleInit {
         new_end_date
       );
       // AFTER PAYMENT APPROVAL/REAPPROVE
-    } else if (adjustment.status === AdjustmentStatus.WAITING_REASSIGNMENT) {
+    } else if (adjustment.status === AdjustmentStatus.WAITING_RECONFIRMATION) {
       return await this.handleWaitingPaymentWithoutDriverReschedule(
         queryRunner, 
         adjustment, 
