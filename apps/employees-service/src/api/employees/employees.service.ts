@@ -136,10 +136,11 @@ export class EmployeeService implements OnModuleInit {
       email: email,
       url: url,
     });
-    const currentDate = new Date();
+    const isoDate = new Date();
+    const gmtplus8 = new Date(isoDate.getTime() + 8 * 60 * 60 * 1000);
     await this.EmployeeTokenRepo.save({
       token: hashedEmail,
-      expiredAt: currentDate,
+      expiredAt: gmtplus8,
     });
 
     return {
@@ -179,7 +180,9 @@ export class EmployeeService implements OnModuleInit {
       const hashedPassword = await this.helper.hashingPassword(password);
       user.password = hashedPassword;
 
-      user.last_update_password = new Date();
+      const isoDate = new Date();
+      const gmtplus8 = new Date(isoDate.getTime() + 8 * 60 * 60 * 1000);
+      user.last_update_password = gmtplus8;
       user.save();
 
       checkToken.used = true;

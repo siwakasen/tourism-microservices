@@ -174,10 +174,11 @@ export class CustomerService implements OnModuleInit {
         email: email,
         url: url,
       });
-      const currentDate = new Date();
+      const isoDate = new Date();
+      const gmtplus8 = new Date(isoDate.getTime() + 8 * 60 * 60 * 1000);
       await this.CustomerTokenRepo.save({
         token: hashedEmail,
-        created_at: currentDate,
+        created_at: gmtplus8, 
       });
       return {
         message: 'Link to reset password has been sent to your email',

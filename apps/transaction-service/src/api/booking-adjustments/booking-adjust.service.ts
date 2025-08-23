@@ -10,6 +10,7 @@ import {  Customer, CustomerServiceClient, EmployeeServiceClient } from "libs/en
 import { ApiTags } from "@nestjs/swagger";
 import { MailService } from "libs/helpers/src/mail/mail.service";
 import { PaymentService } from "../payments/payment.service";
+import { DriverPrice } from "../../shared/enum/enum";
 
 @Injectable()
 export class BookingAdjustmentService implements OnModuleInit {
@@ -80,7 +81,12 @@ export class BookingAdjustmentService implements OnModuleInit {
             }
             
             // if booking starts in 24 hours or less then cannot cancel
-            if(new Date(booking.start_date).getTime() - new Date().getTime() <= 1000 * 60 * 60 * 24){
+            const startDate = new Date(booking.start_date);
+            const isoDate = new Date();
+            const gmtplus8 = new Date(isoDate.getTime() + 8 * 60 * 60 * 1000);
+            const timeDiff = startDate.getTime() - gmtplus8.getTime();
+            const hoursDiff = Math.floor(timeDiff / (1000 * 60 * 60));
+            if(hoursDiff <= 24){
               throw new HttpException('Booking cannot be cancelled within 24 hours of the start date', HttpStatus.BAD_REQUEST);
             }
 
@@ -195,9 +201,9 @@ export class BookingAdjustmentService implements OnModuleInit {
         let additional_price = 0;
         if(new_range_days > old_range_days){
           if(booking.with_driver){
-            const pricePerDay = (booking.total_price / old_range_days) - 10;
+            const pricePerDay = (booking.total_price / old_range_days) - DriverPrice.PER_DAY;
             const additional_days = new_range_days - old_range_days;
-            additional_price = (pricePerDay + 10) * additional_days;
+            additional_price = (pricePerDay + DriverPrice.PER_DAY) * additional_days;
           }else{
             const pricePerDay = (booking.total_price / old_range_days);
             const additional_days = new_range_days - old_range_days;

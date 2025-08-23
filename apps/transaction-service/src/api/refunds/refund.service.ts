@@ -147,7 +147,9 @@ import { AddFormDto, PaginationDto } from "./refund.dto";
                 throw new HttpException('Refund not found', HttpStatus.NOT_FOUND);
             }
             refund.status = RefundStatus.SUCCESS;
-            refund.refund_date = new Date();
+            const isoDate = new Date();
+            const gmtplus8 = new Date(isoDate.getTime() + 8 * 60 * 60 * 1000);
+            refund.refund_date = gmtplus8;
             await queryRunner.manager.save(refund);
             await queryRunner.commitTransaction();
             return { message: 'Refund completed successfully' };

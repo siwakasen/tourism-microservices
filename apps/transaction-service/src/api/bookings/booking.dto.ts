@@ -59,7 +59,6 @@ export class BookingReqDto {
   })
   @IsDate()
   @Type(() => Date)
-  @IsNotEmpty()
   public readonly start_date: Date;
 
   @ApiProperty({
@@ -68,7 +67,6 @@ export class BookingReqDto {
   })
   @IsDate()
   @Type(() => Date)
-  @IsOptional()
   public readonly end_date: Date;
 
   @ApiProperty({

@@ -32,6 +32,8 @@ import { PaymentService } from '../payments/payment.service';
 import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { start } from 'repl';
+import { DriverPrice } from '../../shared/enum/enum';
 
 @Injectable()
 export class BookingService implements OnModuleInit {
@@ -227,14 +229,11 @@ export class BookingService implements OnModuleInit {
         if (!packageData) {
           throw new HttpException('Package not found', HttpStatus.NOT_FOUND);
         }
-        let endDate: Date;
-        const day = packageData.duration / 12;
+
         const startDate = new Date(payload.start_date);
-        if (day > 1) {
-          endDate = new Date(startDate.getTime() + day * 24 * 60 * 60 * 1000);
-        } else {
-          endDate = new Date(startDate.getTime() + 1 * 60 * 1000);
-        }
+        console.log('startDate', startDate);
+        const endDate = new Date(startDate.getTime() + packageData.duration * 1 * 60 * 60 * 1000);
+        console.log('endDate', endDate);
 
         total_price = packageData.packagePrice * payload.number_of_persons;
         product_name = packageData.packageName;
@@ -242,7 +241,7 @@ export class BookingService implements OnModuleInit {
         booking = await queryRunner.manager.save(Bookings, {
           package_id: payload.package_id,
           total_price: total_price,
-          start_date: startDate,
+          start_date: payload.start_date,
           end_date: endDate,
           customer_id: customer.id,
           number_of_persons: payload.number_of_persons,
@@ -269,9 +268,12 @@ export class BookingService implements OnModuleInit {
         }
         const { pricePerDay, carName } = carData;
         product_name = carName;
+        
 
         const startDate = new Date(payload.start_date);
+        console.log('startDate', startDate);
         const endDate = new Date(payload.end_date);
+        console.log('endDate', endDate);
         let days =
           (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
 
@@ -283,7 +285,7 @@ export class BookingService implements OnModuleInit {
         }
         let driverPrice = 0;
         if (payload.with_driver) {
-          driverPrice = 10;
+          driverPrice = DriverPrice.PER_DAY;
         }
         total_price = (pricePerDay + driverPrice) * Number(days.toFixed(0));
 
