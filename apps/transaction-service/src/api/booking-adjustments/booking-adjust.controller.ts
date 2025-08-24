@@ -27,6 +27,13 @@ export class BookingAdjustmentController {
       return this.bookingAdjustmentService.getAdjustments(query);
     }
 
+    @Get('/adjustments/:id')
+    @UseGuards(JwtAuthGuard)
+    @Roles(UserType.ADMIN)
+    async getAdjustmentById(@Param('id') id: number) {
+      return this.bookingAdjustmentService.getAdjustmentById(id);
+    }
+
     @Patch('/aprrovement-cancellation/:id')
     @UseGuards(JwtAuthGuard)
     @Roles(UserType.ADMIN)

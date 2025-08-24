@@ -498,7 +498,7 @@ export class BookingService implements OnModuleInit {
       throw new HttpException('Booking not found', HttpStatus.NOT_FOUND);
     }
     return {
-      data: booking,
+        data: booking,
         message: 'Booking fetched successfully',
       };
     } catch (error) {

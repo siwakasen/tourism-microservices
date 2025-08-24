@@ -280,6 +280,26 @@ export class BookingAdjustmentService implements OnModuleInit {
     }
   }
 
+  public async getAdjustmentById(id: number) {
+    try {
+      const adjustment = await this.repository.createQueryBuilder('booking_adjustments')
+      .leftJoinAndSelect('booking_adjustments.booking', 'bookings')
+      .leftJoinAndSelect('bookings.payments', 'payments')
+      .where('booking_adjustments.id = :id', { id })
+      .getOne();
+
+      if(!adjustment){
+        throw new HttpException('Booking adjustment not found', HttpStatus.NOT_FOUND);
+      }
+      return {
+        data: adjustment,
+        message: 'Booking adjustment fetched successfully',
+      };
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   // FROM CONTROLLER ACCESS
   public async approvementCancellation(id: number, status: AdjustmentStatus.APPROVED | AdjustmentStatus.REJECTED) {
     const queryRunner = this.dataSource.createQueryRunner();
