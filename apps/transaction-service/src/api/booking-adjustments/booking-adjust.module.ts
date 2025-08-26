@@ -57,6 +57,23 @@ import { AuthRedisService } from "../payments/redis.service";
               }),
             },
           ]),
+          ClientsModule.registerAsync([
+            {
+              inject: [ConfigService],
+              name: 'TRAVEL_PACKAGE_CLIENT',
+              useFactory: (config: ConfigService) => ({
+                transport: Transport.GRPC,
+                options: {
+                  package: 'travelpackage',
+                  protoPath: 'contract/travel-package-api.proto',
+                  url: config.get<string>('TRAVEL_PACKAGE_CLIENT'),
+                  loader: {
+                    keepCase: true,
+                  },
+                },
+              }),
+            },
+          ]),
           MailModule,
     ],
     

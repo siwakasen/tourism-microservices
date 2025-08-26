@@ -231,9 +231,7 @@ export class BookingService implements OnModuleInit {
         }
 
         const startDate = new Date(payload.start_date);
-        console.log('startDate', startDate);
         const endDate = new Date(startDate.getTime() + packageData.duration * 1 * 60 * 60 * 1000);
-        console.log('endDate', endDate);
 
         total_price = packageData.packagePrice * payload.number_of_persons;
         product_name = packageData.packageName;

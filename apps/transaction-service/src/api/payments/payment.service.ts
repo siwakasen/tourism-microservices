@@ -487,11 +487,12 @@ export class PaymentService {
         where: { payment_gateway_id: orderId },
         relations: ['booking', 'modification'],
       });
-      
+      const isoDate = new Date();
+      const gmtplus8 = new Date(isoDate.getTime() + 8 * 60 * 60 * 1000);
       await this.paymentRepository.update(payment.id, {
         status: PaymentStatus.SUCCESS,
         net_amount: seller_receivable_breakdown.net_amount.value,
-        payment_date: new Date(),
+        payment_date: gmtplus8,
       });
       if(payment.modification) {
         await this.bookingAdjustmentRepository.update(

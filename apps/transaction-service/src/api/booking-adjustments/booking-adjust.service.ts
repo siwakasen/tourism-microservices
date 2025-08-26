@@ -6,7 +6,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import {   ApprovementRescheduleDto, PaginationDto, RescheduleBookingReqDto } from "./booking-adjust.dto";
 import { RefundService } from "../refunds/refund.service";
 import { ClientGrpc } from "@nestjs/microservices";
-import {  Customer, CustomerServiceClient, EmployeeServiceClient } from "libs/entities";
+import {  Customer, CustomerServiceClient, EmployeeServiceClient, TravelPackageServiceClient } from "libs/entities";
 import { ApiTags } from "@nestjs/swagger";
 import { MailService } from "libs/helpers/src/mail/mail.service";
 import { PaymentService } from "../payments/payment.service";
@@ -33,6 +33,10 @@ export class BookingAdjustmentService implements OnModuleInit {
     private clientCus: ClientGrpc;
     private customerGrpcService: CustomerServiceClient;
 
+    @Inject('TRAVEL_PACKAGE_CLIENT')
+    private clientTravelPackage: ClientGrpc;
+    private travelPackageGrpcService: TravelPackageServiceClient;
+
     @Inject(MailService)
 
   private readonly mailService: MailService;
@@ -40,6 +44,7 @@ export class BookingAdjustmentService implements OnModuleInit {
     onModuleInit() {
         this.employeeGrpcService = this.clientEmp.getService<EmployeeServiceClient>('EmployeeGrpcService');
         this.customerGrpcService = this.clientCus.getService<CustomerServiceClient>('CustomerGrpcService');
+        this.travelPackageGrpcService = this.clientTravelPackage.getService<TravelPackageServiceClient>('TravelPackageGrpcService');
     }
 
     private async getCustomerGrpc(customer_id: number) {
@@ -51,6 +56,19 @@ export class BookingAdjustmentService implements OnModuleInit {
         return response;
 
     }
+    private async getPackageGrpc(payload: { package_id: number }) {
+    try {
+      const data = await this.travelPackageGrpcService
+        .getTravelPackage({
+          id: payload.package_id,
+        })
+        .toPromise();
+      return data;
+    } catch (error) {
+      console.log(error.details);
+      throw new HttpException(error.details, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
     
     // FROM CONTROLLER ACCESS
     public async  cancelBooking(booking_id: number, customer_id : number, reason: string) {
@@ -136,37 +154,35 @@ export class BookingAdjustmentService implements OnModuleInit {
             throw new HttpException('Booking not found', HttpStatus.NOT_FOUND);
           }
 
-          if(new Date(booking.start_date).getTime() - new Date().getTime() <= 1000 * 60 * 60 * 24){
-            throw new HttpException('Booking cannot be rescheduled within 24 hours of the start date', HttpStatus.BAD_REQUEST);
+          // if booking starts in 24 hours or less then cannot cancel
+          const startDate = new Date(booking.start_date);
+          const isoDate = new Date();
+          const gmtplus8 = new Date(isoDate.getTime() + 8 * 60 * 60 * 1000);
+          const timeDiff = startDate.getTime() - gmtplus8.getTime();
+          const hoursDiff = Math.floor(timeDiff / (1000 * 60 * 60));
+          if(hoursDiff <= 24){
+            throw new HttpException('Booking cannot be cancelled within 24 hours of the start date', HttpStatus.BAD_REQUEST);
           }
+
+          const newStartDate = new Date(payload.new_start_date);
+          let newEndDate = new Date(payload.new_end_date);
+
           if(booking.package_id){
-            const now = new Date().setHours(0,0,0,0);
-            const new_start_date = new Date(payload.new_start_date).setHours(0,0,0,0);
-            if(new_start_date <= now){
+            const packageData = await this.getPackageGrpc({package_id: booking.package_id});
+            if (!packageData) {
+              throw new HttpException('Package not found', HttpStatus.NOT_FOUND);
+            }
+            newEndDate = new Date(newStartDate.getTime() + packageData.duration * 1 * 60 * 60 * 1000);
+          }
+
+          if(booking.package_id){
+            if(newStartDate <= gmtplus8){
               throw new HttpException('New start date must be greater than today', HttpStatus.BAD_REQUEST);
             }
           }else{
-            const startDate = new Date(payload.new_start_date);
-            const endDate = new Date(payload.new_end_date);
-            const days = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
+            const days = (newEndDate.getTime() - newStartDate.getTime()) / (1000 * 60 * 60 * 24);
             if(days < 1){
-              throw new HttpException('End date must be greater than start date', HttpStatus.BAD_REQUEST);
-            }
-            const old_start = new Date(booking.start_date).setHours(0,0,0,0);
-            const new_start = new Date(payload.new_start_date).setHours(0,0,0,0);
-            const new_end = new Date(payload.new_end_date).setHours(0,0,0,0);
-
-            // if same start day, check end date is after
-            if(new_start === old_start){
-              if(new_end <= old_start){
-                throw new HttpException('New end date must be greater than start date', HttpStatus.BAD_REQUEST);
-              }
-            }
-            // if different start day, check end after new start
-            else {
-              if(new_end <= new_start){
-                throw new HttpException('New end date must be greater than new start date', HttpStatus.BAD_REQUEST);
-              }
+              throw new HttpException('New end date must be greater than new start date', HttpStatus.BAD_REQUEST);
             }
           }
 
@@ -180,8 +196,8 @@ export class BookingAdjustmentService implements OnModuleInit {
               booking: booking,
               request_type: RequestType.RESCHEDULE,
               status: AdjustmentStatus.PENDING,
-              new_start_date: payload.new_start_date,
-              new_end_date: payload.new_start_date,
+              new_start_date: newStartDate,
+              new_end_date: newEndDate,
               additional_price: 0,
             });
 
@@ -193,9 +209,8 @@ export class BookingAdjustmentService implements OnModuleInit {
             };
           }
 
-        const startDate = new Date(payload.new_start_date);
-        const endDate = new Date(payload.new_end_date);
-        const new_range_days = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
+          // calculate car additional price
+        const new_range_days = (newEndDate.getTime() - newStartDate.getTime()) / (1000 * 60 * 60 * 24);
         const old_range_days = (booking.end_date.getTime() - booking.start_date.getTime()) / (1000 * 60 * 60 * 24);
 
         let additional_price = 0;
@@ -215,8 +230,8 @@ export class BookingAdjustmentService implements OnModuleInit {
             booking: booking,
             request_type: RequestType.RESCHEDULE,
             status: AdjustmentStatus.PENDING,
-            new_start_date: payload.new_start_date,
-            new_end_date: payload.new_end_date,
+            new_start_date: newStartDate,
+            new_end_date: newEndDate,
             additional_price: additional_price,
           });
 
