@@ -109,6 +109,21 @@ services:
     deploy:
       replicas: 3
 
+  # Report Service
+  report-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.report
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - travel-volume:/app/dist/apps/report-service/logs
+    networks:
+      - travel-network
+    restart: unless-stopped
+    deploy:
+      replicas: 1
+
 networks:
   cloudflare-network:
     external: true
