@@ -29,8 +29,8 @@ class Refunds extends BaseEntity {
   public booking!: Bookings;
 
   @ApiProperty()
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
-  public amount!: number;
+  @Column({ type: 'float', nullable: false })
+  public amount: number;
 
   @ApiProperty()
   @Column({

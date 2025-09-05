@@ -6,7 +6,6 @@ import { JwtAuthGuard } from "@app/helpers/auth/user/auth.guard";
 import { Roles, UserType } from "@app/helpers/auth/decorators/auth.decorator";
 import { GetCustomer } from "@app/helpers/auth/decorators/get-user.decorator";
 import { Customer } from "libs/entities/customer/customer.entity";
-import { RefundMethod } from "libs/entities/transactions/refunds.entitiy";
 
 
 @Controller('refunds')
@@ -26,7 +25,7 @@ export class RefundController {
 
     @Get('data/all')
     @UseGuards(JwtAuthGuard)
-    @Roles(UserType.OWNER)
+    @Roles(UserType.OWNER, UserType.ADMIN)
     @ApiBearerAuth()
     async getAllRefund(@Query() query: PaginationDto) {
         return this.refundService.getAllRefund(query);

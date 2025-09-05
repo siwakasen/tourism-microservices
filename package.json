@@ -9,7 +9,7 @@
     "build": "nest build",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
     "start": "nest start",
-    "dev": "concurrently \"pnpm start:employees-service:dev\" \"pnpm start:travel-packages-service:dev\" \"pnpm start:rent-car-service:dev\" \"pnpm start:expenses-service:dev\" \"pnpm start:customer-service:dev\" \"pnpm start:transaction-service:dev\"",
+    "dev": "concurrently \"pnpm start:employees-service:dev\" \"pnpm start:travel-packages-service:dev\" \"pnpm start:rent-car-service:dev\" \"pnpm start:expenses-service:dev\" \"pnpm start:customer-service:dev\" \"pnpm start:transaction-service:dev\" \"pnpm start:report-service:dev\"",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -28,6 +28,7 @@
     "start:customer-service:prod": "cross-env NODE_ENV=production nest start customer-service --watch",
     "start:transaction-service:dev": "cross-env NODE_ENV=development nest start transaction-service --watch",
     "start:transaction-service:prod": "cross-env NODE_ENV=production nest start transaction-service --watch",
+    "start:report-service:dev": "cross-env NODE_ENV=development nest start report-service --watch",
     "build:employees-service": "nest build employees-service",
     "build:employees-service:prod": "cross-env NODE_ENV=production nest build employees-service",
     "build:travel-packages-service": "nest build travel-packages-service",
@@ -39,7 +40,8 @@
     "build:customer-service": "nest build customer-service",
     "build:customer-service:prod": "cross-env NODE_ENV=production nest build customer-service",
     "build:transaction-service": "nest build transaction-service",
-    "build:transaction-service:prod": "cross-env NODE_ENV=production nest build transaction-service"
+    "build:transaction-service:prod": "cross-env NODE_ENV=production nest build transaction-service",
+    "build:report-service:prod": "cross-env NODE_ENV=production nest build report-service"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.13.4",

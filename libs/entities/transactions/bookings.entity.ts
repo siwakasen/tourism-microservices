@@ -8,9 +8,11 @@ import {
   UpdateDateColumn,
   OneToMany,
   JoinColumn,
+  OneToOne,
 } from 'typeorm';
 import { Payment } from './payment.entity';
 import { BookingAdjustments } from './booking_adjustments.entity';
+import { Refunds } from './refunds.entitiy';
 
 export enum BookingStatus {
   WAITING_PAYMENT = 'WAITING_PAYMENT',
@@ -101,6 +103,9 @@ class Bookings extends BaseEntity {
     (booking_adjustment) => booking_adjustment.booking,
   )
   public booking_adjustments: BookingAdjustments[];
+
+  @OneToOne(() => Refunds, (refund) => refund.booking)
+  public refunds: Refunds;
 }
 
 export { Bookings };
