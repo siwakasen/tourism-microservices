@@ -6,9 +6,9 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
-  const app : NestExpressApplication = await NestFactory.create(ApiModule);
-  const config : ConfigService = app.get(ConfigService);
-  const port : number = config.get<number>('PORT');
+  const app: NestExpressApplication = await NestFactory.create(ApiModule);
+  const config: ConfigService = app.get(ConfigService);
+  const port: number = config.get<number>('PORT');
   app.set('trust proxy', 1);
   console.log('Running on', config.get<string>('NODE_ENV'));
   if (config.get<string>('NODE_ENV') === 'development') {
@@ -21,10 +21,7 @@ async function bootstrap() {
     });
   } else {
     app.enableCors({
-      origin: [
-        'https://travel.vulpbox.com',
-        'https://admin.vulpbox.com',
-      ],
+      origin: ['https://travel.vulpbox.com', 'https://admin.vulpbox.com'],
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'application/json'],
