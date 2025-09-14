@@ -10,6 +10,7 @@ import { BookingGrpcModule } from './api/bookings/grpc/booking-grpc.module';
 import { BookingAdjustmentModule } from './api/booking-adjustments/booking-adjust.module';
 import { RefundModule } from './api/refunds/refund.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { RatingsModule } from './api/ratings/ratings.module';
 
 const envFilePath: string = getEnvPath(`${__dirname}`);
 console.log('envFilePath:', getEnvPath(`${__dirname}`));
@@ -28,12 +29,19 @@ const TransactionLogger = new LoggerMiddleware({
     BookingGrpcModule,
     BookingAdjustmentModule,
     RefundModule,
+    RatingsModule,
   ],
 })
 export class ApiModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(TransactionLogger.use.bind(TransactionLogger))
-      .forRoutes('bookings', 'payments', 'booking-adjustments', 'refunds');
+      .forRoutes(
+        'bookings',
+        'payments',
+        'booking-adjustments',
+        'refunds',
+        'ratings'
+      );
   }
 }

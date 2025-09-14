@@ -7,18 +7,11 @@ import {
   IsEnum,
   IsIn,
   IsJSON,
-  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
-import {
-  AdjustmentStatus,
-  Bookings,
-  BookingStatus,
-  Payment,
-  PaymentMethod,
-} from 'libs/entities';
+import { Bookings, BookingStatus, PaymentMethod } from 'libs/entities';
 
 export class BookingReqDto {
   @ApiProperty({
@@ -258,12 +251,11 @@ export class AssignEmployeeDto {
     description: 'The employee id of the booking',
     example: 1,
   })
-    @IsNumber()
-    public readonly employee_id: number;
+  @IsNumber()
+  public readonly employee_id: number;
 }
 
 export class FinishBookingDto {
-
   @ApiProperty({
     enum: [BookingStatus.COMPLETED, BookingStatus.NO_SHOW],
     description: 'Status can only be COMPLETED or NO_SHOW',

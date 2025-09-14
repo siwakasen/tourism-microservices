@@ -16,7 +16,7 @@ async function bootstrap() {
 
   if (config.get<string>('NODE_ENV') === 'development') {
     app.enableCors({
-      origin: '*',
+      origin: ['http://localhost:3000', 'http://localhost:3010'],
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'application/json'],
@@ -24,10 +24,7 @@ async function bootstrap() {
     });
   } else {
     app.enableCors({
-      origin: [
-        'https://travel.vulpbox.com',
-        'https://admin.vulpbox.com',
-      ],
+      origin: ['https://travel.vulpbox.com', 'https://admin.vulpbox.com'],
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'application/json'],
@@ -47,7 +44,7 @@ async function bootstrap() {
           keepCase: true,
         },
       },
-    },
+    }
   );
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));

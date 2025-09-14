@@ -40,7 +40,7 @@ export class BookingService implements OnModuleInit {
   constructor(
     private readonly paymentService: PaymentService,
     @InjectRepository(Bookings)
-    private readonly bookingRepository: Repository<Bookings>,
+    private readonly bookingRepository: Repository<Bookings>
   ) {}
 
   @Inject('CUS_AUTH_CLIENT')
@@ -64,19 +64,18 @@ export class BookingService implements OnModuleInit {
 
   @Inject(DataSource)
   private readonly dataSource: DataSource;
-    onModuleInit() {
-    
+  onModuleInit() {
     this.customerGrpcService = this.clientCus.getService<CustomerServiceClient>(
-      'CustomerGrpcService',
+      'CustomerGrpcService'
     );
     this.travelPackageGrpcService =
       this.clientTravelPackage.getService<TravelPackageServiceClient>(
-        'TravelPackageGrpcService',
-    );
+        'TravelPackageGrpcService'
+      );
     this.carGrpcService =
       this.clientCar.getService<CarServiceClient>('CarGrpcService');
     this.employeeGrpcService = this.clientEmp.getService<EmployeeServiceClient>(
-      'EmployeeGrpcService',
+      'EmployeeGrpcService'
     );
 
     // Run the booking status update job on app startup
@@ -149,7 +148,7 @@ export class BookingService implements OnModuleInit {
     queryRunner: QueryRunner,
     car_id: number,
     new_start_date: Date,
-    new_end_date: Date,
+    new_end_date: Date
   ) {
     if (!car_id) return;
     const startDate = new Date(new_start_date);
@@ -169,7 +168,7 @@ export class BookingService implements OnModuleInit {
     if (car_conflict) {
       throw new HttpException(
         'Car is already assigned to another booking',
-        HttpStatus.BAD_REQUEST,
+        HttpStatus.BAD_REQUEST
       );
     }
     // Check for WAITING_CONFIRMATION with successful payment
@@ -194,7 +193,7 @@ export class BookingService implements OnModuleInit {
       if (payment) {
         throw new HttpException(
           'Car is already assigned to another booking (waiting confirmation with successful payment)',
-          HttpStatus.BAD_REQUEST,
+          HttpStatus.BAD_REQUEST
         );
       }
     }
@@ -203,7 +202,7 @@ export class BookingService implements OnModuleInit {
   public async createBooking(
     payload: BookingReqDto,
     customer: Customer,
-    isRegister: boolean,
+    isRegister: boolean
   ): Promise<{
     data: {
       message: string;
@@ -231,7 +230,9 @@ export class BookingService implements OnModuleInit {
         }
 
         const startDate = new Date(payload.start_date);
-        const endDate = new Date(startDate.getTime() + packageData.duration * 1 * 60 * 60 * 1000);
+        const endDate = new Date(
+          startDate.getTime() + packageData.duration * 1 * 60 * 60 * 1000
+        );
 
         total_price = packageData.packagePrice * payload.number_of_persons;
         product_name = packageData.packageName;
@@ -258,7 +259,7 @@ export class BookingService implements OnModuleInit {
           queryRunner,
           payload.car_id,
           payload.start_date,
-          payload.end_date,
+          payload.end_date
         );
         const carData = await this.getCarGrpc(payload);
         if (!carData) {
@@ -266,7 +267,6 @@ export class BookingService implements OnModuleInit {
         }
         const { pricePerDay, carName } = carData;
         product_name = carName;
-        
 
         const startDate = new Date(payload.start_date);
         console.log('startDate', startDate);
@@ -278,7 +278,7 @@ export class BookingService implements OnModuleInit {
         if (days <= 0) {
           throw new HttpException(
             'End date must be greater than start date',
-            HttpStatus.BAD_REQUEST,
+            HttpStatus.BAD_REQUEST
           );
         }
         let driverPrice = 0;
@@ -309,7 +309,7 @@ export class BookingService implements OnModuleInit {
             product_name,
             total_price,
             customer,
-            queryRunner,
+            queryRunner
           );
         redirect_url = midtrans_redirect_url;
       } else if (payload.payment_method === PaymentMethod.PAYPAL) {
@@ -319,7 +319,7 @@ export class BookingService implements OnModuleInit {
             product_name,
             total_price,
             customer,
-            queryRunner,
+            queryRunner
           );
         redirect_url = paypal_redirect_url;
       }
@@ -337,7 +337,7 @@ export class BookingService implements OnModuleInit {
       }
       throw new HttpException(
         error.message,
-        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR
       );
     } finally {
       await queryRunner.release();
@@ -350,12 +350,21 @@ export class BookingService implements OnModuleInit {
     await queryRunner.startTransaction();
     try {
       const booking = await queryRunner.manager.findOne(Bookings, {
-        where: { id: booking_id, status: BookingStatus.WAITING_CONFIRMATION, with_driver: false, package_id: null },
+        where: {
+          id: booking_id,
+          status: BookingStatus.WAITING_CONFIRMATION,
+          with_driver: false,
+          package_id: null,
+        },
       });
       if (!booking) {
         throw new HttpException('Booking not found', HttpStatus.NOT_FOUND);
       }
-      await queryRunner.manager.update(Bookings, { id: booking_id }, { status: BookingStatus.CONFIRMED });
+      await queryRunner.manager.update(
+        Bookings,
+        { id: booking_id },
+        { status: BookingStatus.CONFIRMED }
+      );
       await queryRunner.commitTransaction();
       const updatedBooking = await queryRunner.manager.findOne(Bookings, {
         where: { id: booking_id },
@@ -396,7 +405,7 @@ export class BookingService implements OnModuleInit {
       if ((employee as any).role_id != requiredRole) {
         throw new HttpException(
           'Employee role is not match with booking',
-          HttpStatus.BAD_REQUEST,
+          HttpStatus.BAD_REQUEST
         );
       }
 
@@ -414,14 +423,14 @@ export class BookingService implements OnModuleInit {
       if (conflict) {
         throw new HttpException(
           'Employee is already assigned to another booking',
-          HttpStatus.BAD_REQUEST,
+          HttpStatus.BAD_REQUEST
         );
       }
 
       await queryRunner.manager.update(
         Bookings,
         { id: booking_id },
-        { employee_id: employee_id, status: BookingStatus.CONFIRMED },
+        { employee_id: employee_id, status: BookingStatus.CONFIRMED }
       );
       const updatedBooking = await queryRunner.manager.findOne(Bookings, {
         where: { id: booking_id },
@@ -435,17 +444,16 @@ export class BookingService implements OnModuleInit {
       await queryRunner.rollbackTransaction();
       throw new HttpException(
         error.message,
-        error.status || HttpStatus.NOT_FOUND,
+        error.status || HttpStatus.NOT_FOUND
       );
     } finally {
       await queryRunner.release();
     }
   }
-  
 
   public async getBookingsByCustomer(
     customer_id: number,
-    paginationDto: PaginationDto,
+    paginationDto: PaginationDto
   ): Promise<BookingResDto> {
     try {
       const { page, limit } = paginationDto;
@@ -453,7 +461,11 @@ export class BookingService implements OnModuleInit {
       const queryBuilder = this.dataSource.manager
         .createQueryBuilder(Bookings, 'bookings')
         .leftJoinAndSelect('bookings.payments', 'payments')
-        .leftJoinAndSelect('bookings.booking_adjustments', 'booking_adjustments')
+        .leftJoinAndSelect(
+          'bookings.booking_adjustments',
+          'booking_adjustments'
+        )
+        .leftJoinAndSelect('bookings.ratings', 'ratings')
         .where('bookings.customer_id = :customer_id', { customer_id })
         .orderBy('bookings.created_at', 'DESC')
         .addOrderBy('payments.created_at', 'DESC');
@@ -484,18 +496,22 @@ export class BookingService implements OnModuleInit {
 
   public async getBookingById(booking_id: number, customer_id: number) {
     try {
-    const queryBuilder = this.dataSource.manager
-      .createQueryBuilder(Bookings, 'bookings')
-      .leftJoinAndSelect('bookings.payments', 'payments')
-      .leftJoinAndSelect('bookings.booking_adjustments', 'booking_adjustments')
-      .where('bookings.id = :booking_id', { booking_id })
-      .andWhere('bookings.customer_id = :customer_id', { customer_id });
-    const booking = await queryBuilder.getOne();
+      const queryBuilder = this.dataSource.manager
+        .createQueryBuilder(Bookings, 'bookings')
+        .leftJoinAndSelect('bookings.payments', 'payments')
+        .leftJoinAndSelect(
+          'bookings.booking_adjustments',
+          'booking_adjustments'
+        )
+        .leftJoinAndSelect('bookings.ratings', 'ratings')
+        .where('bookings.id = :booking_id', { booking_id })
+        .andWhere('bookings.customer_id = :customer_id', { customer_id });
+      const booking = await queryBuilder.getOne();
 
-    if (!booking) {
-      throw new HttpException('Booking not found', HttpStatus.NOT_FOUND);
-    }
-    return {
+      if (!booking) {
+        throw new HttpException('Booking not found', HttpStatus.NOT_FOUND);
+      }
+      return {
         data: booking,
         message: 'Booking fetched successfully',
       };
@@ -505,7 +521,7 @@ export class BookingService implements OnModuleInit {
   }
 
   public async getAllBookings(
-    paginationDto: PaginationDto,
+    paginationDto: PaginationDto
   ): Promise<BookingResDto> {
     try {
       const { page = 1, limit = 10, search = '' } = paginationDto;
@@ -571,7 +587,7 @@ export class BookingService implements OnModuleInit {
 
   public async finishBooking(
     booking_id: number,
-    booking_status: BookingStatus.COMPLETED | BookingStatus.NO_SHOW,
+    booking_status: BookingStatus.COMPLETED | BookingStatus.NO_SHOW
   ) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -583,13 +599,13 @@ export class BookingService implements OnModuleInit {
       if (!booking) {
         throw new HttpException(
           'Booking not found or not ongoing',
-          HttpStatus.NOT_FOUND,
+          HttpStatus.NOT_FOUND
         );
       }
       await queryRunner.manager.update(
         Bookings,
         { id: booking_id },
-        { status: booking_status },
+        { status: booking_status }
       );
       await queryRunner.commitTransaction();
       return {
@@ -614,7 +630,7 @@ export class BookingService implements OnModuleInit {
   })
   async handleUpdateConfirmedBookingToOngoing() {
     this.logger.log(
-      `Called at ${new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleString('en-US', { timeZone: 'Asia/Jakarta' })}`,
+      `Called at ${new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleString('en-US', { timeZone: 'Asia/Jakarta' })}`
     );
     const jakartaDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
     const queryRunner = this.dataSource.createQueryRunner();
@@ -633,7 +649,7 @@ export class BookingService implements OnModuleInit {
         await queryRunner.manager.update(
           Bookings,
           { id: booking.id },
-          { status: BookingStatus.ONGOING },
+          { status: BookingStatus.ONGOING }
         );
       }
       await queryRunner.commitTransaction();

@@ -13,6 +13,7 @@ import {
 import { Payment } from './payment.entity';
 import { BookingAdjustments } from './booking_adjustments.entity';
 import { Refunds } from './refunds.entitiy';
+import { Ratings } from './ratings.entity';
 
 export enum BookingStatus {
   WAITING_PAYMENT = 'WAITING_PAYMENT',
@@ -100,12 +101,15 @@ class Bookings extends BaseEntity {
 
   @OneToMany(
     () => BookingAdjustments,
-    (booking_adjustment) => booking_adjustment.booking,
+    (booking_adjustment) => booking_adjustment.booking
   )
   public booking_adjustments: BookingAdjustments[];
 
   @OneToOne(() => Refunds, (refund) => refund.booking)
   public refunds: Refunds;
+
+  @OneToOne(() => Ratings, (rating) => rating.booking)
+  public ratings: Ratings;
 }
 
 export { Bookings };

@@ -1,5 +1,15 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToOne,
+  JoinColumn,
+} from 'typeorm';
+import { Bookings } from './bookings.entity';
 
 @Entity('ratings')
 class Ratings extends BaseEntity {
@@ -7,9 +17,12 @@ class Ratings extends BaseEntity {
   @PrimaryGeneratedColumn()
   public id!: number;
 
-  @ApiProperty()
-  @Column({ type: 'int', nullable: false })
-  public bookings_id!: number;
+  @OneToOne(() => Bookings, (booking) => booking.id, {
+    cascade: true,
+    nullable: false,
+  })
+  @JoinColumn({ name: 'booking_id' })
+  public booking!: Bookings;
 
   @ApiProperty()
   @Column({ type: 'int', nullable: false })
@@ -21,15 +34,7 @@ class Ratings extends BaseEntity {
 
   @ApiProperty()
   @Column({ type: 'varchar', nullable: true })
-  public desc_service: string;
-
-  @ApiProperty()
-  @Column({ type: 'int', nullable: false })
-  public employee_rate!: number;
-
-  @ApiProperty()
-  @Column({ type: 'varchar', nullable: true })
-  public desc_employee: string;
+  public description: string;
 
   @ApiProperty()
   @CreateDateColumn()
