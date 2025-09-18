@@ -1,20 +1,19 @@
 import { Module } from '@nestjs/common';
-import { BookingController } from './booking.controller';
-import { BookingService } from './booking.service';
+import { LiveChatGateway } from './live-chat.gateway';
+import { LiveChatService } from './live-chat.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Bookings, Payment, BookingAdjustments } from 'libs/entities';
+import { ChatSessions, ChatMessages } from 'libs/entities';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { ClientGrpc, ClientsModule, Transport } from '@nestjs/microservices';
-import { AuthHelper } from '@app/helpers/auth/user/auth.helper';
 import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
-import { PaymentService } from '../payments/payment.service';
-import { AuthRedisService } from '../payments/redis.service';
+import { AuthHelper } from '@app/helpers/auth/user/auth.helper';
+import { LiveChatController } from './live-chat.controller';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Bookings, Payment, BookingAdjustments]),
+    TypeOrmModule.forFeature([ChatSessions, ChatMessages]),
     PassportModule.register({ defaultStrategy: 'user', property: 'user' }),
     JwtModule.registerAsync({
       inject: [ConfigService],
@@ -23,40 +22,6 @@ import { AuthRedisService } from '../payments/redis.service';
         signOptions: { expiresIn: config.get('JWT_EXPIRES') },
       }),
     }),
-    ClientsModule.registerAsync([
-      {
-        inject: [ConfigService],
-        name: 'TRAVEL_PACKAGE_CLIENT',
-        useFactory: (config: ConfigService) => ({
-          transport: Transport.GRPC,
-          options: {
-            package: 'travelpackage',
-            protoPath: 'contract/travel-package-api.proto',
-            url: config.get<string>('TRAVEL_PACKAGE_CLIENT'),
-            loader: {
-              keepCase: true,
-            },
-          },
-        }),
-      },
-    ]),
-    ClientsModule.registerAsync([
-      {
-        inject: [ConfigService],
-        name: 'CAR_CLIENT',
-        useFactory: (config: ConfigService) => ({
-          transport: Transport.GRPC,
-          options: {
-            package: 'car',
-            protoPath: 'contract/rent-car-api.proto',
-            url: config.get<string>('CAR_CLIENT'),
-            loader: {
-              keepCase: true,
-            },
-          },
-        }),
-      },
-    ]),
     ClientsModule.registerAsync([
       {
         inject: [ConfigService],
@@ -89,23 +54,22 @@ import { AuthRedisService } from '../payments/redis.service';
       },
     ]),
   ],
-  controllers: [BookingController],
+  controllers: [LiveChatController],
   providers: [
-    BookingService,
-    PaymentService,
-    AuthRedisService,
+    LiveChatGateway,
+    LiveChatService,
     JwtStrategy,
     {
       provide: AuthHelper,
       useFactory: (
         jwt: JwtService,
-        cusAuthClient: ClientGrpc,
-        empAuthClient: ClientGrpc
+        clientCus: ClientGrpc,
+        clientEmp: ClientGrpc
       ) => {
-        return new AuthHelper(jwt, empAuthClient, cusAuthClient);
+        return new AuthHelper(jwt, clientEmp, clientCus);
       },
       inject: [JwtService, 'CUS_AUTH_CLIENT', 'EMP_AUTH_CLIENT'],
     },
   ],
 })
-export class BookingModule {}
+export class LiveChatModule {}

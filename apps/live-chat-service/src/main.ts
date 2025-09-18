@@ -1,8 +1,31 @@
 import { NestFactory } from '@nestjs/core';
-import { LiveChatServiceModule } from './live-chat-service.module';
-
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { ConfigService } from '@nestjs/config';
+import { ValidationPipe } from '@nestjs/common';
+import { ApiModule } from './api.module';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
-  const app = await NestFactory.create(LiveChatServiceModule);
-  await app.listen(process.env.port ?? 3000);
+  const app: NestExpressApplication = await NestFactory.create(ApiModule);
+  const config: ConfigService = app.get(ConfigService);
+  const port: number = config.get<number>('PORT');
+  app.set('trust proxy', 1);
+  console.log('Running on', config.get<string>('NODE_ENV'));
+
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+
+  const configSwagger = new DocumentBuilder()
+    .setTitle('Live Chat Service')
+    .setDescription('API for Live Chat')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .addServer(`http://localhost:${port}`)
+    .addServer(`https://live-chat-service.vulpbox.com`)
+    .build();
+  const document = SwaggerModule.createDocument(app, configSwagger);
+  SwaggerModule.setup('api-docs', app, document);
+
+  await app.listen(port, () => {
+    console.log('[Live Chat Service]', `http://localhost:${port}`);
+  });
 }
 bootstrap();

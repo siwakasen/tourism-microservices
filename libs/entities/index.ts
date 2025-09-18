@@ -7,3 +7,4 @@ export * from './customer';
 export * from './grpc-interfaces';
 export * from './roles/roles.entity';
 export * from './transactions';
+export * from './live-chat';

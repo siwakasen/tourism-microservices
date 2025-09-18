@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { LiveChatServiceModule } from './../src/live-chat-service.module';
+import { LiveChatServiceModule } from '../src/api/live-chat.module';
 
 describe('LiveChatServiceController (e2e)', () => {
   let app: INestApplication;

@@ -7,7 +7,12 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { EmployeeServiceClient, Customer, Employee, CustomerServiceClient } from 'libs/entities';
+import {
+  EmployeeServiceClient,
+  Customer,
+  Employee,
+  CustomerServiceClient,
+} from 'libs/entities';
 import { ClientGrpc } from '@nestjs/microservices';
 import * as crypto from 'crypto';
 
@@ -19,13 +24,17 @@ export class AuthHelper implements OnModuleInit {
   onModuleInit() {
     try {
       if (this.clientEmp) {
-        this.employeeService = this.clientEmp.getService<EmployeeServiceClient>('EmployeeGrpcService');
+        this.employeeService = this.clientEmp.getService<EmployeeServiceClient>(
+          'EmployeeGrpcService'
+        );
         if (!this.employeeService) {
           throw new Error('Failed to initialize employee service');
         }
       }
       if (this.clientCus) {
-        this.customerService = this.clientCus.getService<CustomerServiceClient>('CustomerGrpcService');
+        this.customerService = this.clientCus.getService<CustomerServiceClient>(
+          'CustomerGrpcService'
+        );
         if (!this.customerService) {
           throw new Error('Failed to initialize customer service');
         }
@@ -41,7 +50,7 @@ export class AuthHelper implements OnModuleInit {
   constructor(
     jwt: JwtService,
     @Inject('EMP_AUTH_CLIENT') private clientEmp?: ClientGrpc,
-    @Inject('CUS_AUTH_CLIENT') private clientCus?: ClientGrpc,
+    @Inject('CUS_AUTH_CLIENT') private clientCus?: ClientGrpc
   ) {
     this.jwt = jwt;
   }
@@ -51,22 +60,24 @@ export class AuthHelper implements OnModuleInit {
     return this.jwt.decode(token, null);
   }
 
-  public async validateTokenExpiration(exp: number): Promise<boolean> { 
-    if(exp < Math.floor(Date.now() / 1000)) {
+  public async validateTokenExpiration(exp: number): Promise<boolean> {
+    if (exp < Math.floor(Date.now() / 1000)) {
       return false;
-
     }
     return true;
   }
 
-  // Get User by User ID we get from decode()
   public async validateUser(decoded: any): Promise<Employee | Customer> {
     try {
       if (this.employeeService && decoded.type === 'c') {
-        const customer = await this.customerService.getCustomer({ id: decoded.sub }).toPromise();
+        const customer = await this.customerService
+          .getCustomer({ id: decoded.sub })
+          .toPromise();
         return customer;
-      }else{
-        const employee = await this.employeeService.getEmployee({ id: decoded.sub }).toPromise();
+      } else {
+        const employee = await this.employeeService
+          .getEmployee({ id: decoded.sub })
+          .toPromise();
         return employee;
       }
     } catch (error) {
@@ -74,50 +85,52 @@ export class AuthHelper implements OnModuleInit {
     }
   }
 
-
   public generateResetPwToken = (email: string) => {
     return this.jwt.sign(
-      { 
+      {
         sub: email,
-        iat: Math.floor(Date.now() / 1000)
-       },
+        iat: Math.floor(Date.now() / 1000),
+      },
       {
         algorithm: 'HS256',
         secret: process.env.JWT_KEY,
         expiresIn: '4h',
-      },
+      }
     );
   };
 
   public async verifyResetPwToken(token: string) {
     return this.jwt.verify<{ email: string; iat: number }>(token);
-  };
+  }
 
   // Generate JWT Token
   public async generateToken(user: Employee | Customer): Promise<string> {
-    return this.jwt.signAsync({
-      sub: user.id.toString(), // subject claim for user ID
-      type: user instanceof Employee ? user.role.id == 1? 'o' : 'e' : 'c',
-      jti: crypto.randomUUID(), // unique token ID
-      iat: Math.floor(Date.now() / 1000), // issued at timestamp
-    },{
-      algorithm: 'HS256',
-      secret: process.env.JWT_KEY,
-      expiresIn: '12h',
-    });
+    return this.jwt.signAsync(
+      {
+        sub: user.id.toString(), // subject claim for user ID
+        type: user instanceof Employee ? (user.role.id == 1 ? 'o' : 'e') : 'c',
+        jti: crypto.randomUUID(), // unique token ID
+        iat: Math.floor(Date.now() / 1000), // issued at timestamp
+      },
+      {
+        algorithm: 'HS256',
+        secret: process.env.JWT_KEY,
+        expiresIn: '12h',
+      }
+    );
   }
 
   // Validate User's password
   public async isPasswordValid(
     storedPassword: string,
-    suppliedPassword: string,
+    suppliedPassword: string
   ): Promise<boolean> {
     return bcrypt.compare(suppliedPassword, storedPassword);
   }
 
   // Encode User's password
   public async hashingPassword(password: string): Promise<string> {
-    const saltRounds = 12; 
+    const saltRounds = 12;
     return bcrypt.hash(password, saltRounds);
   }
 }

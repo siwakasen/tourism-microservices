@@ -1,43 +1,102 @@
-import { Injectable, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  ExecutionContext,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthGuard as Guard, IAuthGuard } from '@nestjs/passport';
 import { Customer, Employee } from 'libs/entities';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY, UserType } from '../decorators/auth.decorator';
+import { Socket } from 'socket.io';
+import { WsException } from '@nestjs/websockets';
+import { JwtService } from '@nestjs/jwt';
+import { AuthHelper } from './auth.helper';
+
 @Injectable()
 export class JwtAuthGuard extends Guard('user') implements IAuthGuard {
-  constructor(private reflector: Reflector) {
+  constructor(
+    private reflector: Reflector,
+    private jwtService: JwtService,
+    private authHelper: AuthHelper
+  ) {
     super();
   }
 
-  public handleRequest(err: unknown, user: Employee | Customer): any { 
-    if (err || !user) {
-      throw new UnauthorizedException('Invalid token or user not found');
+  // Ensure Passport gets the right request object for both HTTP and WS
+  // so it can extract the token and attach user
+  public getRequest(context: ExecutionContext): any {
+    if (context.getType() === 'ws') {
+      const wsCtx = context.switchToWs();
+      const client = wsCtx.getClient<Socket>();
+      const data = wsCtx.getData();
+      const headers = { ...(client.handshake?.headers || {}) } as Record<
+        string,
+        string
+      >;
+
+      // Support token via Socket.IO auth or query if Authorization header missing
+
+      return {
+        headers,
+        query: client.handshake?.query || {},
+        body: data,
+        client,
+      };
     }
-    return user;
+    return context.switchToHttp().getRequest();
   }
 
   public async canActivate(context: ExecutionContext): Promise<boolean> {
-    await super.canActivate(context);
+    try {
+      await super.canActivate(context);
+    } catch (e) {
+      if (context.getType() === 'ws') {
+        throw new WsException('Unauthorized');
+      }
+      throw e;
+    }
 
-    const requiredRoles = this.reflector.getAllAndOverride<UserType[]>(ROLES_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
-
+    const requiredRoles = this.reflector.getAllAndOverride<UserType[]>(
+      ROLES_KEY,
+      [context.getHandler(), context.getClass()]
+    );
 
     if (!requiredRoles) {
       return true; // No roles required, allow access
     }
 
-    const request = context.switchToHttp().getRequest();
+    const request: any = this.getRequest(context);
+
+    // In WebSocket context, manually attach user to request
+    if (context.getType() === 'ws' && !request.user) {
+      try {
+        // Extract JWT from Authorization header
+        const authHeader = request.headers.authorization;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+          const token = authHeader.substring(7);
+          const payload = this.jwtService.verify(token);
+
+          // Use injected AuthHelper to get user
+          const user = await this.authHelper.validateUser(payload);
+
+          if (user) {
+            request.user = user;
+          }
+        }
+      } catch (error) {}
+    }
+
     const user = request.user;
     if (!user) {
+      if (context.getType() === 'ws') {
+        throw new WsException('Unauthorized');
+      }
       throw new UnauthorizedException('User not found');
     }
 
     // Handle customer type
     if (requiredRoles.includes(UserType.CUSTOMER)) {
-      if(user && !user.role_id) {
+      if (user && !user.role_id) {
         return true;
       }
     }
@@ -52,6 +111,9 @@ export class JwtAuthGuard extends Guard('user') implements IAuthGuard {
       }
     }
 
+    if (context.getType() === 'ws') {
+      throw new WsException('Forbidden');
+    }
     return false;
   }
 }
