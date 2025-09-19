@@ -1,4 +1,11 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  UseGuards,
+  Query,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '@app/helpers/auth/user/auth.guard';
 import { LiveChatService } from './live-chat.service';
 import { Roles } from '@app/helpers/auth/decorators/auth.decorator';

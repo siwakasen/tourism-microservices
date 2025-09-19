@@ -12,7 +12,6 @@ import {
 export enum SenderType {
   CUS = 'CUS',
   EMP = 'EMP',
-  GUEST = 'GUEST',
 }
 
 export

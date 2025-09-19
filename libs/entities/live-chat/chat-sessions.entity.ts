@@ -10,6 +10,11 @@ import {
   DeleteDateColumn,
 } from 'typeorm';
 
+export enum SessionStatus {
+  OPEN = 'OPEN',
+  CLOSED = 'CLOSED',
+}
+
 export
 @Entity('chat_sessions')
 class ChatSessions extends BaseEntity {
@@ -23,7 +28,10 @@ class ChatSessions extends BaseEntity {
   public guest_name!: string | null;
 
   @Column({ type: 'varchar', nullable: false })
-  public status_session!: string;
+  public status_session!: SessionStatus;
+
+  @Column({ type: 'varchar', nullable: true })
+  public session_key!: string | null;
 
   @CreateDateColumn()
   public created_at!: Date;

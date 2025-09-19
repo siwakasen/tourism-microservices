@@ -255,7 +255,7 @@ export class BookingAdjustmentService implements OnModuleInit {
       const hoursDiff = Math.floor(timeDiff / (1000 * 60 * 60));
       if (hoursDiff <= 24) {
         throw new HttpException(
-          'Booking cannot be cancelled within 24 hours of the start date',
+          'Booking cannot be rescheduled within 24 hours of the start date',
           HttpStatus.BAD_REQUEST
         );
       }
