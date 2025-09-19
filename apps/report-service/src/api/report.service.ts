@@ -79,7 +79,6 @@ export class ReportService {
         }
       )
       .orderBy('bookings.created_at', 'DESC');
-
     const [result, total] = await queryBuilder.getManyAndCount();
 
     const grossRevenue = result.reduce(
@@ -87,7 +86,7 @@ export class ReportService {
       0
     );
     const refundCost = result.reduce(
-      (acc, booking) => acc + booking.refunds.amount,
+      (acc, booking) => (booking.refunds ? acc + booking.refunds.amount : 0),
       0
     );
     const paymentGatewayCost: number = Number(
