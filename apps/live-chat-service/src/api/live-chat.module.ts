@@ -10,9 +10,11 @@ import { ClientGrpc, ClientsModule, Transport } from '@nestjs/microservices';
 import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
 import { AuthHelper } from '@app/helpers/auth/user/auth.helper';
 import { LiveChatController } from './live-chat.controller';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     TypeOrmModule.forFeature([ChatSessions, ChatMessages]),
     PassportModule.register({ defaultStrategy: 'user', property: 'user' }),
     JwtModule.registerAsync({

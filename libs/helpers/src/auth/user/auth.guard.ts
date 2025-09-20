@@ -4,7 +4,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthGuard as Guard, IAuthGuard } from '@nestjs/passport';
-import { Customer, Employee } from 'libs/entities';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY, UserType } from '../decorators/auth.decorator';
 import { Socket } from 'socket.io';
@@ -33,12 +32,16 @@ export class JwtAuthGuard extends Guard('user') implements IAuthGuard {
         string,
         string
       >;
+      const query = client.handshake?.query || {};
 
       // Support token via Socket.IO auth or query if Authorization header missing
+      if (!headers.authorization && query.token) {
+        headers.authorization = `Bearer ${query.token}`;
+      }
 
       return {
         headers,
-        query: client.handshake?.query || {},
+        query,
         body: data,
         client,
       };
@@ -78,10 +81,14 @@ export class JwtAuthGuard extends Guard('user') implements IAuthGuard {
 
           // Use injected AuthHelper to get user
           const user = await this.authHelper.validateUser(payload);
-
           if (user) {
             request.user = user;
           }
+          context.switchToWs().getClient().request.user = request.user;
+          console.log(
+            'WebSocket user:',
+            context.switchToWs().getClient().request.user
+          );
         }
       } catch (error) {}
     }

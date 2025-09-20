@@ -626,13 +626,13 @@ export class BookingService implements OnModuleInit {
 
   @Cron('0 0 0 * * *', {
     name: 'set-booking-to-ongoing',
-    timeZone: 'Asia/Jakarta',
+    timeZone: 'Asia/Singapore',
   })
   async handleUpdateConfirmedBookingToOngoing() {
     this.logger.log(
       `Called at ${new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleString('en-US', { timeZone: 'Asia/Jakarta' })}`
     );
-    const jakartaDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const gmtplus8Date = new Date(Date.now() + 24 * 60 * 60 * 1000);
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -640,7 +640,7 @@ export class BookingService implements OnModuleInit {
       const bookings = await queryRunner.manager.find(Bookings, {
         where: {
           status: BookingStatus.CONFIRMED,
-          start_date: LessThanOrEqual(jakartaDate),
+          start_date: LessThanOrEqual(gmtplus8Date),
         },
       });
       this.logger.log(`Found ${bookings.length} bookings to set to ongoing`);

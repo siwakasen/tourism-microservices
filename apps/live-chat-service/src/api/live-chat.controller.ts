@@ -16,6 +16,8 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 @ApiTags('Live Chat')
 @Controller('live-chat')
 export class LiveChatController {
+  constructor(private readonly liveChatService: LiveChatService) {}
+
   @Get()
   @UseGuards(JwtAuthGuard)
   @Roles(UserType.ADMIN)

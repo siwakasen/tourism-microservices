@@ -27,15 +27,13 @@ export class LiveChatGateway
   constructor(private readonly chatService: LiveChatService) {}
 
   async handleConnection(client: Socket) {
-    console.log(`Client connected: ${client.id}`);
+    console.log('Client ID:', client.id);
   }
 
   async handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
-    client.emit('disconnected', {
-      message: 'Disconnected from the server',
-      clientId: client.id,
-    });
+    // Remove from admin room if it was an admin
+    client.leave('admin');
   }
 
   // Client (guest/customer) starts chat
@@ -57,6 +55,14 @@ export class LiveChatGateway
     const session = await this.chatService.createSession(data);
     client.join(`chat_${session.id}`);
     client.emit('session_started', session);
+
+    this.server.to('admin').emit('new_session', {
+      sessionId: session.id,
+      customerId: session.customer_id,
+      guestName: session.guest_name,
+      status: session.status_session,
+      createdAt: session.created_at,
+    });
   }
 
   @SubscribeMessage('rejoin_session')
@@ -65,10 +71,22 @@ export class LiveChatGateway
     @ConnectedSocket() client: Socket
   ) {
     try {
+      if (!data.sessionKey || !data.chatSessionId) {
+        client.emit('session_error', {
+          message: 'Session key and chat session id are required',
+        });
+        return;
+      }
       const session = await this.chatService.validateAndRejoinSession(
         data.sessionKey,
         data.chatSessionId
       );
+      if (!session) {
+        client.emit('session_error', {
+          message: 'Invalid session key',
+        });
+        return;
+      }
 
       client.join(`chat_${session.id}`);
       client.emit('session_rejoined', {
@@ -98,13 +116,15 @@ export class LiveChatGateway
     },
     @ConnectedSocket() client: Socket
   ) {
+    console.log(data);
     const newData = {
       ...data,
       senderType: SenderType.CUS,
     };
     if (!client.rooms.has(`chat_${data.chatSessionId}`)) {
       client.emit('session_error', {
-        message: 'You are not in this session',
+        message:
+          'You are not on a room chat, please try again to start a new chat',
       });
       return;
     }
@@ -119,7 +139,8 @@ export class LiveChatGateway
   ) {
     if (!client.rooms.has(`chat_${data.chatSessionId}`)) {
       client.emit('session_error', {
-        message: 'You are not in this session',
+        message:
+          'You are not on a room chat, please try again to start a new chat',
       });
       return;
     }
@@ -130,15 +151,34 @@ export class LiveChatGateway
     });
   }
 
-  // Employee joins a session
-  @SubscribeMessage('join_session')
+  // Employee gets all sessions after login
+  @SubscribeMessage('get_all_sessions')
+  @UseGuards(JwtAuthGuard)
+  @Roles(UserType.ADMIN)
+  async getAllSessions(@ConnectedSocket() client: Socket) {
+    const sessions = await this.chatService.getAllSessions();
+    client.join('admin');
+    client.emit('all_sessions', sessions);
+    client.join(['admin', ...sessions.map((session) => `chat_${session.id}`)]);
+  }
+
+  // Employee gets messages when enter room chat
+  @SubscribeMessage('get_messages')
   @UseGuards(JwtAuthGuard)
   @Roles(UserType.ADMIN)
   async joinSession(
     @MessageBody() data: { chatSessionId: number },
     @ConnectedSocket() client: Socket
   ) {
+    const session = await this.chatService.getSessionById(data.chatSessionId);
+    if (!session) {
+      client.emit('session_error', {
+        message: 'Session not found',
+      });
+      return;
+    }
     client.join(`chat_${data.chatSessionId}`);
+
     const messages = await this.chatService.getMessages(data.chatSessionId);
     client.emit('messages', messages);
   }
@@ -152,20 +192,25 @@ export class LiveChatGateway
     @ConnectedSocket() client: Socket,
     @GetEmployee() employee: Employee
   ) {
-    // Ensure admin has joined the session first
     if (!client.rooms.has(`chat_${data.chatSessionId}`)) {
       client.emit('session_error', {
         message: 'Please join the session first',
       });
       return;
     }
+    try {
+      const newData = {
+        ...data,
+        senderType: SenderType.EMP,
+        senderId: employee.id,
+      };
 
-    const newData = {
-      ...data,
-      senderType: SenderType.EMP,
-      senderId: employee.id, // Track which admin sent the message
-    };
-    const msg = await this.chatService.saveMessage(newData);
-    this.server.to(`chat_${data.chatSessionId}`).emit('new_message', msg);
+      const msg = await this.chatService.saveMessage(newData);
+      this.server.to(`chat_${data.chatSessionId}`).emit('new_message', msg);
+    } catch (error) {
+      client.emit('session_error', {
+        message: error.message || 'Failed to send message',
+      });
+    }
   }
 }
