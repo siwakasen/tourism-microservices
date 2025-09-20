@@ -1,15 +1,5 @@
-import {
-  Controller,
-  Get,
-  UseGuards,
-  Query,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
-import { JwtAuthGuard } from '@app/helpers/auth/user/auth.guard';
+import { Controller, Get } from '@nestjs/common';
 import { LiveChatService } from './live-chat.service';
-import { Roles } from '@app/helpers/auth/decorators/auth.decorator';
-import { UserType } from '@app/helpers/auth/decorators/auth.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @ApiBearerAuth()
@@ -19,8 +9,6 @@ export class LiveChatController {
   constructor(private readonly liveChatService: LiveChatService) {}
 
   @Get()
-  @UseGuards(JwtAuthGuard)
-  @Roles(UserType.ADMIN)
   async ping() {
     return { message: 'pong' };
   }
