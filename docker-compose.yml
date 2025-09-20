@@ -123,6 +123,21 @@ services:
     restart: unless-stopped
     deploy:
       replicas: 1
+  
+  # Live Chat Service
+  live-chat-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.live-chat
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - travel-volume:/app/dist/apps/live-chat-service/logs
+    networks:
+      - travel-network
+    restart: unless-stopped
+    deploy:
+      replicas: 1
 
 networks:
   cloudflare-network:
