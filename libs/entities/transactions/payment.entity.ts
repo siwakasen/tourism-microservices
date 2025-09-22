@@ -1,12 +1,23 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToOne } from "typeorm";
-import { Bookings } from "./bookings.entity";
-import { BookingAdjustments } from "./booking_adjustments.entity";
+// payment.entity.ts
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+  OneToOne,
+} from 'typeorm';
+import { Bookings } from './bookings.entity';
+import { BookingAdjustments } from './booking_adjustments.entity';
 
 export enum PaymentStatus {
   PENDING = 'PENDING',
   SUCCESS = 'SUCCESS',
-  FAILED = 'FAILED'
+  FAILED = 'FAILED',
 }
 
 export enum PaymentMethod {
@@ -60,7 +71,7 @@ class Payment extends BaseEntity {
   @Column({
     type: 'enum',
     enum: PaymentStatus,
-    default: PaymentStatus.PENDING
+    default: PaymentStatus.PENDING,
   })
   public status: PaymentStatus;
 

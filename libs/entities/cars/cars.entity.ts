@@ -1,3 +1,4 @@
+// cars.entity.ts
 import { ApiProperty } from '@nestjs/swagger';
 import {
   Entity,
@@ -5,7 +6,7 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-  DeleteDateColumn
+  DeleteDateColumn,
 } from 'typeorm';
 
 @Entity('cars')
@@ -58,7 +59,6 @@ export class Cars {
   })
   @Column({ type: 'varchar', length: 1000, nullable: true })
   description: string;
-
 
   @ApiProperty({
     description: 'Maximum number of people',

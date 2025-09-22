@@ -1,3 +1,4 @@
+// travel-packages.entity.ts
 import { ApiProperty } from '@nestjs/swagger';
 import {
   Entity,
@@ -71,7 +72,6 @@ export class TravelPackages {
   })
   @Column({ type: 'json', nullable: true })
   includes: string[];
-
 
   @ApiProperty({
     description: 'The timestamp when the travel package was created',

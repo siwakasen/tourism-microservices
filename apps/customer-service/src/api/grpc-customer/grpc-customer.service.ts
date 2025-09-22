@@ -1,3 +1,4 @@
+// grpc-customer.service.ts
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -16,7 +17,10 @@ export class GrpcCustomerService {
 
   public getCustomerGrpc = async (id: number) => {
     try {
-      const customer = await this.repository.findOne({ where: { id }, withDeleted: true });
+      const customer = await this.repository.findOne({
+        where: { id },
+        withDeleted: true,
+      });
       if (!customer) {
         throw new RpcException('Customer not found');
       }

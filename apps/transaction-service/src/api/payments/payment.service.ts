@@ -1,3 +1,4 @@
+// payment.service.ts
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import {
   Bookings,
@@ -35,7 +36,7 @@ export class PaymentService {
     @InjectRepository(Payment)
     private readonly paymentRepository: Repository<Payment>,
 
-    private readonly redisService: AuthRedisService,
+    private readonly redisService: AuthRedisService
   ) {}
 
   public async createTransactionMidtrans(
@@ -43,7 +44,7 @@ export class PaymentService {
     product_name: string,
     total_price: number,
     customer: Customer,
-    queryRunner: QueryRunner,
+    queryRunner: QueryRunner
   ): Promise<{ redirect_url: string }> {
     try {
       const total_price_idr = await convertUSDToIDR(total_price);
@@ -97,7 +98,7 @@ export class PaymentService {
     } catch (error) {
       throw new HttpException(
         `${error.code} ${error.message}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -107,7 +108,7 @@ export class PaymentService {
     product_name: string,
     total_price: number,
     adjustment: BookingAdjustments,
-    queryRunner: QueryRunner,
+    queryRunner: QueryRunner
   ): Promise<{ redirect_url: string }> {
     try {
       const total_price_idr = await convertUSDToIDR(total_price);
@@ -162,12 +163,10 @@ export class PaymentService {
     } catch (error) {
       throw new HttpException(
         `${error.code} ${error.message}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
-
-
 
   public async capturePaymentMidtrans(notificationJson: any): Promise<{}> {
     const queryRunner = this.dataSource.createQueryRunner();
@@ -187,7 +186,7 @@ export class PaymentService {
           let fraudStatus = statusResponse.fraud_status;
 
           console.log(
-            `Transaction notification received. Order ID: ${bookingId}. Transaction status: ${transactionStatus}. Fraud status: ${fraudStatus}`,
+            `Transaction notification received. Order ID: ${bookingId}. Transaction status: ${transactionStatus}. Fraud status: ${fraudStatus}`
           );
 
           if (transactionStatus == 'capture') {
@@ -195,13 +194,13 @@ export class PaymentService {
               await queryRunner.manager.update(
                 Payment,
                 { booking: { id: bookingId } },
-                { status: PaymentStatus.SUCCESS, payment_date: new Date() },
+                { status: PaymentStatus.SUCCESS, payment_date: new Date() }
               );
               await this.updateStatusBookingMidtrans(
                 bookingId,
                 queryRunner,
                 BookingStatus.WAITING_CONFIRMATION,
-                true,
+                true
               );
               await queryRunner.commitTransaction();
               return {
@@ -212,13 +211,13 @@ export class PaymentService {
             await queryRunner.manager.update(
               Payment,
               { booking: { id: bookingId } },
-              { status: PaymentStatus.SUCCESS, payment_date: new Date() },
+              { status: PaymentStatus.SUCCESS, payment_date: new Date() }
             );
             await this.updateStatusBookingMidtrans(
               bookingId,
               queryRunner,
               BookingStatus.WAITING_CONFIRMATION,
-              true,
+              true
             );
             await queryRunner.commitTransaction();
             return {
@@ -232,13 +231,13 @@ export class PaymentService {
             await queryRunner.manager.update(
               Payment,
               { booking: { id: bookingId } },
-              { status: PaymentStatus.FAILED },
+              { status: PaymentStatus.FAILED }
             );
             await this.updateStatusBookingMidtrans(
               bookingId,
               queryRunner,
               BookingStatus.PAYMENT_FAILED,
-              false,
+              false
             );
             await queryRunner.commitTransaction();
             return {
@@ -248,13 +247,13 @@ export class PaymentService {
             await queryRunner.manager.update(
               Payment,
               { booking: { id: bookingId } },
-              { status: PaymentStatus.PENDING },
+              { status: PaymentStatus.PENDING }
             );
             await this.updateStatusBookingMidtrans(
               bookingId,
               queryRunner,
               BookingStatus.WAITING_PAYMENT,
-              false,
+              false
             );
             await queryRunner.commitTransaction();
             return {
@@ -267,7 +266,7 @@ export class PaymentService {
       await queryRunner.rollbackTransaction();
       throw new HttpException(
         error.message || 'Error processing payment notification',
-        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR
       );
     } finally {
       await queryRunner.release();
@@ -278,36 +277,35 @@ export class PaymentService {
     bookingId: string,
     queryRunner: QueryRunner,
     status: BookingStatus,
-    isSuccess: boolean,
+    isSuccess: boolean
   ) {
     const booking = await queryRunner.manager.findOne(Bookings, {
       where: { id: Number(bookingId) },
       relations: ['booking_adjustments'],
     });
-    if(booking.booking_adjustments.length > 0) {
-      for(const adjustment of booking.booking_adjustments) {
-        if(adjustment.status === AdjustmentStatus.WAITING_PAYMENT) {
+    if (booking.booking_adjustments.length > 0) {
+      for (const adjustment of booking.booking_adjustments) {
+        if (adjustment.status === AdjustmentStatus.WAITING_PAYMENT) {
           await queryRunner.manager.update(
             BookingAdjustments,
             { id: adjustment.id },
-            { status: AdjustmentStatus.WAITING_RECONFIRMATION },
+            { status: AdjustmentStatus.WAITING_RECONFIRMATION }
           );
           return;
         }
       }
     }
     if (isSuccess) {
-        await queryRunner.manager.update(
-          Bookings,
-          { id: bookingId },
-          { status: BookingStatus.WAITING_CONFIRMATION },
-        );
-      
+      await queryRunner.manager.update(
+        Bookings,
+        { id: bookingId },
+        { status: BookingStatus.WAITING_CONFIRMATION }
+      );
     } else {
       await queryRunner.manager.update(
         Bookings,
         { id: bookingId },
-        { status: status },
+        { status: status }
       );
     }
   }
@@ -317,7 +315,7 @@ export class PaymentService {
     product_name: string,
     total_price: number,
     customer: Customer,
-    queryRunner: QueryRunner,
+    queryRunner: QueryRunner
   ) {
     try {
       const access_token = await this.generateAccessToken();
@@ -382,11 +380,11 @@ export class PaymentService {
     } catch (error) {
       console.error(
         'Error creating order:',
-        error.response?.data || error.message,
+        error.response?.data || error.message
       );
       throw new HttpException(
         'Failed to create order',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -396,7 +394,7 @@ export class PaymentService {
     product_name: string,
     total_price: number,
     adjustment: BookingAdjustments,
-    queryRunner: QueryRunner,
+    queryRunner: QueryRunner
   ) {
     try {
       const access_token = await this.generateAccessToken();
@@ -462,11 +460,11 @@ export class PaymentService {
     } catch (error) {
       console.error(
         'Error creating order:',
-        error.response?.data || error.message,
+        error.response?.data || error.message
       );
       throw new HttpException(
         'Failed to create order',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -494,17 +492,17 @@ export class PaymentService {
         net_amount: seller_receivable_breakdown.net_amount.value,
         payment_date: gmtplus8,
       });
-      if(payment.modification) {
+      if (payment.modification) {
         await this.bookingAdjustmentRepository.update(
           { id: payment.modification.id },
-          { status: AdjustmentStatus.WAITING_RECONFIRMATION },
+          { status: AdjustmentStatus.WAITING_RECONFIRMATION }
         );
-      }else{
+      } else {
         await this.bookingRepository.update(payment.booking.id, {
           status: BookingStatus.WAITING_CONFIRMATION,
         });
       }
-      
+
       return {
         success: true,
         data: {
@@ -543,12 +541,12 @@ export class PaymentService {
       if (error.status === 422) {
         throw new HttpException(
           error.response.data.details[0].issue,
-          error.status || HttpStatus.BAD_REQUEST,
+          error.status || HttpStatus.BAD_REQUEST
         );
       }
       throw new HttpException(
         error.message,
-        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -568,7 +566,7 @@ export class PaymentService {
       await this.paymentRepository.update(payment.id, {
         status: PaymentStatus.FAILED,
       });
-      if(!payment.modification) {
+      if (!payment.modification) {
         await this.bookingRepository.update(payment.booking.id, {
           status: BookingStatus.CANCELLED,
         });
@@ -581,7 +579,7 @@ export class PaymentService {
     } catch (error) {
       throw new HttpException(
         error.message,
-        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -602,14 +600,14 @@ export class PaymentService {
 
   public async getPaymentByBookingId(booking_id: number, customer_id: number) {
     try {
-    const payment = await this.paymentRepository.findOne({
-      where: { booking: { id: booking_id, customer_id: customer_id } },
-    });
-    if (!payment) {
-      throw new HttpException('Payment not found', HttpStatus.NOT_FOUND);
-    }
-    return {
-      data: payment,
+      const payment = await this.paymentRepository.findOne({
+        where: { booking: { id: booking_id, customer_id: customer_id } },
+      });
+      if (!payment) {
+        throw new HttpException('Payment not found', HttpStatus.NOT_FOUND);
+      }
+      return {
+        data: payment,
         message: 'Payment fetched successfully',
       };
     } catch (error) {
@@ -622,10 +620,9 @@ export class PaymentService {
     if (!access_token) {
       access_token = await generateTokenAccess(
         this.configService,
-        this.redisService,
+        this.redisService
       );
     }
     return access_token;
   }
 }
-

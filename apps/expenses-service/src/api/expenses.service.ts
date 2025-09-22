@@ -1,3 +1,4 @@
+// expenses.service.ts
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Expenses } from 'libs/entities';
@@ -10,7 +11,7 @@ export class ExpensesService {
   constructor(
     @InjectRepository(Expenses)
     private readonly repository: Repository<Expenses>,
-    private readonly dataSource: DataSource,
+    private readonly dataSource: DataSource
   ) {}
 
   private formatDate = (dateStr: string) => {
@@ -24,26 +25,38 @@ export class ExpensesService {
 
   public async getAllExpensess(paginationDto: PaginationExpensesDto) {
     try {
-      const { page = 1, limit = 200, search = '', start_date, end_date } = paginationDto;
+      const {
+        page = 1,
+        limit = 200,
+        search = '',
+        start_date,
+        end_date,
+      } = paginationDto;
       const queryBuilder = this.repository
         .createQueryBuilder('expenses')
         .orderBy('expenses.created_at', 'DESC');
-        
+
       const parameters: Record<string, any> = {};
       const searchConditions: string[] = [];
       const andConditions: string[] = [];
 
       if (search) {
         searchConditions.push(`expenses.expense_name ILIKE :search`);
-        searchConditions.push(`CAST(expenses.expense_amount AS TEXT) ILIKE :search`);
-        searchConditions.push(`CAST(expenses.created_by AS TEXT) ILIKE :search`);
+        searchConditions.push(
+          `CAST(expenses.expense_amount AS TEXT) ILIKE :search`
+        );
+        searchConditions.push(
+          `CAST(expenses.created_by AS TEXT) ILIKE :search`
+        );
         parameters['search'] = `%${search}%`;
       }
 
       if (start_date && end_date) {
         const formattedStartDate = this.formatDate(start_date);
         const formattedEndDate = this.formatDate(end_date);
-        andConditions.push(`expenses.expense_date BETWEEN :start_date AND :end_date`);
+        andConditions.push(
+          `expenses.expense_date BETWEEN :start_date AND :end_date`
+        );
         parameters['start_date'] = formattedStartDate;
         parameters['end_date'] = formattedEndDate;
       }
@@ -59,7 +72,7 @@ export class ExpensesService {
       if (whereParts.length) {
         queryBuilder.where(whereParts.join(' AND '), parameters);
       }
-      
+
       const [result, total] = await queryBuilder
         .skip((page - 1) * limit)
         .take(limit)
@@ -85,7 +98,7 @@ export class ExpensesService {
           message: [error.message || 'Internal Server Error'],
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -94,7 +107,9 @@ export class ExpensesService {
     try {
       const queryBuilder = this.repository.createQueryBuilder('expenses');
 
-      const expenses = await queryBuilder.where('expenses.id = :id', { id }).getOne();
+      const expenses = await queryBuilder
+        .where('expenses.id = :id', { id })
+        .getOne();
 
       if (!expenses) {
         throw new Error('Expenses not found');
@@ -112,7 +127,7 @@ export class ExpensesService {
             error: 'Expenses not found',
             statusCode: HttpStatus.NOT_FOUND,
           },
-          HttpStatus.NOT_FOUND,
+          HttpStatus.NOT_FOUND
         );
       }
       throw new HttpException(
@@ -120,12 +135,15 @@ export class ExpensesService {
           message: [error.message || 'Internal Server Error'],
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
 
-  public async createExpenses(payload: CreateUpdateExpensesDto, created_by: number) {
+  public async createExpenses(
+    payload: CreateUpdateExpensesDto,
+    created_by: number
+  ) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -150,7 +168,7 @@ export class ExpensesService {
           message: [error.message || 'Internal Server Error'],
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     } finally {
       await queryRunner.release();
@@ -167,7 +185,7 @@ export class ExpensesService {
       if (!expenses) {
         throw new Error('Expenses not found');
       }
-      
+
       this.repository.merge(expenses, payload);
 
       await queryRunner.manager.save(expenses);
@@ -177,7 +195,6 @@ export class ExpensesService {
         data: expenses,
         message: 'Successfully update data expenses',
       };
-      
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw new HttpException(
@@ -185,7 +202,7 @@ export class ExpensesService {
           message: [error.message || 'Internal Server Error'],
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     } finally {
       await queryRunner.release();
@@ -219,7 +236,7 @@ export class ExpensesService {
             error: 'Expenses not found',
             statusCode: HttpStatus.NOT_FOUND,
           },
-          HttpStatus.NOT_FOUND,
+          HttpStatus.NOT_FOUND
         );
       }
       throw new HttpException(
@@ -227,12 +244,10 @@ export class ExpensesService {
           message: [error.message || 'Internal Server Error'],
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     } finally {
       await queryRunner.release();
     }
   }
-
-
 }

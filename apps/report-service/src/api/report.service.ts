@@ -1,3 +1,4 @@
+// report.service.ts
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
@@ -18,10 +19,7 @@ import {
   PaymentStatus,
   Employee,
 } from 'libs/entities';
-import {
-  convertUSDToIDR,
-  getExchangeRate,
-} from 'apps/transaction-service/src/common/helper/currency.helper';
+import { getExchangeRate } from 'apps/transaction-service/src/common/helper/currency.helper';
 
 @Injectable()
 export class ReportService {

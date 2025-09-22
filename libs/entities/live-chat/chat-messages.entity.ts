@@ -24,7 +24,7 @@ class ChatMessages extends BaseEntity {
   public chat_session_id!: number;
 
   @Column({ type: 'enum', enum: SenderType })
-  sender_type: SenderType;
+  public sender_type: SenderType;
 
   @Column({ type: 'int', nullable: true })
   public sender_id!: number;

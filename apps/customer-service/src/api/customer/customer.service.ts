@@ -1,3 +1,4 @@
+// customer.service.ts
 import {
   HttpStatus,
   HttpException,
@@ -31,7 +32,7 @@ export class CustomerService implements OnModuleInit {
 
   onModuleInit() {
     this.customerGrpcService = this.clientCus.getService<CustomerServiceClient>(
-      'CustomerGrpcService',
+      'CustomerGrpcService'
     );
   }
 
@@ -62,7 +63,7 @@ export class CustomerService implements OnModuleInit {
       if (user) {
         throw new HttpException(
           { email: 'Email already used' },
-          HttpStatus.CONFLICT,
+          HttpStatus.CONFLICT
         );
       }
 
@@ -89,7 +90,7 @@ export class CustomerService implements OnModuleInit {
     } catch (error) {
       throw new HttpException(
         error.response,
-        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -105,19 +106,19 @@ export class CustomerService implements OnModuleInit {
       if (!user) {
         throw new HttpException(
           'Email or password may be incorrect',
-          HttpStatus.NOT_FOUND,
+          HttpStatus.NOT_FOUND
         );
       }
 
       const passwordMatched = await this.helper.isPasswordValid(
         user.password,
-        password,
+        password
       );
 
       if (!passwordMatched) {
         throw new HttpException(
           'Email or password may be incorrect',
-          HttpStatus.UNAUTHORIZED,
+          HttpStatus.UNAUTHORIZED
         );
       }
 
@@ -131,7 +132,7 @@ export class CustomerService implements OnModuleInit {
     } catch (error) {
       throw new HttpException(
         error.message,
-        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -164,7 +165,7 @@ export class CustomerService implements OnModuleInit {
       if (!user) {
         throw new HttpException(
           { email: 'Email or password may be incorrect' },
-          HttpStatus.BAD_REQUEST,
+          HttpStatus.BAD_REQUEST
         );
       }
       const hashedEmail = this.helper.generateResetPwToken(email);
@@ -177,8 +178,9 @@ export class CustomerService implements OnModuleInit {
       const isoDate = new Date();
       const gmtplus8 = new Date(isoDate.getTime() + 8 * 60 * 60 * 1000);
       await this.CustomerTokenRepo.save({
+        customer_id: user.id,
         token: hashedEmail,
-        created_at: gmtplus8, 
+        created_at: gmtplus8,
       });
       return {
         message: 'Link to reset password has been sent to your email',
@@ -196,7 +198,7 @@ export class CustomerService implements OnModuleInit {
         throw new HttpException('Token Invalid', HttpStatus.BAD_REQUEST);
       }
       const isTokenExpired = await this.helper.validateTokenExpiration(
-        tokenData['exp'],
+        tokenData['exp']
       );
       if (!isTokenExpired) {
         throw new HttpException('Token Expired', HttpStatus.UNAUTHORIZED);
@@ -231,7 +233,7 @@ export class CustomerService implements OnModuleInit {
     } catch (error) {
       throw new HttpException(
         error.message,
-        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -245,17 +247,17 @@ export class CustomerService implements OnModuleInit {
       if (!user) {
         throw new HttpException(
           'Email or password may be incorrect',
-          HttpStatus.NOT_FOUND,
+          HttpStatus.NOT_FOUND
         );
       }
       if (user.identity_file) {
         const distPath = path.join(
           './dist/apps/customer-service/private/identity-files',
-          user.identity_file[0],
+          user.identity_file[0]
         );
         const distPath2 = path.join(
           './dist/apps/customer-service/private/identity-files',
-          user.identity_file[1].toString(),
+          user.identity_file[1].toString()
         );
         if (fs.existsSync(distPath) || fs.existsSync(distPath2)) {
           fs.unlinkSync(distPath);
@@ -285,7 +287,7 @@ export class CustomerService implements OnModuleInit {
   }
 
   public async registerCustomerGrpc(
-    body: RegisterCustomerDto,
+    body: RegisterCustomerDto
   ): Promise<RegisterCustomerResDto> {
     try {
       const { id, jwtToken } = await this.customerGrpcService
@@ -311,7 +313,7 @@ export class CustomerService implements OnModuleInit {
   public async getIdentityFile(
     customerId: number,
     filename: string,
-    res: Response,
+    res: Response
   ) {
     try {
       // Verify customer exists
@@ -324,34 +326,40 @@ export class CustomerService implements OnModuleInit {
       }
 
       // Verify the filename belongs to this customer
-      if (!customer.identity_file || !customer.identity_file.includes(filename)) {
+      if (
+        !customer.identity_file ||
+        !customer.identity_file.includes(filename)
+      ) {
         throw new HttpException(
           'File not found or does not belong to this customer',
-          HttpStatus.NOT_FOUND,
+          HttpStatus.NOT_FOUND
         );
       }
 
       // Construct the file path
       const filePath = path.join(
         './dist/apps/customer-service/private/identity-files',
-        filename,
+        filename
       );
 
       // Check if file exists
       if (!fs.existsSync(filePath)) {
-        throw new HttpException('File not found on server', HttpStatus.NOT_FOUND);
+        throw new HttpException(
+          'File not found on server',
+          HttpStatus.NOT_FOUND
+        );
       }
 
       // Set appropriate headers
       res.setHeader('Content-Type', 'image/jpeg');
       res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
-      
+
       // Send the file
       res.sendFile(path.resolve(filePath));
     } catch (error) {
       throw new HttpException(
         error.message || 'Unable to retrieve file',
-        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }

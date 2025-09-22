@@ -1,3 +1,4 @@
+// customer.entity.ts
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 import {

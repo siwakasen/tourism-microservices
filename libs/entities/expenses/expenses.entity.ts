@@ -1,5 +1,12 @@
-import {  Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-
+// expenses.entity.ts
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity('expenses')
 class Expenses {
@@ -14,7 +21,7 @@ class Expenses {
 
   @Column({ type: 'date', nullable: false })
   public expense_date: Date;
-  
+
   @Column({ type: 'int', nullable: false })
   public created_by: number;
 
@@ -24,7 +31,7 @@ class Expenses {
   @UpdateDateColumn()
   public updated_at: Date;
 
-  @DeleteDateColumn()   
+  @DeleteDateColumn()
   public deleted_at: Date;
 }
 

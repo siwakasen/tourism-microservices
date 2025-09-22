@@ -1,26 +1,36 @@
+// employee.entity.ts
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
-import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import {  Roles } from '../roles/roles.entity';
+import {
+  BaseEntity,
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { Roles } from '../roles/roles.entity';
 @Entity('employees')
 class Employee extends BaseEntity {
   @ApiProperty()
   @PrimaryGeneratedColumn()
   public id!: number;
- 
+
   @ApiProperty()
   @Column({ type: 'text', nullable: false, default: '' })
   public name!: string;
 
-
   @ApiProperty()
-  @ManyToOne(() => Roles, (role) => role.id,{
+  @ManyToOne(() => Roles, (role) => role.id, {
     cascade: true,
     nullable: false,
   })
   @JoinColumn({ name: 'role_id' })
   public role: Roles;
-  
+
   @ApiProperty()
   @Column({ type: 'text', nullable: false, unique: true })
   public email: string;
@@ -33,7 +43,6 @@ class Employee extends BaseEntity {
   @ApiProperty()
   @Column({ type: 'int', nullable: false, default: 0 })
   public salary: number;
-
 
   @ApiProperty()
   @Column({ type: 'timestamp', nullable: true })
@@ -59,8 +68,7 @@ class Employee extends BaseEntity {
     nullable: true,
   })
   @DeleteDateColumn()
-  deleted_at: Date; 
-
+  deleted_at: Date;
 }
 
 export { Employee };

@@ -1,12 +1,23 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, JoinColumn, ManyToOne, OneToOne } from "typeorm";
-import { Bookings } from "./bookings.entity";
+// refunds.entitiy.ts
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  JoinColumn,
+  ManyToOne,
+  OneToOne,
+} from 'typeorm';
+import { Bookings } from './bookings.entity';
 
 export enum RefundStatus {
   WAITING_FORM = 'WAITING_FORM',
   PROCESSING = 'PROCESSING',
   SUCCESS = 'SUCCESS',
-  FAILED = 'FAILED'
+  FAILED = 'FAILED',
 }
 
 export enum RefundMethod {
@@ -37,7 +48,7 @@ class Refunds extends BaseEntity {
     type: 'enum',
     enum: RefundMethod,
     default: RefundMethod.BANK_TRANSFER,
-    nullable: true
+    nullable: true,
   })
   public method?: RefundMethod;
 
@@ -57,7 +68,7 @@ class Refunds extends BaseEntity {
   @Column({
     type: 'enum',
     enum: RefundStatus,
-    default: RefundStatus.WAITING_FORM
+    default: RefundStatus.WAITING_FORM,
   })
   public status: RefundStatus;
 

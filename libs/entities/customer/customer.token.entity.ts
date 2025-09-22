@@ -1,12 +1,22 @@
-    import { ApiProperty } from "@nestjs/swagger";
-import { BaseEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
-
+// customer.token.entity.ts
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  BaseEntity,
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity('customer_tokens')
 class CustomerToken extends BaseEntity {
   @ApiProperty()
   @PrimaryGeneratedColumn()
   public id!: number;
+
+  @ApiProperty()
+  @Column({ type: 'int', nullable: false })
+  public customer_id!: number;
 
   @ApiProperty()
   @Column({ type: 'text' })
@@ -19,6 +29,6 @@ class CustomerToken extends BaseEntity {
   @ApiProperty()
   @CreateDateColumn()
   created_at: Date;
-}   
+}
 
 export { CustomerToken };

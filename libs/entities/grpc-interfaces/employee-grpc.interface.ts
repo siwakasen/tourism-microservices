@@ -1,3 +1,4 @@
+// employee-grpc.interface.ts (grpc)
 import { Observable } from 'rxjs';
 import { Employee } from '../employees/employee.entity';
 import { Customer } from '../customer/customer.entity';

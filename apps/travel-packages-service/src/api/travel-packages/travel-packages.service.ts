@@ -1,10 +1,11 @@
+// travel-packages.service.ts
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TravelPackages } from 'libs/entities';
 import { Repository, DataSource } from 'typeorm';
 import {
   PaginationDto,
-  CreateUpdateTravelPackageDto
+  CreateUpdateTravelPackageDto,
 } from './travel-packages.dto';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -14,7 +15,7 @@ export class TravelPackagesService {
   constructor(
     @InjectRepository(TravelPackages)
     private readonly repository: Repository<TravelPackages>,
-    private readonly dataSource: DataSource,
+    private readonly dataSource: DataSource
   ) {}
 
   public async getAllTravelPackages(paginationDto: PaginationDto) {
@@ -31,9 +32,13 @@ export class TravelPackagesService {
       if (search) {
         conditions.push('travel_packages.package_name ILIKE :search');
         conditions.push('travel_packages.description ILIKE :search');
-        conditions.push('CAST(travel_packages.package_price AS TEXT) ILIKE :search');
+        conditions.push(
+          'CAST(travel_packages.package_price AS TEXT) ILIKE :search'
+        );
         conditions.push('CAST(travel_packages.duration AS TEXT) ILIKE :search');
-        conditions.push('CAST(travel_packages.max_persons AS TEXT) ILIKE :search');
+        conditions.push(
+          'CAST(travel_packages.max_persons AS TEXT) ILIKE :search'
+        );
         parameters['search'] = `%${search}%`;
       }
 
@@ -68,7 +73,7 @@ export class TravelPackagesService {
           error: 'Internal Server Error',
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -81,25 +86,25 @@ export class TravelPackagesService {
         .orderBy('travel_packages.created_at', 'DESC')
         .withDeleted();
 
-    const [result, total] = await queryBuilder
-      .skip((page - 1) * limit)
-      .take(limit)
-      .getManyAndCount();
+      const [result, total] = await queryBuilder
+        .skip((page - 1) * limit)
+        .take(limit)
+        .getManyAndCount();
 
-    const totalPages = Math.ceil(total / limit);
-    const hasNextPage = page < totalPages;
+      const totalPages = Math.ceil(total / limit);
+      const hasNextPage = page < totalPages;
 
-    return {
-      data: result,
-      meta: {
-        totalItems: total,
-        currentPage: page,
-        totalPages,
-        limit,
-        hasNextPage,
-        hasPrevPage: page > 1,
-      },
-    };
+      return {
+        data: result,
+        meta: {
+          totalItems: total,
+          currentPage: page,
+          totalPages,
+          limit,
+          hasNextPage,
+          hasPrevPage: page > 1,
+        },
+      };
     } catch (error) {
       throw new HttpException(
         {
@@ -107,14 +112,16 @@ export class TravelPackagesService {
           error: 'Internal Server Error',
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
 
   public async getTravelPackageById(id: number) {
     try {
-    const travelPackage: TravelPackages = await this.repository.findOneBy({ id });
+      const travelPackage: TravelPackages = await this.repository.findOneBy({
+        id,
+      });
 
       if (!travelPackage) {
         throw new Error('Travel Package not found');
@@ -132,7 +139,7 @@ export class TravelPackagesService {
             error: 'Not Found',
             statusCode: HttpStatus.NOT_FOUND,
           },
-          HttpStatus.NOT_FOUND,
+          HttpStatus.NOT_FOUND
         );
       }
       throw new HttpException(
@@ -141,14 +148,17 @@ export class TravelPackagesService {
           error: 'Internal Server Error',
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
-      }
     }
+  }
 
   public async getTravelPackageHistoryById(id: number) {
     try {
-      const travelPackage: TravelPackages = await this.repository.findOne({ where: { id }, withDeleted: true });
+      const travelPackage: TravelPackages = await this.repository.findOne({
+        where: { id },
+        withDeleted: true,
+      });
       if (travelPackage) {
         return {
           data: travelPackage,
@@ -163,7 +173,7 @@ export class TravelPackagesService {
           error: 'Internal Server Error',
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -178,7 +188,7 @@ export class TravelPackagesService {
         ...payload,
       });
 
-      await queryRunner.manager.save(travelPackage); 
+      await queryRunner.manager.save(travelPackage);
       await queryRunner.commitTransaction();
 
       return {
@@ -194,7 +204,7 @@ export class TravelPackagesService {
           error: 'Internal Server Error',
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     } finally {
       await queryRunner.release();
@@ -206,7 +216,9 @@ export class TravelPackagesService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const travelPackage: TravelPackages = await this.repository.findOneBy({ id });
+      const travelPackage: TravelPackages = await this.repository.findOneBy({
+        id,
+      });
       if (!travelPackage) {
         throw new Error('Travel Package not found');
       }
@@ -228,12 +240,12 @@ export class TravelPackagesService {
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
-        if(files.length > 0) {
-          for(const file of files) {
-            if(file) {
-              fs.unlinkSync(file.path);
-            }
+      if (files.length > 0) {
+        for (const file of files) {
+          if (file) {
+            fs.unlinkSync(file.path);
           }
+        }
       }
       if (error.message === 'Travel Package not found') {
         throw new HttpException(
@@ -242,7 +254,7 @@ export class TravelPackagesService {
             error: 'Not Found',
             statusCode: HttpStatus.NOT_FOUND,
           },
-          HttpStatus.NOT_FOUND,
+          HttpStatus.NOT_FOUND
         );
       }
       throw new HttpException(
@@ -251,7 +263,7 @@ export class TravelPackagesService {
           error: 'Internal Server Error',
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     } finally {
       await queryRunner.release();
@@ -264,14 +276,16 @@ export class TravelPackagesService {
     await queryRunner.startTransaction();
 
     try {
-      const travelPackage: TravelPackages = await this.repository.findOneBy({ id });
+      const travelPackage: TravelPackages = await this.repository.findOneBy({
+        id,
+      });
 
       if (!travelPackage) {
         throw new Error('Travel Package not found');
       }
       const distPath = path.join(
         './dist/apps/travel-packages-service/public/travel-images',
-        travelPackage.images[0],
+        travelPackage.images[0]
       );
       if (fs.existsSync(distPath)) {
         fs.unlinkSync(distPath);
@@ -287,7 +301,7 @@ export class TravelPackagesService {
         message: 'Thumbnail updated successfully',
       };
     } catch (error) {
-      if(file) {
+      if (file) {
         fs.unlinkSync(file.path);
       }
       await queryRunner.rollbackTransaction();
@@ -299,7 +313,7 @@ export class TravelPackagesService {
             error: 'Not Found',
             statusCode: HttpStatus.NOT_FOUND,
           },
-          HttpStatus.NOT_FOUND,
+          HttpStatus.NOT_FOUND
         );
       }
 
@@ -309,7 +323,7 @@ export class TravelPackagesService {
           error: 'Internal Server Error',
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     } finally {
       await queryRunner.release();
@@ -321,7 +335,9 @@ export class TravelPackagesService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const travelPackage: TravelPackages = await this.repository.findOneBy({ id });
+      const travelPackage: TravelPackages = await this.repository.findOneBy({
+        id,
+      });
 
       if (!travelPackage) {
         throw new Error('Travel Package not found');
@@ -333,13 +349,15 @@ export class TravelPackagesService {
       }
       const distPath = path.join(
         './dist/apps/travel-packages-service/public/travel-images',
-        image,
+        image
       );
       if (fs.existsSync(distPath)) {
         fs.unlinkSync(distPath);
         console.log(`Deleted public image: ${distPath}`);
       }
-      travelPackage.images = travelPackage.images.filter((img) => img !== image);
+      travelPackage.images = travelPackage.images.filter(
+        (img) => img !== image
+      );
 
       await queryRunner.manager.save(travelPackage);
 
@@ -358,7 +376,7 @@ export class TravelPackagesService {
             error: 'Not Found',
             statusCode: HttpStatus.NOT_FOUND,
           },
-          HttpStatus.NOT_FOUND,
+          HttpStatus.NOT_FOUND
         );
       }
 
@@ -369,7 +387,7 @@ export class TravelPackagesService {
             error: 'Not Found',
             statusCode: HttpStatus.NOT_FOUND,
           },
-          HttpStatus.NOT_FOUND,
+          HttpStatus.NOT_FOUND
         );
       }
       throw new HttpException(
@@ -378,7 +396,7 @@ export class TravelPackagesService {
           error: 'Internal Server Error',
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     } finally {
       await queryRunner.release();
@@ -387,14 +405,16 @@ export class TravelPackagesService {
 
   public async updateTravelPackage(
     id: number,
-    payload: CreateUpdateTravelPackageDto,
+    payload: CreateUpdateTravelPackageDto
   ) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const travelPackage: TravelPackages = await this.repository.findOneBy({ id });
+      const travelPackage: TravelPackages = await this.repository.findOneBy({
+        id,
+      });
 
       if (!travelPackage) {
         throw new Error('Travel Package not found');
@@ -417,7 +437,7 @@ export class TravelPackagesService {
             error: 'Not Found',
             statusCode: HttpStatus.NOT_FOUND,
           },
-          HttpStatus.NOT_FOUND,
+          HttpStatus.NOT_FOUND
         );
       }
       throw new HttpException(
@@ -426,7 +446,7 @@ export class TravelPackagesService {
           error: 'Internal Server Error',
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     } finally {
       await queryRunner.release();
@@ -439,17 +459,19 @@ export class TravelPackagesService {
     await queryRunner.startTransaction();
 
     try {
-      const travelPackage: TravelPackages = await this.repository.findOneBy({ id });
+      const travelPackage: TravelPackages = await this.repository.findOneBy({
+        id,
+      });
 
       if (!travelPackage) {
         throw new Error('Travel Package not found');
       }
 
       if (travelPackage.images) {
-        for(const image of travelPackage.images) {
+        for (const image of travelPackage.images) {
           const distPath = path.join(
             './dist/apps/travel-packages-service/public/travel-images',
-            image,
+            image
           );
           if (fs.existsSync(distPath)) {
             fs.unlinkSync(distPath);
@@ -474,7 +496,7 @@ export class TravelPackagesService {
             error: 'Not Found',
             statusCode: HttpStatus.NOT_FOUND,
           },
-          HttpStatus.NOT_FOUND,
+          HttpStatus.NOT_FOUND
         );
       }
       throw new HttpException(
@@ -483,7 +505,7 @@ export class TravelPackagesService {
           error: 'Internal Server Error',
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     } finally {
       await queryRunner.release();

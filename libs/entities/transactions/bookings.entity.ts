@@ -1,3 +1,4 @@
+// bookings.entity.ts
 import { ApiProperty } from '@nestjs/swagger';
 import {
   BaseEntity,

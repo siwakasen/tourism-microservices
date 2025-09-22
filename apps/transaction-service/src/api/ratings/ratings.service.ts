@@ -1,3 +1,4 @@
+// ratings.service.ts
 import { Bookings, BookingStatus, Ratings } from 'libs/entities';
 import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';

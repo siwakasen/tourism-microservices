@@ -1,10 +1,20 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, JoinColumn, ManyToOne } from "typeorm";
-import { Bookings } from "./bookings.entity";
+// booking_adjustments.entity.ts
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  JoinColumn,
+  ManyToOne,
+} from 'typeorm';
+import { Bookings } from './bookings.entity';
 
 export enum RequestType {
   CANCELLATION = 'CANCELLATION',
-  RESCHEDULE = 'RESCHEDULE'
+  RESCHEDULE = 'RESCHEDULE',
 }
 
 export enum AdjustmentStatus {
@@ -13,7 +23,7 @@ export enum AdjustmentStatus {
   WAITING_RECONFIRMATION = 'WAITING_RECONFIRMATION',
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',
-  EXPIRED = 'EXPIRED'
+  EXPIRED = 'EXPIRED',
 }
 
 @Entity('booking_adjustments')
@@ -34,7 +44,7 @@ class BookingAdjustments extends BaseEntity {
   @Column({
     type: 'enum',
     enum: RequestType,
-    nullable: false
+    nullable: false,
   })
   public request_type!: RequestType;
 
@@ -42,7 +52,7 @@ class BookingAdjustments extends BaseEntity {
   @Column({
     type: 'enum',
     enum: AdjustmentStatus,
-    default: AdjustmentStatus.PENDING
+    default: AdjustmentStatus.PENDING,
   })
   public status: AdjustmentStatus;
 

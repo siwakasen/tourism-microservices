@@ -1,3 +1,4 @@
+// employees.service.ts
 import {
   HttpException,
   HttpStatus,
@@ -32,7 +33,7 @@ import { ClientGrpc } from '@nestjs/microservices';
 export class EmployeeService implements OnModuleInit {
   constructor(
     private readonly mailService: MailService,
-    private readonly dataSource: DataSource,
+    private readonly dataSource: DataSource
   ) {}
   @InjectRepository(Roles)
   private readonly roleRepository: Repository<Roles>;
@@ -50,12 +51,12 @@ export class EmployeeService implements OnModuleInit {
   onModuleInit() {
     this.bookingsGrpcService =
       this.clientBookings.getService<BookingsServiceClient>(
-        'BookingsGrpcService',
+        'BookingsGrpcService'
       );
   }
 
   public async registerOwner(
-    body: RegisterOwnerDto,
+    body: RegisterOwnerDto
   ): Promise<RegisterOwnerResponseDto> {
     const { email, password, name, role_id }: RegisterOwnerDto = body;
     const user: Employee = await this.repository.findOne({
@@ -94,16 +95,22 @@ export class EmployeeService implements OnModuleInit {
     });
 
     if (!user) {
-      throw new HttpException(`Email or password may be incorrect`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        `Email or password may be incorrect`,
+        HttpStatus.BAD_REQUEST
+      );
     }
 
     const passwordMatched = await this.helper.isPasswordValid(
       user.password,
-      password,
+      password
     );
 
     if (!passwordMatched) {
-      throw new HttpException(`Email or password may be incorrect`, HttpStatus.UNAUTHORIZED);
+      throw new HttpException(
+        `Email or password may be incorrect`,
+        HttpStatus.UNAUTHORIZED
+      );
     }
 
     // delete user.password;
@@ -124,7 +131,7 @@ export class EmployeeService implements OnModuleInit {
     if (!user) {
       throw new HttpException(
         `User with email ${email} not found`,
-        HttpStatus.NOT_FOUND,
+        HttpStatus.NOT_FOUND
       );
     }
 
@@ -139,6 +146,7 @@ export class EmployeeService implements OnModuleInit {
     const isoDate = new Date();
     const gmtplus8 = new Date(isoDate.getTime() + 8 * 60 * 60 * 1000);
     await this.EmployeeTokenRepo.save({
+      employee_id: user.id,
       token: hashedEmail,
       expiredAt: gmtplus8,
     });
@@ -198,7 +206,7 @@ export class EmployeeService implements OnModuleInit {
           error: e.message || 'Internal server error',
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -264,7 +272,7 @@ export class EmployeeService implements OnModuleInit {
           error: error.message || 'Internal server error',
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -305,7 +313,7 @@ export class EmployeeService implements OnModuleInit {
             error: 'Employee not found',
             statusCode: HttpStatus.NOT_FOUND,
           },
-          HttpStatus.NOT_FOUND,
+          HttpStatus.NOT_FOUND
         );
       }
       throw new HttpException(
@@ -314,7 +322,7 @@ export class EmployeeService implements OnModuleInit {
           error: error.message || 'Internal server error',
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -368,14 +376,14 @@ export class EmployeeService implements OnModuleInit {
       if (payload.role_id == 1) {
         throw new HttpException(
           'New Owner cannot be created',
-          HttpStatus.BAD_REQUEST,
+          HttpStatus.BAD_REQUEST
         );
       }
       const role = await this.roleRepository.findOne({
         where: { id: payload.role_id },
       });
       const hashedPassword = await this.helper.hashingPassword(
-        payload.password,
+        payload.password
       );
 
       const user = await this.repository.findOne({
@@ -386,8 +394,6 @@ export class EmployeeService implements OnModuleInit {
       if (user) {
         throw new HttpException(`Email already used`, HttpStatus.CONFLICT);
       }
-
-
 
       const employee: Employee = this.repository.create({
         ...payload,
@@ -408,7 +414,7 @@ export class EmployeeService implements OnModuleInit {
           error: error.message || 'Internal server error',
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     } finally {
       await queryRunner.release();
@@ -419,7 +425,6 @@ export class EmployeeService implements OnModuleInit {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      
       const newRole = await this.roleRepository.findOne({
         where: { id: payload.role_id },
       });
@@ -437,7 +442,7 @@ export class EmployeeService implements OnModuleInit {
       if (payload.role_id == 1 && employee.role.id != 1) {
         throw new HttpException(
           'Cannot change admin into owner',
-          HttpStatus.BAD_REQUEST,
+          HttpStatus.BAD_REQUEST
         );
       }
 
@@ -461,7 +466,7 @@ export class EmployeeService implements OnModuleInit {
           error: error.message || 'Internal server error',
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     } finally {
       await queryRunner.release();
@@ -498,7 +503,7 @@ export class EmployeeService implements OnModuleInit {
           error: error.message || 'Internal server error',
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     } finally {
       await queryRunner.release();
