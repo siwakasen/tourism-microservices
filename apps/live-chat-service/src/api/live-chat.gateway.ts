@@ -67,19 +67,18 @@ export class LiveChatGateway
 
   @SubscribeMessage('rejoin_session')
   async rejoinSession(
-    @MessageBody() data: { chatSessionId: number; sessionKey: string },
+    @MessageBody() data: { sessionKey: string },
     @ConnectedSocket() client: Socket
   ) {
     try {
-      if (!data.sessionKey || !data.chatSessionId) {
+      if (!data.sessionKey) {
         client.emit('session_error', {
           message: 'Session key and chat session id are required',
         });
         return;
       }
       const session = await this.chatService.validateAndRejoinSession(
-        data.sessionKey,
-        data.chatSessionId
+        data.sessionKey
       );
       if (!session) {
         client.emit('session_error', {
@@ -116,7 +115,6 @@ export class LiveChatGateway
     },
     @ConnectedSocket() client: Socket
   ) {
-    console.log(data);
     const newData = {
       ...data,
       senderType: SenderType.CUS,

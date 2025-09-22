@@ -85,10 +85,6 @@ export class JwtAuthGuard extends Guard('user') implements IAuthGuard {
             request.user = user;
           }
           context.switchToWs().getClient().request.user = request.user;
-          console.log(
-            'WebSocket user:',
-            context.switchToWs().getClient().request.user
-          );
         }
       } catch (error) {}
     }

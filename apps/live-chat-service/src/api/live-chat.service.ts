@@ -100,10 +100,9 @@ export class LiveChatService {
     });
   }
 
-  async validateAndRejoinSession(sessionKey: string, chatSessionId: number) {
+  async validateAndRejoinSession(sessionKey: string) {
     const session = await this.chatSessionsRepo.findOne({
       where: {
-        id: chatSessionId,
         session_key: sessionKey,
         status_session: SessionStatus.OPEN,
       },
