@@ -25,10 +25,7 @@ async function bootstrap() {
     });
   } else {
     app.enableCors({
-      origin: [
-        'https://travel.vulpbox.com',
-        'https://admin.vulpbox.com',
-      ],
+      origin: ['https://travel.vulpbox.com', 'https://admin.vulpbox.com'],
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'application/json'],
@@ -36,7 +33,6 @@ async function bootstrap() {
     });
   }
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-  //   app.useGlobalInterceptors(new FormatErrorInterceptor());
 
   const configSwagger = new DocumentBuilder()
     .setTitle('Rent Car Service')
@@ -47,7 +43,9 @@ async function bootstrap() {
     .addServer(`https://rent-car-service.vulpbox.com`)
     .build();
   const document = SwaggerModule.createDocument(app, configSwagger);
-  SwaggerModule.setup('api-docs', app, document);
+  if (config.get<string>('NODE_ENV') === 'development') {
+    SwaggerModule.setup('api-docs', app, document);
+  }
 
   // GRPC
   const appGRPC = await NestFactory.createMicroservice<MicroserviceOptions>(
@@ -62,7 +60,7 @@ async function bootstrap() {
           keepCase: true,
         },
       },
-    },
+    }
   );
   await app.listen(port, () => {
     console.log('[Rent Car Service]', `http://localhost:${port}`);

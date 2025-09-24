@@ -25,10 +25,7 @@ async function bootstrap() {
     });
   } else {
     app.enableCors({
-      origin: [
-        'https://travel.vulpbox.com',
-        'https://admin.vulpbox.com',
-      ],
+      origin: ['https://travel.vulpbox.com', 'https://admin.vulpbox.com'],
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'application/json'],
@@ -48,7 +45,7 @@ async function bootstrap() {
         package: 'authcus',
         protoPath: 'contract/auth-customer-api.proto',
       },
-    },
+    }
   );
 
   const configSwagger = new DocumentBuilder()
@@ -60,7 +57,9 @@ async function bootstrap() {
     .addServer(`https://customer-service.vulpbox.com`)
     .build();
   const document = SwaggerModule.createDocument(app, configSwagger);
-  SwaggerModule.setup('api-docs', app, document);
+  if (config.get<string>('NODE_ENV') === 'development') {
+    SwaggerModule.setup('api-docs', app, document);
+  }
 
   await app.listen(port, () => {
     console.log('[Customer Service]', `http://localhost:${port}`);

@@ -3,9 +3,9 @@ import { ApiModule } from './api.module';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { DocumentBuilder,SwaggerModule } from '@nestjs/swagger';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
-async function bootstrap() {  
+async function bootstrap() {
   const app: NestExpressApplication = await NestFactory.create(ApiModule);
   const config: ConfigService = app.get(ConfigService);
   const port: number = config.get<number>('PORT');
@@ -21,10 +21,7 @@ async function bootstrap() {
     });
   } else {
     app.enableCors({
-      origin: [
-        'https://travel.vulpbox.com',
-        'https://admin.vulpbox.com',
-      ],
+      origin: ['https://travel.vulpbox.com', 'https://admin.vulpbox.com'],
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'application/json'],
@@ -42,11 +39,12 @@ async function bootstrap() {
     .addServer(`https://expenses-service.vulpbox.com`)
     .build();
   const document = SwaggerModule.createDocument(app, configSwagger);
-  SwaggerModule.setup('api-docs', app, document);
+  if (config.get<string>('NODE_ENV') === 'development') {
+    SwaggerModule.setup('api-docs', app, document);
+  }
 
   await app.listen(port, () => {
     console.log('[Expenses Service]', `http://localhost:${port}`);
   });
-
 }
 bootstrap();
