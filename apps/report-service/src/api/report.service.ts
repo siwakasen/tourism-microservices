@@ -787,7 +787,12 @@ export class ReportService {
       const totalCost = salaryCost + expensesCost;
 
       // Calculate profit/loss
-      const profitLoss = Number((netRevenue - totalCost).toFixed(2));
+      console.log('month', month + 1);
+      console.log('totalCost', totalCost);
+      console.log('netRevenue', netRevenue);
+      const profitLoss = Number(
+        (netRevenue * exchangeRate - totalCost).toFixed(2)
+      );
 
       monthlyBreakdown.push({
         month: month + 1,
@@ -972,8 +977,10 @@ export class ReportService {
       const totalCost = salaryCost + expensesCost;
 
       // Calculate profit/loss
-      const profitLoss = Number((netRevenue - totalCost).toFixed(2));
       const exchangeRate = await getExchangeRate();
+      const profitLoss = Number(
+        (netRevenue * exchangeRate - totalCost).toFixed(2)
+      );
 
       yearlyBreakdown.push({
         year: year,
