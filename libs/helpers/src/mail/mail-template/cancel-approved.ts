@@ -102,18 +102,18 @@ const cancelApprovedTemplate = (name: string, url: string) => `<!DOCTYPE html>
 
             <div class="cta">
                 <a href="${url}" target="_blank">Fill Refund Form</a>
-                <a href="https://ridebaliexplore.com/orders" target="_blank">Go to Order History</a>
+                <a href="https://travel.vulpbox.com/history-order" target="_blank">Go to Order History</a>
             </div>
 
             <p><strong>Important:</strong> Please complete the refund form as soon as possible to ensure timely processing of your refund.</p>
             
-            <p>If you have any questions about the refund process or need assistance, please don't hesitate to contact our support team at <a href="mailto:ridebaliexplore@gmail.com">ridebaliexplore@gmail.com</a></p>
+            <p>If you have any questions about the refund process or need assistance, please don't hesitate to contact our support team at <a href="mailto:balitravelride@gmail.com">balitravelride@gmail.com</a></p>
         </div>
 
         <!-- Footer Section -->
         <div class="footer">
-            <p>Regards,<br>Ride Bali Explore Team</p>
-            <p>&copy; 2025 Ride Bali Explore. All rights reserved.</p>
+            <p>Regards,<br>Bali Travel Ride Team</p>
+            <p>&copy; 2025 Bali Travel Ride. All rights reserved.</p>
         </div>
     </div>
 </body>

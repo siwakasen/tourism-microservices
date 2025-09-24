@@ -89,7 +89,7 @@ const resetPasswordTemplate = (url: string) => `<!DOCTYPE html>
 
     <!-- Footer Section -->
     <div class="footer">
-        <p>&copy; 2025 Ride Bali Explore. All rights reserved.</p>
+        <p>&copy; 2025 Bali Travel Ride. All rights reserved.</p>
     </div>
     </div>
 </body>

@@ -355,7 +355,7 @@ export class PaymentService {
           payment_source: {
             paypal: {
               experience_context: {
-                brand_name: 'Ride Bali Explore',
+                brand_name: 'Bali Travel Ride',
                 shipping_preference: 'NO_SHIPPING',
                 landing_page: 'NO_PREFERENCE',
                 user_action: 'PAY_NOW',
@@ -434,7 +434,7 @@ export class PaymentService {
           payment_source: {
             paypal: {
               experience_context: {
-                brand_name: 'Ride Bali Explore',
+                brand_name: 'Bali Travel Ride',
                 shipping_preference: 'NO_SHIPPING',
                 landing_page: 'NO_PREFERENCE',
                 user_action: 'PAY_NOW',

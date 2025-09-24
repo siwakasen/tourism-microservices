@@ -5,7 +5,6 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { ApiModule } from './api.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-// import { FormatErrorInterceptor } from 'libs/helper/interceptors/exeption.interceptor';
 
 async function bootstrap() {
   const app: NestExpressApplication = await NestFactory.create(ApiModule);

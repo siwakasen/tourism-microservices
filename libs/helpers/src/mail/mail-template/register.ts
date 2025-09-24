@@ -54,16 +54,16 @@ const registrationTemplate = (name: string) => `<!DOCTYPE html>
 <body>
     <div class="container">
         <div class="content">
-            <h1>Ride Bali Explore Account Registration</h1>
+            <h1>Bali Travel Ride Account Registration</h1>
             
             <p>Hello ${name}!</p>
             
-            <p>Your account has been registered in the Ride Bali Explore service. Now you can log in to the system using your email and password.</p>
+            <p>Your account has been registered in the Bali Travel Ride service. Now you can log in to the system using your email and password.</p>
             
-            <p>If you did not make this request, please contact us immediately at <a href="mailto:ridebaliexplore@gmail.com">ridebaliexplore@gmail.com</a></p>
+            <p>If you did not make this request, please contact us immediately at <a href="mailto:balitravelride@gmail.com">balitravelride@gmail.com</a></p>
             
             <div class="footer">
-                <p>Regards,<br>Ride Bali Explore Team</p>
+                <p>Regards,<br>Bali Travel Ride Team</p>
             </div>
         </div>
     </div>
