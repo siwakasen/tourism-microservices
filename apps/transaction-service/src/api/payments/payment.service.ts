@@ -55,7 +55,7 @@ export class PaymentService {
       });
       const parameter = {
         transaction_details: {
-          order_id: payload.id,
+          order_id: payload.id + '-' + crypto.randomUUID(),
           gross_amount: total_price_idr,
         },
         customer_details: {
@@ -119,7 +119,7 @@ export class PaymentService {
       });
       const parameter = {
         transaction_details: {
-          order_id: `${payload.id}-${adjustment.id}`,
+          order_id: `${payload.id}-${adjustment.id}-${crypto.randomUUID()}`,
           gross_amount: total_price_idr,
         },
         customer_details: {
