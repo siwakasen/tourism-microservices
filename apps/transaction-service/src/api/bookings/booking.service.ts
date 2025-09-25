@@ -648,9 +648,10 @@ export class BookingService implements OnModuleInit {
       this.logger.log(`Found ${bookings.length} bookings to set to ongoing`);
       for (const booking of bookings) {
         this.logger.log(`Set booking ${booking.id} to ongoing`);
-        console.log('start_date', booking.start_date);
-        console.log('gmtplus8Date', gmtplus8Date);
-        console.log(
+
+        this.logger.log('start_date', booking.start_date);
+        this.logger.log('gmtplus8Date', gmtplus8Date);
+        this.logger.log(
           'booking.start_date <= gmtplus8Date',
           booking.start_date <= gmtplus8Date
         );
