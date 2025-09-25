@@ -649,11 +649,18 @@ export class BookingService implements OnModuleInit {
       for (const booking of bookings) {
         this.logger.log(`Set booking ${booking.id} to ongoing`);
 
-        await queryRunner.manager.update(
-          Bookings,
-          { id: booking.id },
-          { status: BookingStatus.ONGOING }
+        this.logger.log('start_date', booking.start_date);
+        this.logger.log('gmtplus8Date', gmtplus8Date);
+        this.logger.log(
+          'booking.start_date <= gmtplus8Date',
+          booking.start_date <= gmtplus8Date
         );
+
+        // await queryRunner.manager.update(
+        //   Bookings,
+        //   { id: booking.id },
+        //   { status: BookingStatus.ONGOING }
+        // );
       }
       await queryRunner.commitTransaction();
     } catch (error) {
