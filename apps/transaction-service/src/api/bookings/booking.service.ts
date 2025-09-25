@@ -644,14 +644,22 @@ export class BookingService implements OnModuleInit {
           start_date: LessThanOrEqual(gmtplus8Date),
         },
       });
+
       this.logger.log(`Found ${bookings.length} bookings to set to ongoing`);
       for (const booking of bookings) {
         this.logger.log(`Set booking ${booking.id} to ongoing`);
-        await queryRunner.manager.update(
-          Bookings,
-          { id: booking.id },
-          { status: BookingStatus.ONGOING }
+        console.log('start_date', booking.start_date);
+        console.log('gmtplus8Date', gmtplus8Date);
+        console.log(
+          'booking.start_date <= gmtplus8Date',
+          booking.start_date <= gmtplus8Date
         );
+
+        // await queryRunner.manager.update(
+        //   Bookings,
+        //   { id: booking.id },
+        //   { status: BookingStatus.ONGOING }
+        // );
       }
       await queryRunner.commitTransaction();
     } catch (error) {
