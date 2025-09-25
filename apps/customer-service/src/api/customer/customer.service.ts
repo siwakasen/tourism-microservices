@@ -22,6 +22,7 @@ import { MailService } from '@app/helpers/mail/mail.service';
 import * as path from 'path';
 import * as fs from 'fs';
 import { Response } from 'express';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class CustomerService implements OnModuleInit {
@@ -50,6 +51,9 @@ export class CustomerService implements OnModuleInit {
 
   @Inject(DataSource)
   private readonly dataSource: DataSource;
+
+  @Inject(ConfigService)
+  private readonly configService: ConfigService;
 
   public async registerCustomer(body: RegisterCustomerDto) {
     try {
@@ -170,7 +174,8 @@ export class CustomerService implements OnModuleInit {
       }
       const hashedEmail = this.helper.generateResetPwToken(email);
       const url =
-        `${process.env.CLIENT_URL}/forget-password/execute/` + hashedEmail;
+        `${this.configService.get('CLIENT_URL')}/forget-password/execute/` +
+        hashedEmail;
       this.mailService.requestResetPassword({
         email: email,
         url: url,

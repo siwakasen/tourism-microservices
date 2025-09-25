@@ -47,6 +47,7 @@ import {
 import { MailService } from 'libs/helpers/src/mail/mail.service';
 import { PaymentService } from '../payments/payment.service';
 import { DriverPrice } from '../../shared/enum/enum';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class BookingAdjustmentService implements OnModuleInit {
@@ -74,6 +75,9 @@ export class BookingAdjustmentService implements OnModuleInit {
 
   @Inject(MailService)
   private readonly mailService: MailService;
+
+  @Inject(ConfigService)
+  private readonly configService: ConfigService;
 
   onModuleInit() {
     this.employeeGrpcService = this.clientEmp.getService<EmployeeServiceClient>(
@@ -473,7 +477,7 @@ export class BookingAdjustmentService implements OnModuleInit {
         await this.mailService.sendCancelApproved({
           email: customer.email,
           name: customer.name,
-          url: `${process.env.FRONTEND_URL}/history-order/${booking.id}`,
+          url: `${this.configService.get('CLIENT_URL')}/history-order/${booking.id}`,
         });
         // refund the customer
         refund_data = await this.refundService.createRefund(

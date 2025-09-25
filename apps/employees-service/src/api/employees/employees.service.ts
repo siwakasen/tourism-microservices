@@ -27,6 +27,7 @@ import { FormatErrorInterceptor } from 'libs/helpers/interceptors/exeption.inter
 import { Employee, EmployeeToken, Roles } from 'libs/entities';
 import { BookingsServiceClient } from 'libs/entities/grpc-interfaces/bookings.interface';
 import { ClientGrpc } from '@nestjs/microservices';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 @UseInterceptors(FormatErrorInterceptor)
@@ -43,6 +44,9 @@ export class EmployeeService implements OnModuleInit {
   private readonly helper: AuthHelper;
   @InjectRepository(EmployeeToken)
   private readonly EmployeeTokenRepo: Repository<EmployeeToken>;
+
+  @Inject(ConfigService)
+  private readonly configService: ConfigService;
 
   @Inject('BOOKINGS_CLIENT')
   private clientBookings: ClientGrpc;
@@ -138,7 +142,8 @@ export class EmployeeService implements OnModuleInit {
     const hashedEmail = this.helper.generateResetPwToken(email);
 
     const url =
-      `${process.env.FRONTEND_URL}/forget-password/execute/` + hashedEmail;
+      `${this.configService.get('FRONTEND_URL')}/forget-password/execute/` +
+      hashedEmail;
     this.mailService.requestResetPassword({
       email: email,
       url: url,
