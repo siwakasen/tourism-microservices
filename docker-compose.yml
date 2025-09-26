@@ -23,7 +23,6 @@ services:
       dockerfile: Dockerfile.customer
     environment:
       - NODE_ENV=production
-      - TZ=Asia/Makassar
     volumes:
       - travel-volume:/app/dist/apps/customer-service/private
       - travel-volume:/app/dist/apps/customer-service/logs
@@ -40,7 +39,6 @@ services:
       dockerfile: Dockerfile.employees
     environment:
       - NODE_ENV=production
-      - TZ=Asia/Makassar
     volumes:
       - travel-volume:/app/dist/apps/employees-service/logs
     networks:
@@ -56,7 +54,6 @@ services:
       dockerfile: Dockerfile.expenses
     environment:
       - NODE_ENV=production
-      - TZ=Asia/Makassar
     volumes:
       - travel-volume:/app/dist/apps/expenses-service/logs
     networks:
@@ -72,7 +69,6 @@ services:
       dockerfile: Dockerfile.rent-car
     environment:
       - NODE_ENV=production
-      - TZ=Asia/Makassar
     volumes:
       - travel-volume:/app/dist/apps/rent-car-service/public
       - travel-volume:/app/dist/apps/rent-car-service/logs
@@ -89,7 +85,6 @@ services:
       dockerfile: Dockerfile.travel-packages
     environment:
       - NODE_ENV=production
-      - TZ=Asia/Makassar
     volumes:
       - travel-volume:/app/dist/apps/travel-packages-service/public
       - travel-volume:/app/dist/apps/travel-packages-service/logs
@@ -106,7 +101,6 @@ services:
       dockerfile: Dockerfile.transaction
     environment:
       - NODE_ENV=production
-      - TZ=Asia/Makassar
     volumes:
       - travel-volume:/app/dist/apps/transaction-service/logs
     networks:
@@ -122,7 +116,6 @@ services:
       dockerfile: Dockerfile.report
     environment:
       - NODE_ENV=production
-      - TZ=Asia/Makassar
     volumes:
       - travel-volume:/app/dist/apps/report-service/logs
     networks:
@@ -138,7 +131,6 @@ services:
       dockerfile: Dockerfile.live-chat
     environment:
       - NODE_ENV=production
-      - TZ=Asia/Makassar
     volumes:
       - travel-volume:/app/dist/apps/live-chat-service/logs
     networks:
