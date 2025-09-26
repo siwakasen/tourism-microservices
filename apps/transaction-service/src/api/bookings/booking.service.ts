@@ -635,16 +635,26 @@ export class BookingService implements OnModuleInit {
       `Called at ${new Date(Date.now()).toLocaleString('en-US', { timeZone: 'Asia/Singapore' })}`
     );
     const gmtplus8Date = new Date(Date.now());
+    this.logger.log('gmtplus8Date: ', gmtplus8Date);
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
+      this.logger.log('gmtplus8Date: ', gmtplus8Date);
+
       const bookings = await queryRunner.manager.find(Bookings, {
         where: {
           status: BookingStatus.CONFIRMED,
           start_date: LessThanOrEqual(gmtplus8Date),
         },
       });
+
+      const bookings2 = await this.bookingRepository.find({
+        where: {
+          status: BookingStatus.CONFIRMED,
+        },
+      });
+      console.log('bookings2: ', bookings2);
 
       this.logger.log(`Found ${bookings.length} bookings to set to ongoing`);
       for (const booking of bookings) {
