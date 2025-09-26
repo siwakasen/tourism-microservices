@@ -83,6 +83,7 @@ export class ReportService {
       (acc, booking) => acc + booking.total_price,
       0
     );
+    console.log(result);
     const refundCost = result.reduce(
       (acc, booking) => (booking.refunds ? acc + booking.refunds.amount : 0),
       0
