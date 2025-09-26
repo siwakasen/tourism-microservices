@@ -632,7 +632,7 @@ export class BookingService implements OnModuleInit {
   })
   async handleUpdateConfirmedBookingToOngoing() {
     this.logger.log(
-      `Called at ${new Date(Date.now()).toLocaleString('en-US', { timeZone: 'Asia/Jakarta' })}`
+      `Called at ${new Date(Date.now()).toLocaleString('en-US', { timeZone: 'Asia/Singapore' })}`
     );
     const gmtplus8Date = new Date(Date.now());
     const queryRunner = this.dataSource.createQueryRunner();
@@ -650,11 +650,14 @@ export class BookingService implements OnModuleInit {
       for (const booking of bookings) {
         this.logger.log(`Set booking ${booking.id} to ongoing`);
 
-        await queryRunner.manager.update(
-          Bookings,
-          { id: booking.id },
-          { status: BookingStatus.ONGOING }
-        );
+        this.logger.log('start_date: ', booking.start_date);
+        this.logger.log('gmtplus8Date: ', gmtplus8Date);
+
+        // await queryRunner.manager.update(
+        //   Bookings,
+        //   { id: booking.id },
+        //   { status: BookingStatus.ONGOING }
+        // );
       }
       await queryRunner.commitTransaction();
     } catch (error) {
