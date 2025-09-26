@@ -632,20 +632,24 @@ export class BookingService implements OnModuleInit {
   })
   async handleUpdateConfirmedBookingToOngoing() {
     this.logger.log(
-      `Called at ${new Date(Date.now()).toLocaleString('en-US', { timeZone: 'Asia/Singapore' })}`
+      `GMT +0 || Called at ${new Date(Date.now()).toLocaleString()}`
     );
-    const gmtplus8Date = new Date(Date.now());
-    this.logger.log('gmtplus8Date: ', gmtplus8Date);
+    this.logger.log(
+      `GMT +0 || Called at ${new Date(Date.now()).toLocaleString('en-US', { timeZone: 'Asia/Singapore' })}`
+    );
+    const gmtPlusZeroDate = new Date(Date.now());
+    const gmtPlusEightDate = new Date(Date.now() + 8 * 60 * 60 * 1000);
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      this.logger.log('gmtplus8Date: ', gmtplus8Date);
+      this.logger.log('gmtplus8Date: ', gmtPlusZeroDate);
+      this.logger.log('gmtplus8Date: ', gmtPlusEightDate);
 
       const bookings = await queryRunner.manager.find(Bookings, {
         where: {
           status: BookingStatus.CONFIRMED,
-          start_date: LessThanOrEqual(gmtplus8Date),
+          start_date: LessThanOrEqual(gmtPlusZeroDate),
         },
       });
 
@@ -659,9 +663,6 @@ export class BookingService implements OnModuleInit {
       this.logger.log(`Found ${bookings.length} bookings to set to ongoing`);
       for (const booking of bookings) {
         this.logger.log(`Set booking ${booking.id} to ongoing`);
-
-        this.logger.log('start_date: ', booking.start_date);
-        this.logger.log('gmtplus8Date: ', gmtplus8Date);
 
         // await queryRunner.manager.update(
         //   Bookings,
