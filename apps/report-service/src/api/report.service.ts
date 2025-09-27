@@ -1,5 +1,5 @@
 // report.service.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import {
@@ -23,6 +23,7 @@ import { getExchangeRate } from 'apps/transaction-service/src/common/helper/curr
 
 @Injectable()
 export class ReportService {
+  private readonly logger = new Logger(ReportService.name);
   constructor(
     @InjectDataSource('primary')
     private transactionDataSource: DataSource,
@@ -32,7 +33,9 @@ export class ReportService {
 
     @InjectDataSource('third')
     private employeeDataSource: DataSource
-  ) {}
+  ) {
+    this.logger = new Logger(ReportService.name);
+  }
 
   public async getBookingMonthlyRevenue(payload: GetBookingMonthlyRevenueDto) {
     const { start_date, end_date } = payload;
@@ -89,10 +92,10 @@ export class ReportService {
       (acc, booking) => acc + booking.total_price,
       0
     );
-    console.log('result: ', result);
+    this.logger.log('result: ', result);
     for (const booking of result) {
-      console.log('booking id: ', booking.id);
-      console.log('refund amount: ', booking.refunds);
+      this.logger.log('booking id: ', booking.id);
+      this.logger.log('refund amount: ', booking.refunds);
     }
     const refundCost = result.reduce(
       (acc, booking) => (booking.refunds ? acc + booking.refunds.amount : 0),
