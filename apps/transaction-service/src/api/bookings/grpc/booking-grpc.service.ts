@@ -72,7 +72,6 @@ export class BookingGrpcService {
     startDate.setHours(0, 0, 0, 0);
     endDate.setHours(23, 59, 59, 999);
     try {
-      console.log('booking_id', booking_id);
       const bookings = await this.repository.find({
         where: {
           start_date: Between(startDate, endDate),
@@ -80,7 +79,6 @@ export class BookingGrpcService {
           id: Not(booking_id),
         },
       });
-      console.log('bookings', bookings);
       const employee_ids = bookings.map((b) => b.employee_id);
       return { employee_ids };
     } catch (error: any) {

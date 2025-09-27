@@ -53,6 +53,7 @@ export class PaymentService {
         isProduction: false,
         serverKey: this.configService.get('MIDTRANS_SERVER_KEY'),
       });
+
       const parameter = {
         transaction_details: {
           order_id: payload.id + '-' + crypto.randomUUID(),

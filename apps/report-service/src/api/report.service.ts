@@ -83,7 +83,6 @@ export class ReportService {
       (acc, booking) => acc + booking.total_price,
       0
     );
-    console.log(result);
     const refundCost = result.reduce(
       (acc, booking) => (booking.refunds ? acc + booking.refunds.amount : 0),
       0
@@ -788,9 +787,6 @@ export class ReportService {
       const totalCost = salaryCost + expensesCost;
 
       // Calculate profit/loss
-      console.log('month', month + 1);
-      console.log('totalCost', totalCost);
-      console.log('netRevenue', netRevenue);
       const profitLoss = Number(
         (netRevenue * exchangeRate - totalCost).toFixed(2)
       );
