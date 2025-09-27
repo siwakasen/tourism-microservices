@@ -95,7 +95,7 @@ export class ReportService {
     this.logger.log('result: ', result);
     for (const booking of result) {
       this.logger.log('booking id: ', booking.id);
-      this.logger.log('refund amount: ', booking.refunds);
+      this.logger.log('refund amount: ', booking.refunds?.amount);
     }
     const refundCost = result.reduce(
       (acc, booking) => (booking.refunds ? acc + booking.refunds.amount : 0),
