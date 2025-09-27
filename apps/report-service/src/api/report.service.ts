@@ -37,14 +37,20 @@ export class ReportService {
   public async getBookingMonthlyRevenue(payload: GetBookingMonthlyRevenueDto) {
     const { start_date, end_date } = payload;
 
+    // Set end_date to 11:59 PM UTC to include the entire day
+    const adjustedEndDate = new Date(end_date);
+    adjustedEndDate.setUTCHours(23, 59, 59, 999);
+
     // checkin bookings with no show, completed, and cancelled
     // for cancelled status, check if the payment is not failed (which means the booking is cancelled before payment successful)
+    console.log('start_date', start_date);
+    console.log('end_date', adjustedEndDate);
     const queryBuilder = this.transactionDataSource
       .createQueryBuilder(Bookings, 'bookings')
       .leftJoinAndSelect('bookings.payments', 'payments')
       .leftJoinAndSelect('bookings.refunds', 'refunds')
       .where('bookings.start_date >= :start_date', { start_date })
-      .andWhere('bookings.end_date <= :end_date', { end_date })
+      .andWhere('bookings.end_date <= :end_date', { end_date: adjustedEndDate })
       .andWhere('bookings.status IN (:...statuses)', {
         statuses: [
           BookingStatus.NO_SHOW,
@@ -83,6 +89,11 @@ export class ReportService {
       (acc, booking) => acc + booking.total_price,
       0
     );
+    console.log('result: ', result);
+    for (const booking of result) {
+      console.log('booking id: ', booking.id);
+      console.log('refund amount: ', booking.refunds);
+    }
     const refundCost = result.reduce(
       (acc, booking) => (booking.refunds ? acc + booking.refunds.amount : 0),
       0
@@ -413,10 +424,16 @@ export class ReportService {
   public async getExpensesMonthlyReport(payload: GetExpensesMonthlyReportDto) {
     const { start_date, end_date } = payload;
 
+    // Set end_date to 11:59 PM UTC to include the entire day
+    const adjustedEndDate = new Date(end_date);
+    adjustedEndDate.setUTCHours(23, 59, 59, 999);
+
     const queryBuilder = this.expensesDataSource
       .createQueryBuilder(Expenses, 'expenses')
       .where('expenses.expense_date >= :start_date', { start_date })
-      .andWhere('expenses.expense_date <= :end_date', { end_date })
+      .andWhere('expenses.expense_date <= :end_date', {
+        end_date: adjustedEndDate,
+      })
       .orderBy('expenses.expense_date', 'DESC');
 
     const expensesAmount = await queryBuilder
@@ -427,7 +444,7 @@ export class ReportService {
 
     const employeeQueryBuilder = this.employeeDataSource
       .createQueryBuilder(Employee, 'employees')
-      .where('employees.created_at <= :end_date', { end_date })
+      .where('employees.created_at <= :end_date', { end_date: adjustedEndDate })
       .orderBy('employees.created_at', 'DESC');
 
     let employees = await employeeQueryBuilder.getMany();
