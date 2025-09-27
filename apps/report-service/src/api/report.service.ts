@@ -1,5 +1,5 @@
 // report.service.ts
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import {
@@ -23,7 +23,6 @@ import { getExchangeRate } from 'apps/transaction-service/src/common/helper/curr
 
 @Injectable()
 export class ReportService {
-  private readonly logger = new Logger(ReportService.name);
   constructor(
     @InjectDataSource('primary')
     private transactionDataSource: DataSource,
@@ -33,9 +32,7 @@ export class ReportService {
 
     @InjectDataSource('third')
     private employeeDataSource: DataSource
-  ) {
-    this.logger = new Logger(ReportService.name);
-  }
+  ) {}
 
   public async getBookingMonthlyRevenue(payload: GetBookingMonthlyRevenueDto) {
     const { start_date, end_date } = payload;
@@ -96,7 +93,6 @@ export class ReportService {
     for (const booking of result) {
       if (booking.refunds) {
         refundCost += booking.refunds.amount;
-        this.logger.log('refundCost: ', refundCost);
       }
     }
     const paymentGatewayCost: number = Number(
@@ -194,9 +190,12 @@ export class ReportService {
       (acc, booking) => acc + booking.total_price,
       0
     );
-    const refundCost: number = result.reduce((acc, booking) => {
-      return booking.refunds ? acc + booking.refunds.amount : 0;
-    }, 0);
+    let refundCost = 0;
+    for (const booking of result) {
+      if (booking.refunds) {
+        refundCost += booking.refunds.amount;
+      }
+    }
     const paymentGatewayCost: number = Number(
       result
         .reduce(
@@ -241,9 +240,12 @@ export class ReportService {
         (acc, booking) => acc + booking.total_price,
         0
       );
-      const monthRefundCost: number = monthBookings.reduce((acc, booking) => {
-        return booking.refunds ? acc + booking.refunds.amount : 0;
-      }, 0);
+      let monthRefundCost = 0;
+      for (const booking of monthBookings) {
+        if (booking.refunds) {
+          monthRefundCost += booking.refunds.amount;
+        }
+      }
       const monthPaymentGatewayCost: number = Number(
         monthBookings
           .reduce(
@@ -370,9 +372,12 @@ export class ReportService {
         (acc, booking) => acc + booking.total_price,
         0
       );
-      const refundCost: number = yearBookings.reduce((acc, booking) => {
-        return booking.refunds ? acc + booking.refunds.amount : 0;
-      }, 0);
+      let refundCost = 0;
+      for (const booking of result) {
+        if (booking.refunds) {
+          refundCost += booking.refunds.amount;
+        }
+      }
       const paymentGatewayCost: number = Number(
         yearBookings
           .reduce(
@@ -746,9 +751,12 @@ export class ReportService {
         (acc, booking) => acc + booking.total_price,
         0
       );
-      const refundCost: number = monthBookings.reduce((acc, booking) => {
-        return booking.refunds ? acc + booking.refunds.amount : 0;
-      }, 0);
+      let refundCost = 0;
+      for (const booking of monthBookings) {
+        if (booking.refunds) {
+          refundCost += booking.refunds.amount;
+        }
+      }
       const paymentGatewayCost: number = Number(
         monthBookings
           .reduce(
@@ -926,9 +934,12 @@ export class ReportService {
         (acc, booking) => acc + booking.total_price,
         0
       );
-      const refundCost: number = yearBookings.reduce((acc, booking) => {
-        return booking.refunds ? acc + booking.refunds.amount : 0;
-      }, 0);
+      let refundCost = 0;
+      for (const booking of yearBookings) {
+        if (booking.refunds) {
+          refundCost += booking.refunds.amount;
+        }
+      }
       const paymentGatewayCost: number = Number(
         yearBookings
           .reduce(
