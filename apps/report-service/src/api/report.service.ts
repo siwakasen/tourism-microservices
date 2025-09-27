@@ -94,13 +94,10 @@ export class ReportService {
     );
     this.logger.log('result: ', result);
     for (const booking of result) {
-      this.logger.log('booking id: ', booking.id);
-      this.logger.log('refund amount: ', booking.refunds?.amount);
     }
-    const refundCost = result.reduce(
-      (acc, booking) => (booking.refunds ? acc + booking.refunds.amount : 0),
-      0
-    );
+    const refundCost = result.reduce((acc, booking) => {
+      return booking.refunds ? acc + booking.refunds.amount : 0;
+    }, 0);
     const paymentGatewayCost: number = Number(
       result
         .reduce(
@@ -196,10 +193,9 @@ export class ReportService {
       (acc, booking) => acc + booking.total_price,
       0
     );
-    const refundCost: number = result.reduce(
-      (acc, booking) => acc + (booking.refunds?.amount || 0),
-      0
-    );
+    const refundCost: number = result.reduce((acc, booking) => {
+      return booking.refunds ? acc + booking.refunds.amount : 0;
+    }, 0);
     const paymentGatewayCost: number = Number(
       result
         .reduce(
@@ -244,10 +240,9 @@ export class ReportService {
         (acc, booking) => acc + booking.total_price,
         0
       );
-      const monthRefundCost: number = monthBookings.reduce(
-        (acc, booking) => acc + (booking.refunds?.amount || 0),
-        0
-      );
+      const monthRefundCost: number = monthBookings.reduce((acc, booking) => {
+        return booking.refunds ? acc + booking.refunds.amount : 0;
+      }, 0);
       const monthPaymentGatewayCost: number = Number(
         monthBookings
           .reduce(
@@ -374,10 +369,9 @@ export class ReportService {
         (acc, booking) => acc + booking.total_price,
         0
       );
-      const refundCost: number = yearBookings.reduce(
-        (acc, booking) => acc + (booking.refunds?.amount || 0),
-        0
-      );
+      const refundCost: number = yearBookings.reduce((acc, booking) => {
+        return booking.refunds ? acc + booking.refunds.amount : 0;
+      }, 0);
       const paymentGatewayCost: number = Number(
         yearBookings
           .reduce(
@@ -751,10 +745,9 @@ export class ReportService {
         (acc, booking) => acc + booking.total_price,
         0
       );
-      const refundCost: number = monthBookings.reduce(
-        (acc, booking) => acc + (booking.refunds?.amount || 0),
-        0
-      );
+      const refundCost: number = monthBookings.reduce((acc, booking) => {
+        return booking.refunds ? acc + booking.refunds.amount : 0;
+      }, 0);
       const paymentGatewayCost: number = Number(
         monthBookings
           .reduce(
@@ -932,10 +925,9 @@ export class ReportService {
         (acc, booking) => acc + booking.total_price,
         0
       );
-      const refundCost: number = yearBookings.reduce(
-        (acc, booking) => acc + (booking.refunds?.amount || 0),
-        0
-      );
+      const refundCost: number = yearBookings.reduce((acc, booking) => {
+        return booking.refunds ? acc + booking.refunds.amount : 0;
+      }, 0);
       const paymentGatewayCost: number = Number(
         yearBookings
           .reduce(
