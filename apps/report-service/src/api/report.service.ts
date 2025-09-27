@@ -92,12 +92,13 @@ export class ReportService {
       (acc, booking) => acc + booking.total_price,
       0
     );
-    this.logger.log('result: ', result);
+    let refundCost = 0;
     for (const booking of result) {
+      if (booking.refunds) {
+        refundCost += booking.refunds.amount;
+        this.logger.log('refundCost: ', refundCost);
+      }
     }
-    const refundCost = result.reduce((acc, booking) => {
-      return booking.refunds ? acc + booking.refunds.amount : 0;
-    }, 0);
     const paymentGatewayCost: number = Number(
       result
         .reduce(
