@@ -1,6 +1,14 @@
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { ApiTags } from '@nestjs/swagger';
-import { Controller, Post, UseGuards, Body, Get, Query } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  UseGuards,
+  Body,
+  Get,
+  Query,
+  Param,
+} from '@nestjs/common';
 import { RatingsService } from './ratings.service';
 import { Roles, UserType } from '@app/helpers/auth/decorators/auth.decorator';
 import { JwtAuthGuard } from '@app/helpers/auth/user/auth.guard';
@@ -31,5 +39,23 @@ export class RatingsController {
   @ApiBearerAuth()
   async getRatings(@Query() query: PaginationDto) {
     return this.ratingsService.getRatings(query);
+  }
+
+  @Get('car/:car_id')
+  @ApiBearerAuth()
+  async getRatingByCarId(@Param('car_id') car_id: number) {
+    return this.ratingsService.getRatingByCarId(car_id);
+  }
+
+  @Get('package/:package_id')
+  @ApiBearerAuth()
+  async getRatingByPackageId(@Param('package_id') package_id: number) {
+    return this.ratingsService.getRatingByPackageId(package_id);
+  }
+
+  @Get('reviews')
+  @ApiBearerAuth()
+  async getRatingReviews() {
+    return this.ratingsService.getRatingReviews();
   }
 }

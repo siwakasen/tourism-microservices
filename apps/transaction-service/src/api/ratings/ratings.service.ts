@@ -103,4 +103,106 @@ export class RatingsService {
       );
     }
   }
+
+  public async getRatingReviews() {
+    try {
+      const rating = await this.dataSource.manager
+        .createQueryBuilder(Ratings, 'ratings')
+        .orderBy('ratings.service_rate', 'DESC')
+        .limit(6)
+        .getMany();
+
+      if (rating.length === 0) {
+        return {
+          data: [],
+          message: 'No rating found',
+        };
+      }
+      return {
+        data: rating,
+        message: 'Get rating reviews successfully',
+      };
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Failed to fetch rating reviews',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  public async getRatingByCarId(car_id: number): Promise<{
+    data: {
+      averageRating: number;
+      ratingsCount: number;
+      ratings: Ratings[];
+    };
+    message: string;
+  }> {
+    const rating = await this.dataSource.manager
+      .createQueryBuilder(Ratings, 'ratings')
+      .leftJoinAndSelect('ratings.booking', 'booking')
+      .where('booking.car_id = :car_id', { car_id })
+      .getMany();
+    if (rating.length === 0) {
+      return {
+        data: {
+          averageRating: 0,
+          ratingsCount: 0,
+          ratings: [],
+        },
+        message: 'No rating found',
+      };
+    }
+    const totalRating = rating.reduce(
+      (acc, curr) => acc + curr.service_rate,
+      0
+    );
+    const averageRating = totalRating / rating.length;
+    return {
+      data: {
+        averageRating,
+        ratingsCount: rating.length,
+        ratings: rating,
+      },
+      message: 'Get rating by car id successfully',
+    };
+  }
+
+  public async getRatingByPackageId(package_id: number): Promise<{
+    data: {
+      averageRating: number;
+      ratingsCount: number;
+      ratings: Ratings[];
+    };
+    message: string;
+  }> {
+    const rating = await this.dataSource.manager
+      .createQueryBuilder(Ratings, 'ratings')
+      .leftJoinAndSelect('ratings.booking', 'booking')
+      .where('booking.package_id = :package_id', { package_id })
+      .getMany();
+    if (rating.length === 0) {
+      return {
+        data: {
+          averageRating: 0,
+          ratingsCount: 0,
+          ratings: [],
+        },
+        message: 'No rating found',
+      };
+    }
+    const totalRating = rating.reduce(
+      (acc, curr) => acc + curr.service_rate,
+      0
+    );
+    const averageRating = totalRating / rating.length;
+    return {
+      data: {
+        averageRating,
+        ratingsCount: rating.length,
+        ratings: rating,
+      },
+      message: 'Get rating by package id successfully',
+    };
+  }
 }

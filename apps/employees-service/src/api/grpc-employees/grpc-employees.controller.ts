@@ -3,7 +3,7 @@ import { GrpcMethod } from '@nestjs/microservices';
 import { GrpcService } from './grpc-employees.service';
 
 @Controller()
-export class GrpcController {
+export class EmployeesGrpcController {
   @Inject(GrpcService)
   private readonly grpcService: GrpcService;
 
