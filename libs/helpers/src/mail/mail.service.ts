@@ -11,9 +11,10 @@ export class MailService {
   async requestResetPassword(payload: {
     url: string;
     email: string;
+    pathImage: string;
   }): Promise<void> {
     try {
-      const { url, email } = payload;
+      const { url, email, pathImage } = payload;
 
       const htmlTemplate = `${resetPasswordTemplate(url)}`;
 
@@ -24,12 +25,11 @@ export class MailService {
         attachments: [
           {
             filename: 'lock-icon.png',
-            path: 'dist/apps/employees-service/images/email/image-1.png',
+            path: pathImage,
             cid: 'lockIcon',
           },
         ],
       });
-
     } catch (error) {
       console.error(`Error sending email to `, error);
       throw error;

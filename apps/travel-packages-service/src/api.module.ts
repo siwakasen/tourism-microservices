@@ -21,8 +21,8 @@ const TravelPackagesLogger = new LoggerMiddleware({
     ConfigModule.forRoot({ envFilePath, isGlobal: true }),
     TypeOrmModule.forRootAsync({ useClass: TypeOrmConfigService }),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'public'), // Adjusted for apps/travel-packages-service/public
-      serveRoot: '/public', // Optional: URL prefix for static files
+      rootPath: join(__dirname, '..', 'public'),
+      serveRoot: '/public',
     }),
     TravelPackagesModule,
     GrpcTravelPackagesModule,

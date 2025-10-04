@@ -147,6 +147,7 @@ export class EmployeeService implements OnModuleInit {
     this.mailService.requestResetPassword({
       email: email,
       url: url,
+      pathImage: 'dist/apps/employees-service/images/email/image-1.png',
     });
     const isoDate = new Date();
     const gmtplus8 = new Date(isoDate.getTime() + 8 * 60 * 60 * 1000);
