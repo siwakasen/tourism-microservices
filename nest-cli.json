@@ -21,10 +21,6 @@
           {
             "include": "common/envs/*.env",
             "outDir": "dist/apps/travel-packages-service/src/"
-          },
-          {
-            "include": "../images",
-            "outDir": "dist/apps/travel-packages-service/images/"
           }
         ]
       }
@@ -98,6 +94,10 @@
           {
             "include": "common/envs/*.env",
             "outDir": "dist/apps/customer-service/src/"
+          },
+          {
+            "include": "../images",
+            "outDir": "dist/apps/customer-service/images/"
           }
         ]
       }
