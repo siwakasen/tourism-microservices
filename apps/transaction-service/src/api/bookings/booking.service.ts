@@ -33,7 +33,6 @@ import { PaymentService } from '../payments/payment.service';
 import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { start } from 'repl';
 import { DriverPrice } from '../../shared/enum/enum';
 
 @Injectable()
@@ -528,7 +527,6 @@ export class BookingService implements OnModuleInit {
     try {
       const { page = 1, limit = 10, search = '' } = paginationDto;
 
-      // Use a single query with left join to fetch bookings and payments
       const queryBuilder = this.bookingRepository
         .createQueryBuilder('bookings')
         .leftJoinAndSelect('bookings.payments', 'payments')

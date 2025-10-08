@@ -183,7 +183,7 @@ export class ReportService {
       )
       .orderBy('bookings.created_at', 'DESC');
 
-    const [result, total] = await queryBuilder.getManyAndCount();
+    const [result] = await queryBuilder.getManyAndCount();
 
     // Calculate yearly totals
     const grossRevenue: number = result.reduce(
@@ -835,7 +835,6 @@ export class ReportService {
 
     return {
       year: year,
-
       monthly_breakdown: monthlyBreakdown,
     };
   }

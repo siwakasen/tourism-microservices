@@ -139,8 +139,6 @@ export class BookingAdjustmentService implements OnModuleInit {
         throw new HttpException('Booking not found', HttpStatus.NOT_FOUND);
       }
       if (booking.status === BookingStatus.WAITING_PAYMENT) {
-        // ada case untuk report-service : status cancelled dengan payment PENDING tidak dihitung
-        // auto cancel on booking
         await this.dataSource.manager.update(
           Bookings,
           { id: booking_id },
