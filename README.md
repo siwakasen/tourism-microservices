@@ -27,5 +27,5 @@ I’m not using Kubernetes yet since everything runs on a single server, but I m
 ## Application Layers
 <img width="711" height="284" alt="Application Layers" src="https://github.com/user-attachments/assets/b2e261fa-7cef-4f65-9797-e01a6d37669b" />
 
-The diagram above illustrates the layered architecture of the system — from the [frontend](https://github.com/siwakasen/client-web-app) to the backend and database layers.  
+The diagram above illustrates the layered architecture of the system — from the [customer frontend](https://github.com/siwakasen/client-web-app) to the backend and database layers.  
 While it might not follow every industry best practice, it’s structured and organized in a way that keeps the overall system maintainable and clear.
