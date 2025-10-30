@@ -30,3 +30,4 @@ The diagram above illustrates the layered architecture of the system — from th
 While it might not follow every industry best practice, it’s structured and organized in a way that keeps the overall system maintainable and clear.
 
 # V.2 Clustering
+Working on it
