@@ -1,9 +1,9 @@
-# Microservices Architecture
+# V.1 Microservices Architecture
 <img width="498" height="412" alt="Microservices Architecture" src="https://github.com/user-attachments/assets/a49aa30a-b2a6-4a0f-bac0-a71b300edcc2" />
 
 This application follows the *Domain-Driven Design (DDD)* approach, where each service owns its own domain logic and database.  
 The diagram above shows the complete infrastructure, including frontend applications, load balancer, and tunneling for public access.  
-All instances run in a Docker environment on my homelab server.
+All instances run in a Docker environment on a server.
 
 ---
 
@@ -20,7 +20,6 @@ Each service acts as both a gRPC server and client, exposing its own port for ot
 
 In production, I use *Nginx* as a load balancer to distribute traffic between service instances.  
 This setup allows for better scalability and fault tolerance.  
-I’m not using Kubernetes yet since everything runs on a single server, but I may consider it for future projects that require more complex scaling.
 
 ---
 
@@ -29,3 +28,5 @@ I’m not using Kubernetes yet since everything runs on a single server, but I m
 
 The diagram above illustrates the layered architecture of the system — from the [customer frontend](https://github.com/siwakasen/client-web-app) to the backend and database layers.  
 While it might not follow every industry best practice, it’s structured and organized in a way that keeps the overall system maintainable and clear.
+
+# V.2 Clustering
