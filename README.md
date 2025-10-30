@@ -28,6 +28,3 @@ This setup allows for better scalability and fault tolerance.
 
 The diagram above illustrates the layered architecture of the system — from the [customer frontend](https://github.com/siwakasen/client-web-app) to the backend and database layers.  
 While it might not follow every industry best practice, it’s structured and organized in a way that keeps the overall system maintainable and clear.
-
-# V.2 Clustering
-Working on it
