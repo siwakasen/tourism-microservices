@@ -1,0 +1,91 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: docker
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Prepare environment variables
+        id: vars
+        run: |
+          # Extract branch name safely
+          BRANCH_NAME="${GITHUB_REF##*/}"
+          SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-7)
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+
+          echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
+          echo "SHORT_SHA=${SHORT_SHA}" >> $GITHUB_ENV
+          echo "COMMIT_MESSAGE=${COMMIT_MESSAGE}" >> $GITHUB_ENV
+
+      # ----------------------------------------
+      # SKIP LOGIC
+      # ----------------------------------------
+      - name: Check for skip keywords
+        id: skip-check
+        run: |
+          if echo "${COMMIT_MESSAGE}" | grep -qE "(skip:build|ci:skip)"; then
+            echo "skip=true" >> $GITHUB_ENV
+            echo "Skipping workflow because commit contains skip keyword."
+          else
+            echo "skip=false" >> $GITHUB_ENV
+          fi
+
+      - name: Log in to Gitea Registry
+        if: env.skip == 'false'
+        run: |
+          echo "${{ secrets.REGISTRY_TOKEN }}" | docker login \
+            -u ${{ secrets.REGISTRY_USER }} \
+            --password-stdin gitea.siwakasen.dev
+
+      # ----------------------------------------
+      # CUSTOMER SERVICE
+      # ----------------------------------------
+      - name: Build and push customer-service image
+        if: |
+          env.skip == 'false' &&
+          (
+            !contains(env.COMMIT_MESSAGE, 'build:') ||
+            contains(env.COMMIT_MESSAGE, 'build:customer') ||
+            contains(env.COMMIT_MESSAGE, 'build:customer,') ||
+            contains(env.COMMIT_MESSAGE, ',customer') ||
+            contains(env.COMMIT_MESSAGE, ',customer,') ||
+            contains(env.COMMIT_MESSAGE, 'build:employees,customer')
+          )
+        run: |
+          IMAGE=gitea.siwakasen.dev/${{ secrets.REGISTRY_USER }}/customer-service
+          docker build -f Dockerfile.customer -t $IMAGE:latest -t $IMAGE:sha-${SHORT_SHA} -t $IMAGE:${BRANCH_NAME} .
+          docker push $IMAGE:latest
+          docker push $IMAGE:sha-${SHORT_SHA}
+          docker push $IMAGE:${BRANCH_NAME}
+
+      # ----------------------------------------
+      # EMPLOYEES SERVICE
+      # ----------------------------------------
+      - name: Build and push employees-service image
+        if: |
+          env.skip == 'false' &&
+          (
+            !contains(env.COMMIT_MESSAGE, 'build:') ||
+            contains(env.COMMIT_MESSAGE, 'build:employees') ||
+            contains(env.COMMIT_MESSAGE, 'build:employees,') ||
+            contains(env.COMMIT_MESSAGE, ',employees') ||
+            contains(env.COMMIT_MESSAGE, ',employees,') ||
+            contains(env.COMMIT_MESSAGE, 'build:customer,employees')
+          )
+        run: |
+          IMAGE=gitea.siwakasen.dev/${{ secrets.REGISTRY_USER }}/employees-service
+          docker build -f Dockerfile.employees -t $IMAGE:latest -t $IMAGE:sha-${SHORT_SHA} -t $IMAGE:${BRANCH_NAME} .
+          docker push $IMAGE:latest
+          docker push $IMAGE:sha-${SHORT_SHA}
+          docker push $IMAGE:${BRANCH_NAME}
