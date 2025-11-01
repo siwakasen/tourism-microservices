@@ -50,12 +50,11 @@ jobs:
         if: |
           env.skip == 'false' &&
           (
-            !contains(env.COMMIT_MESSAGE, 'build:') ||
-            contains(env.COMMIT_MESSAGE, 'build:customer') ||
-            contains(env.COMMIT_MESSAGE, 'build:customer,') ||
-            contains(env.COMMIT_MESSAGE, ',customer') ||
-            contains(env.COMMIT_MESSAGE, ',customer,') ||
-            contains(env.COMMIT_MESSAGE, 'build:employees,customer')
+            contains(env.COMMIT_MESSAGE, 'build:') &&
+            (
+              contains(env.COMMIT_MESSAGE, 'customer,') ||
+              contains(env.COMMIT_MESSAGE, ',customer')
+            )
           )
         run: |
           IMAGE=${{ secrets.REGISTRY_URL }}/customer-service
@@ -70,16 +69,129 @@ jobs:
         if: |
           env.skip == 'false' &&
           (
-            !contains(env.COMMIT_MESSAGE, 'build:') ||
-            contains(env.COMMIT_MESSAGE, 'build:employees') ||
-            contains(env.COMMIT_MESSAGE, 'build:employees,') ||
-            contains(env.COMMIT_MESSAGE, ',employees') ||
-            contains(env.COMMIT_MESSAGE, ',employees,') ||
-            contains(env.COMMIT_MESSAGE, 'build:customer,employees')
+            contains(env.COMMIT_MESSAGE, 'build:') &&
+            (
+              contains(env.COMMIT_MESSAGE, 'employees,') ||
+              contains(env.COMMIT_MESSAGE, ',employees')
+            )
           )
         run: |
           IMAGE=${{ secrets.REGISTRY_URL }}/employees-service
           docker build --progress=plain  -f Dockerfile.employees -t $IMAGE:latest -t $IMAGE:sha-${SHORT_SHA} .
+          docker push $IMAGE:latest
+          docker push $IMAGE:sha-${SHORT_SHA}
+
+      # ----------------------------------------
+      # EXPENSES SERVICE
+      # ----------------------------------------
+      - name: Build and push expenses-service image
+        if: |
+          env.skip == 'false' &&
+          (
+            contains(env.COMMIT_MESSAGE, 'build:') &&
+            (
+              contains(env.COMMIT_MESSAGE, 'expenses,') ||
+              contains(env.COMMIT_MESSAGE, ',expenses')
+            )
+          )
+        run: |
+          IMAGE=${{ secrets.REGISTRY_URL }}/expenses-service
+          docker build --progress=plain  -f Dockerfile.expenses -t $IMAGE:latest -t $IMAGE:sha-${SHORT_SHA} .
+          docker push $IMAGE:latest
+          docker push $IMAGE:sha-${SHORT_SHA}
+      
+      # ----------------------------------------
+      # LIVE CHAT SERVICE
+      # ----------------------------------------
+      - name: Build and push live-chat-service image
+        if: |
+          env.skip == 'false' &&
+          (
+            contains(env.COMMIT_MESSAGE, 'build:') &&
+            (
+              contains(env.COMMIT_MESSAGE, 'live-chat,') ||
+              contains(env.COMMIT_MESSAGE, ',live-chat')
+            )
+          )
+        run: |
+          IMAGE=${{ secrets.REGISTRY_URL }}/live-chat-service
+          docker build --progress=plain  -f Dockerfile.live-chat -t $IMAGE:latest -t $IMAGE:sha-${SHORT_SHA} .
+          docker push $IMAGE:latest
+          docker push $IMAGE:sha-${SHORT_SHA}
+
+      # ----------------------------------------
+      # RENT CAR SERVICE
+      # ----------------------------------------
+      - name: Build and push rent-car-service image
+        if: |
+          env.skip == 'false' &&
+          (
+            contains(env.COMMIT_MESSAGE, 'build:') &&
+            (
+              contains(env.COMMIT_MESSAGE, 'rent-car,') ||
+              contains(env.COMMIT_MESSAGE, ',rent-car')
+            )
+          )
+        run: |
+          IMAGE=${{ secrets.REGISTRY_URL }}/rent-car-service
+          docker build --progress=plain  -f Dockerfile.rent-car -t $IMAGE:latest -t $IMAGE:sha-${SHORT_SHA} .
+          docker push $IMAGE:latest
+          docker push $IMAGE:sha-${SHORT_SHA}
+
+      # ----------------------------------------
+      # REPORT SERVICE
+      # ----------------------------------------
+      - name: Build and push report-service image
+        if: |
+          env.skip == 'false' &&
+          (
+            contains(env.COMMIT_MESSAGE, 'build:') &&
+            (
+              contains(env.COMMIT_MESSAGE, 'report,') ||
+              contains(env.COMMIT_MESSAGE, ',report')
+            )
+          )
+        run: |
+          IMAGE=${{ secrets.REGISTRY_URL }}/report-service
+          docker build --progress=plain  -f Dockerfile.report -t $IMAGE:latest -t $IMAGE:sha-${SHORT_SHA} .
+          docker push $IMAGE:latest
+          docker push $IMAGE:sha-${SHORT_SHA}
+
+      # ----------------------------------------
+      # Transaction SERVICE
+      # ----------------------------------------
+      - name: Build and push transaction-service image
+        if: |
+          env.skip == 'false' &&
+          (
+            contains(env.COMMIT_MESSAGE, 'build:') &&
+            (
+              contains(env.COMMIT_MESSAGE, 'transaction,') ||
+              contains(env.COMMIT_MESSAGE, ',transaction')
+            )
+          )
+        run: |
+          IMAGE=${{ secrets.REGISTRY_URL }}/transaction-service
+          docker build --progress=plain  -f Dockerfile.transaction -t $IMAGE:latest -t $IMAGE:sha-${SHORT_SHA} .
+          docker push $IMAGE:latest
+          docker push $IMAGE:sha-${SHORT_SHA}
+
+      # ----------------------------------------
+      # Travel Packages SERVICE
+      # ----------------------------------------
+      - name: Build and push travel-packages-service image
+        if: |
+          env.skip == 'false' &&
+          (
+            contains(env.COMMIT_MESSAGE, 'build:') &&
+            (
+              contains(env.COMMIT_MESSAGE, 'travel-packages,') ||
+              contains(env.COMMIT_MESSAGE, ',travel-packages')
+            )
+          )
+        run: |
+          IMAGE=${{ secrets.REGISTRY_URL }}/travel-packages-service
+          docker build --progress=plain  -f Dockerfile.travel-packages -t $IMAGE:latest -t $IMAGE:sha-${SHORT_SHA} .
           docker push $IMAGE:latest
           docker push $IMAGE:sha-${SHORT_SHA}
       
