@@ -7,9 +7,11 @@ on:
     branches: [master, main]
 
 jobs:
-  build:
+  determine-services:
     runs-on: ubuntu-latest
-
+    outputs:
+      should-skip: ${{ steps.determine-services.outputs.skip }}
+      services: ${{ steps.determine-services.outputs.services }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -23,181 +25,132 @@ jobs:
           echo "SHORT_SHA=${SHORT_SHA}" >> $GITHUB_ENV
           echo "COMMIT_MESSAGE=${COMMIT_MESSAGE}" >> $GITHUB_ENV
 
-      # ----------------------------------------
-      # SKIP LOGIC
-      # ----------------------------------------
-      - name: Check for skip keywords
-        id: skip-check
+      - name: Check for skip keywords and determine services
+        id: determine-services
         run: |
-          if echo "${COMMIT_MESSAGE}" | grep -qE "(skip:build|ci:skip)"; then
-            echo "skip=true" >> $GITHUB_ENV
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          SERVICES=()
+          SKIP="false"
+
+          # Check for skip keywords
+          if echo "${COMMIT_MSG}" | grep -qE "(skip:build|ci:skip)"; then
+            SKIP="true"
             echo "Skipping workflow because commit contains skip keyword."
-          else
-            echo "skip=false" >> $GITHUB_ENV
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "services=[]" >> $GITHUB_OUTPUT
+            exit 0
           fi
 
+          echo "skip=false" >> $GITHUB_OUTPUT
+
+          # Check if commit message contains 'build:' keyword
+          if echo "${COMMIT_MSG}" | grep -q "build:"; then
+            # Check each service (only once per service)
+            if echo "${COMMIT_MSG}" | grep -qE "(customer,|,customer)"; then
+              SERVICES+=("customer")
+            fi
+            if echo "${COMMIT_MSG}" | grep -qE "(employees,|,employees)"; then
+              SERVICES+=("employees")
+            fi
+            if echo "${COMMIT_MSG}" | grep -qE "(expenses,|,expenses)"; then
+              SERVICES+=("expenses")
+            fi
+            if echo "${COMMIT_MSG}" | grep -qE "(live-chat,|,live-chat)"; then
+              SERVICES+=("live-chat")
+            fi
+            if echo "${COMMIT_MSG}" | grep -qE "(rent-car,|,rent-car)"; then
+              SERVICES+=("rent-car")
+            fi
+            if echo "${COMMIT_MSG}" | grep -qE "(report,|,report)"; then
+              SERVICES+=("report")
+            fi
+            if echo "${COMMIT_MSG}" | grep -qE "(transaction,|,transaction)"; then
+              SERVICES+=("transaction")
+            fi
+            if echo "${COMMIT_MSG}" | grep -qE "(travel-packages,|,travel-packages)"; then
+              SERVICES+=("travel-packages")
+            fi
+          else
+            # If commit message doesn't contain 'build:', build all services
+            SERVICES=("customer" "employees" "expenses" "live-chat" "rent-car" "report" "transaction" "travel-packages")
+            echo "Commit message doesn't contain 'build:', building all services"
+          fi
+
+          # Convert array to JSON array
+          if [ ${#SERVICES[@]} -eq 0 ]; then
+            echo "services=[]" >> $GITHUB_OUTPUT
+          else
+            SERVICES_JSON=$(printf '%s\n' "${SERVICES[@]}" | jq -R . | jq -s .)
+            echo "services=${SERVICES_JSON}" >> $GITHUB_OUTPUT
+            echo "Services to build: ${SERVICES[*]}"
+          fi
+
+  build-and-push:
+    needs: determine-services
+    if: needs.determine-services.outputs.should-skip != 'true' && needs.determine-services.outputs.services != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.determine-services.outputs.services) }}
+      fail-fast: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Prepare environment variables
+        run: |
+          SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-7)
+          echo "SHORT_SHA=${SHORT_SHA}" >> $GITHUB_ENV
+
       - name: Log in to Registry
-        if: env.skip == 'false'
         run: |
           echo ${{ secrets.REGISTRY_TOKEN }} | docker login \
             -u ${{ secrets.REGISTRY_USER }} \
-          --password-stdin ${{ secrets.REGISTRY_URL }}
+            --password-stdin ${{ secrets.REGISTRY_URL }}
 
-      # ----------------------------------------
-      # CUSTOMER SERVICE
-      # ----------------------------------------
-      - name: Build and push customer-service image
-        if: |
-          env.skip == 'false' &&
-          (
-            contains(env.COMMIT_MESSAGE, 'build:') &&
-            (
-              contains(env.COMMIT_MESSAGE, 'customer,') ||
-              contains(env.COMMIT_MESSAGE, ',customer')
-            )
-          )
+      - name: Build and push ${{ matrix.service }} image
         run: |
-          IMAGE=${{ secrets.REGISTRY_URL }}/customer-service
-          docker build --progress=plain -f Dockerfile.customer -t $IMAGE:latest -t $IMAGE:sha-${SHORT_SHA} .
-          docker push $IMAGE:latest
-          docker push $IMAGE:sha-${SHORT_SHA}
+          SERVICE_NAME="${{ matrix.service }}"
+          IMAGE=${{ secrets.REGISTRY_URL }}/${SERVICE_NAME}-service
+          
+          # Map service name to Dockerfile
+          case "$SERVICE_NAME" in
+            customer)
+              DOCKERFILE="Dockerfile.customer"
+              ;;
+            employees)
+              DOCKERFILE="Dockerfile.employees"
+              ;;
+            expenses)
+              DOCKERFILE="Dockerfile.expenses"
+              ;;
+            live-chat)
+              DOCKERFILE="Dockerfile.live-chat"
+              ;;
+            rent-car)
+              DOCKERFILE="Dockerfile.rent-car"
+              ;;
+            report)
+              DOCKERFILE="Dockerfile.report"
+              ;;
+            transaction)
+              DOCKERFILE="Dockerfile.transaction"
+              ;;
+            travel-packages)
+              DOCKERFILE="Dockerfile.travel-packages"
+              ;;
+            *)
+              echo "Unknown service: $SERVICE_NAME"
+              exit 1
+              ;;
+          esac
+          
+          docker build --progress=plain -f "$DOCKERFILE" -t "$IMAGE:latest" -t "$IMAGE:sha-${SHORT_SHA}" .
+          docker push "$IMAGE:latest"
+          docker push "$IMAGE:sha-${SHORT_SHA}"
 
-      # ----------------------------------------
-      # EMPLOYEES SERVICE
-      # ----------------------------------------
-      - name: Build and push employees-service image
-        if: |
-          env.skip == 'false' &&
-          (
-            contains(env.COMMIT_MESSAGE, 'build:') &&
-            (
-              contains(env.COMMIT_MESSAGE, 'employees,') ||
-              contains(env.COMMIT_MESSAGE, ',employees')
-            )
-          )
-        run: |
-          IMAGE=${{ secrets.REGISTRY_URL }}/employees-service
-          docker build --progress=plain  -f Dockerfile.employees -t $IMAGE:latest -t $IMAGE:sha-${SHORT_SHA} .
-          docker push $IMAGE:latest
-          docker push $IMAGE:sha-${SHORT_SHA}
-
-      # ----------------------------------------
-      # EXPENSES SERVICE
-      # ----------------------------------------
-      - name: Build and push expenses-service image
-        if: |
-          env.skip == 'false' &&
-          (
-            contains(env.COMMIT_MESSAGE, 'build:') &&
-            (
-              contains(env.COMMIT_MESSAGE, 'expenses,') ||
-              contains(env.COMMIT_MESSAGE, ',expenses')
-            )
-          )
-        run: |
-          IMAGE=${{ secrets.REGISTRY_URL }}/expenses-service
-          docker build --progress=plain  -f Dockerfile.expenses -t $IMAGE:latest -t $IMAGE:sha-${SHORT_SHA} .
-          docker push $IMAGE:latest
-          docker push $IMAGE:sha-${SHORT_SHA}
-      
-      # ----------------------------------------
-      # LIVE CHAT SERVICE
-      # ----------------------------------------
-      - name: Build and push live-chat-service image
-        if: |
-          env.skip == 'false' &&
-          (
-            contains(env.COMMIT_MESSAGE, 'build:') &&
-            (
-              contains(env.COMMIT_MESSAGE, 'live-chat,') ||
-              contains(env.COMMIT_MESSAGE, ',live-chat')
-            )
-          )
-        run: |
-          IMAGE=${{ secrets.REGISTRY_URL }}/live-chat-service
-          docker build --progress=plain  -f Dockerfile.live-chat -t $IMAGE:latest -t $IMAGE:sha-${SHORT_SHA} .
-          docker push $IMAGE:latest
-          docker push $IMAGE:sha-${SHORT_SHA}
-
-      # ----------------------------------------
-      # RENT CAR SERVICE
-      # ----------------------------------------
-      - name: Build and push rent-car-service image
-        if: |
-          env.skip == 'false' &&
-          (
-            contains(env.COMMIT_MESSAGE, 'build:') &&
-            (
-              contains(env.COMMIT_MESSAGE, 'rent-car,') ||
-              contains(env.COMMIT_MESSAGE, ',rent-car')
-            )
-          )
-        run: |
-          IMAGE=${{ secrets.REGISTRY_URL }}/rent-car-service
-          docker build --progress=plain  -f Dockerfile.rent-car -t $IMAGE:latest -t $IMAGE:sha-${SHORT_SHA} .
-          docker push $IMAGE:latest
-          docker push $IMAGE:sha-${SHORT_SHA}
-
-      # ----------------------------------------
-      # REPORT SERVICE
-      # ----------------------------------------
-      - name: Build and push report-service image
-        if: |
-          env.skip == 'false' &&
-          (
-            contains(env.COMMIT_MESSAGE, 'build:') &&
-            (
-              contains(env.COMMIT_MESSAGE, 'report,') ||
-              contains(env.COMMIT_MESSAGE, ',report')
-            )
-          )
-        run: |
-          IMAGE=${{ secrets.REGISTRY_URL }}/report-service
-          docker build --progress=plain  -f Dockerfile.report -t $IMAGE:latest -t $IMAGE:sha-${SHORT_SHA} .
-          docker push $IMAGE:latest
-          docker push $IMAGE:sha-${SHORT_SHA}
-
-      # ----------------------------------------
-      # Transaction SERVICE
-      # ----------------------------------------
-      - name: Build and push transaction-service image
-        if: |
-          env.skip == 'false' &&
-          (
-            contains(env.COMMIT_MESSAGE, 'build:') &&
-            (
-              contains(env.COMMIT_MESSAGE, 'transaction,') ||
-              contains(env.COMMIT_MESSAGE, ',transaction')
-            )
-          )
-        run: |
-          IMAGE=${{ secrets.REGISTRY_URL }}/transaction-service
-          docker build --progress=plain  -f Dockerfile.transaction -t $IMAGE:latest -t $IMAGE:sha-${SHORT_SHA} .
-          docker push $IMAGE:latest
-          docker push $IMAGE:sha-${SHORT_SHA}
-
-      # ----------------------------------------
-      # Travel Packages SERVICE
-      # ----------------------------------------
-      - name: Build and push travel-packages-service image
-        if: |
-          env.skip == 'false' &&
-          (
-            contains(env.COMMIT_MESSAGE, 'build:') &&
-            (
-              contains(env.COMMIT_MESSAGE, 'travel-packages,') ||
-              contains(env.COMMIT_MESSAGE, ',travel-packages')
-            )
-          )
-        run: |
-          IMAGE=${{ secrets.REGISTRY_URL }}/travel-packages-service
-          docker build --progress=plain  -f Dockerfile.travel-packages -t $IMAGE:latest -t $IMAGE:sha-${SHORT_SHA} .
-          docker push $IMAGE:latest
-          docker push $IMAGE:sha-${SHORT_SHA}
-      
       - name: Logout from Registry
-        if: env.skip == 'false'
+        if: always()
         run: |
           docker logout
-
 
