@@ -80,8 +80,12 @@ jobs:
           if [ ${#SERVICES[@]} -eq 0 ]; then
             echo "services=[]" >> $GITHUB_OUTPUT
           else
-            SERVICES_JSON=$(printf '%s\n' "${SERVICES[@]}" | jq -R . | jq -s .)
-            echo "services=${SERVICES_JSON}" >> $GITHUB_OUTPUT
+            SERVICES_JSON=$(printf '%s\n' "${SERVICES[@]}" | jq -R . | jq -s -c .)
+            {
+              echo "services<<EOF"
+              echo "$SERVICES_JSON"
+              echo "EOF"
+            } >> $GITHUB_OUTPUT
             echo "Services to build: ${SERVICES[*]}"
           fi
 
