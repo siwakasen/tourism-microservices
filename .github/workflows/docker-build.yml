@@ -39,11 +39,12 @@ jobs:
             echo "skip=false" >> $GITHUB_ENV
           fi
 
-      - name: Log in to Gitea Registry
+      - name: Log in to Registry
         if: env.skip == 'false'
         run: |
-          echo "${{ secrets.REGISTRY_TOKEN }}" | docker login \
+          docker login \
             -u ${{ secrets.REGISTRY_USER }} \
+            -p ${{ secrets.REGISTRY_TOKEN}} \ 
             --password-stdin ${{ secrets.REGISTRY_URL }}
 
       # ----------------------------------------
