@@ -84,7 +84,7 @@ jobs:
           docker push $IMAGE:sha-${SHORT_SHA}
       
       - name: Logout from Registry
-        if: env.skip == false
+        if: env.skip == 'false'
         run: |
           docker logout
 
