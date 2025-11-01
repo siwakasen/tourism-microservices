@@ -62,7 +62,7 @@ jobs:
           )
         run: |
           IMAGE=${{ secrets.REGISTRY_URL }}/customer-service
-          docker build -f Dockerfile.customer -t $IMAGE:latest -t $IMAGE:sha-${SHORT_SHA} -t $IMAGE:${BRANCH_NAME} .
+          docker build -f Dockerfile.customer -t $IMAGE:latest -t $IMAGE:sha-${SHORT_SHA} .
           docker push $IMAGE:latest
           docker push $IMAGE:sha-${SHORT_SHA}
 
@@ -82,6 +82,6 @@ jobs:
           )
         run: |
           IMAGE=${{ secrets.REGISTRY_URL }}/employees-service
-          docker build -f Dockerfile.employees -t $IMAGE:latest -t $IMAGE:sha-${SHORT_SHA} -t $IMAGE:${BRANCH_NAME} .
+          docker build -f Dockerfile.employees -t $IMAGE:latest -t $IMAGE:sha-${SHORT_SHA} .
           docker push $IMAGE:latest
           docker push $IMAGE:sha-${SHORT_SHA}
