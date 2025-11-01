@@ -42,10 +42,9 @@ jobs:
       - name: Log in to Registry
         if: env.skip == 'false'
         run: |
-          docker login \
+          echo ${{secrets.REGISTRY_URL}} docker login \
             -u ${{ secrets.REGISTRY_USER }} \
-            -p ${{ secrets.REGISTRY_TOKEN}} \ 
-            --password-stdin ${{ secrets.REGISTRY_URL }}
+          --password-stdin https://${{ secrets.REGISTRY_URL }}
 
       # ----------------------------------------
       # CUSTOMER SERVICE
