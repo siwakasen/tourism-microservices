@@ -2,8 +2,9 @@ name: Build and Push Docker Images
 
 on:
   push:
-    branches:
-      - master
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
 
 jobs:
   build:
@@ -11,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Prepare environment variables
         id: vars
@@ -43,7 +44,7 @@ jobs:
         run: |
           echo "${{ secrets.REGISTRY_TOKEN }}" | docker login \
             -u ${{ secrets.REGISTRY_USER }} \
-            --password-stdin gitea.siwakasen.dev
+            --password-stdin ${{ secrets.REGISTRY_URL }}
 
       # ----------------------------------------
       # CUSTOMER SERVICE
@@ -60,11 +61,10 @@ jobs:
             contains(env.COMMIT_MESSAGE, 'build:employees,customer')
           )
         run: |
-          IMAGE=gitea.siwakasen.dev/${{ secrets.REGISTRY_USER }}/customer-service
+          IMAGE=${{ secrets.REGISTRY_URL }}/customer-service
           docker build -f Dockerfile.customer -t $IMAGE:latest -t $IMAGE:sha-${SHORT_SHA} -t $IMAGE:${BRANCH_NAME} .
           docker push $IMAGE:latest
           docker push $IMAGE:sha-${SHORT_SHA}
-          docker push $IMAGE:${BRANCH_NAME}
 
       # ----------------------------------------
       # EMPLOYEES SERVICE
@@ -81,8 +81,7 @@ jobs:
             contains(env.COMMIT_MESSAGE, 'build:customer,employees')
           )
         run: |
-          IMAGE=gitea.siwakasen.dev/${{ secrets.REGISTRY_USER }}/employees-service
+          IMAGE=${{ secrets.REGISTRY_URL }}/employees-service
           docker build -f Dockerfile.employees -t $IMAGE:latest -t $IMAGE:sha-${SHORT_SHA} -t $IMAGE:${BRANCH_NAME} .
           docker push $IMAGE:latest
           docker push $IMAGE:sha-${SHORT_SHA}
-          docker push $IMAGE:${BRANCH_NAME}
