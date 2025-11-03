@@ -42,6 +42,7 @@ lerna-debug.log*
 .env.test.local
 .env.production.local
 .env.local
+.envs
 
 # temp directory
 .temp
@@ -62,5 +63,6 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # ENV
 *.env
+/.envs
 
 # Docker

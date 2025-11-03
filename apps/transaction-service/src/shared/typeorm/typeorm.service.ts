@@ -1,7 +1,13 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmOptionsFactory, TypeOrmModuleOptions } from '@nestjs/typeorm';
-import {  Bookings, BookingAdjustments, Payment, Refunds, Ratings } from 'libs/entities';
+import {
+  Bookings,
+  BookingAdjustments,
+  Payment,
+  Refunds,
+  Ratings,
+} from 'libs/entities';
 
 @Injectable()
 export class TypeOrmConfigService implements TypeOrmOptionsFactory {
@@ -11,16 +17,29 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
   public createTypeOrmOptions(): TypeOrmModuleOptions {
     return {
       type: 'postgres',
-      host: this.config.get<string>('DATABASE_HOST'),
-      port: this.config.get<number>('DATABASE_PORT'),
-      database: this.config.get<string>('DATABASE_NAME'),
-      username: this.config.get<string>('DATABASE_USER'),
-      password: this.config.get<string>('DATABASE_PASSWORD'),
+      replication: {
+        master: {
+          host: this.config.get<string>('DATABASE_HOST'),
+          port: this.config.get<number>('DATABASE_PORT'),
+          database: this.config.get<string>('DATABASE_NAME'),
+          username: this.config.get<string>('DATABASE_USER'),
+          password: this.config.get<string>('DATABASE_PASSWORD'),
+        },
+        slaves: [
+          {
+            host: this.config.get<string>('SLAVE_DATABASE_HOST'),
+            port: this.config.get<number>('SLAVE_DATABASE_PORT'),
+            database: this.config.get<string>('SLAVE_DATABASE_NAME'),
+            username: this.config.get<string>('SLAVE_DATABASE_USER'),
+            password: this.config.get<string>('SLAVE_DATABASE_PASSWORD'),
+          },
+        ],
+      },
       entities: [Bookings, BookingAdjustments, Payment, Refunds, Ratings],
       migrations: ['dist/migrations/*.{ts,js}'],
       migrationsTableName: 'typeorm_migrations',
       logger: 'advanced-console',
-        // logging: ['query', 'error'],
+      // logging: ['query', 'error'],
       logging: ['error'],
       synchronize: this.config.get<boolean>('SYNCHRONIZE'), // NEVER USE TRUE IN PRODUCTION
     };
