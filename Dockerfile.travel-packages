@@ -18,5 +18,7 @@ COPY --from=builder tmp/node_modules ./node_modules
 COPY --from=builder tmp/dist ./dist
 COPY --from=builder tmp/contract ./contract
 
+ENV NODE_ENV=production
+
 EXPOSE 3000
 CMD ["node", "dist/apps/travel-packages-service/src/main.js"]
