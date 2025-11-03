@@ -9,6 +9,11 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
   private readonly config: ConfigService;
 
   public createTypeOrmOptions(): TypeOrmModuleOptions {
+    console.log('DATABASE_HOST:', this.config.get<string>('DATABASE_HOST'));
+    console.log(
+      'SLAVE_DATABASE_HOST:',
+      this.config.get<string>('SLAVE_DATABASE_HOST')
+    );
     return {
       type: 'postgres',
       replication: {
