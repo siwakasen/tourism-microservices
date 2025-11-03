@@ -18,7 +18,11 @@ const CarLogger = new LoggerMiddleware({
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ ignoreEnvFile: true, isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      ignoreEnvFile: process.env.NODE_ENV === 'production',
+      envFilePath: process.env.NODE_ENV === 'production' ? [] : envFilePath,
+    }),
     TypeOrmModule.forRootAsync({ useClass: TypeOrmConfigService }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),

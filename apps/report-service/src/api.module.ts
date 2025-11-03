@@ -21,7 +21,11 @@ const ReportLogger = new LoggerMiddleware({
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ ignoreEnvFile: true, isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      ignoreEnvFile: process.env.NODE_ENV === 'production',
+      envFilePath: process.env.NODE_ENV === 'production' ? [] : envFilePath,
+    }),
     // Primary database connection
     TypeOrmModule.forRootAsync({
       name: 'primary',
