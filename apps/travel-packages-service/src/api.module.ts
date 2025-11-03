@@ -11,9 +11,6 @@ import { GrpcTravelPackagesModule } from './api/grpc-travel-packages/grpc-travel
 
 const envFilePath: string = getEnvPath(`${__dirname}`);
 console.log('envFilePath [FOR DEV]:', getEnvPath(`${__dirname}`));
-console.log('NODE_ENV:', process.env.NODE_ENV);
-console.log('DATABASE_HOST:', process.env.DATABASE_HOST);
-
 const TravelPackagesLogger = new LoggerMiddleware({
   directory: 'dist/apps/travel-packages-service/logs/travel-packages-logs',
 });

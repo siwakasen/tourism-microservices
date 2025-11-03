@@ -21,5 +21,6 @@ COPY --from=builder tmp/contract ./contract
 
 RUN rm -rf /tmp
 
+ENV NODE_ENV=production
 EXPOSE 3000
 CMD ["node", "dist/apps/customer-service/src/main"]

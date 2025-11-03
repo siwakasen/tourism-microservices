@@ -13,7 +13,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { RatingsModule } from './api/ratings/ratings.module';
 
 const envFilePath: string = getEnvPath(`${__dirname}`);
-console.log('envFilePath:', getEnvPath(`${__dirname}`));
+console.log('envFilePath [FOR DEV]:', getEnvPath(`${__dirname}`));
 
 const TransactionLogger = new LoggerMiddleware({
   directory: 'dist/apps/transaction-service/logs/transaction-logs',

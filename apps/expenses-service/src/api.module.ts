@@ -9,7 +9,7 @@ import { ExpensesModule } from './api/expenses.module';
 import { LoggerMiddleware } from 'libs/helpers/middleware/logger.midleware';
 
 const envFilePath: string = getEnvPath(`${__dirname}`);
-console.log('envFilePath:', getEnvPath(`${__dirname}`));
+console.log('envFilePath [FOR DEV]:', getEnvPath(`${__dirname}`));
 
 const ExpensesLogger = new LoggerMiddleware({
   directory: 'dist/apps/expenses-service/logs/expenses-logs',

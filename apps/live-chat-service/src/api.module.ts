@@ -9,7 +9,7 @@ import { LiveChatModule } from './api/live-chat.module';
 import { LoggerMiddleware } from 'libs/helpers/middleware/logger.midleware';
 
 const envFilePath: string = getEnvPath(`${__dirname}`);
-console.log('envFilePath:', getEnvPath(`${__dirname}`));
+console.log('envFilePath [FOR DEV] :', getEnvPath(`${__dirname}`));
 
 const LiveChatLogger = new LoggerMiddleware({
   directory: 'dist/apps/live-chat-service/logs/live-chat-logs',

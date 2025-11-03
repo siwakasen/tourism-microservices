@@ -13,7 +13,7 @@ import {
 } from './shared/typeorm/typeorm.service';
 
 const envFilePath: string = getEnvPath(`${__dirname}`);
-console.log('envFilePath:', getEnvPath(`${__dirname}`));
+console.log('envFilePath [FOR DEV] :', getEnvPath(`${__dirname}`));
 
 const ReportLogger = new LoggerMiddleware({
   directory: 'dist/apps/report-service/logs/report-logs',
