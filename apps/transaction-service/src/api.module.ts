@@ -21,7 +21,7 @@ const TransactionLogger = new LoggerMiddleware({
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ envFilePath, isGlobal: true }),
+    ConfigModule.forRoot({ ignoreEnvFile: true, isGlobal: true }),
     TypeOrmModule.forRootAsync({ useClass: TypeOrmConfigService }),
     ScheduleModule.forRoot(),
     BookingModule,

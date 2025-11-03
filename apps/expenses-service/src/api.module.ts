@@ -17,10 +17,7 @@ const ExpensesLogger = new LoggerMiddleware({
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true, // Membuat config tersedia secara global
-    }),
-    ConfigModule.forRoot({ envFilePath, isGlobal: true }),
+    ConfigModule.forRoot({ ignoreEnvFile: true, isGlobal: true }),
     TypeOrmModule.forRootAsync({ useClass: TypeOrmConfigService }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),

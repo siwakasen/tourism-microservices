@@ -17,7 +17,7 @@ const LiveChatLogger = new LoggerMiddleware({
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ envFilePath, isGlobal: true }),
+    ConfigModule.forRoot({ ignoreEnvFile: true, isGlobal: true }),
     TypeOrmModule.forRootAsync({ useClass: TypeOrmConfigService }),
     LiveChatModule,
   ],
