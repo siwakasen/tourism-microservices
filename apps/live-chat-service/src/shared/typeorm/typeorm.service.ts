@@ -15,19 +15,11 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       type: 'postgres',
       replication: {
         master: {
-          host: this.config.get<string>('DATABASE_HOST'),
-          port: this.config.get<number>('DATABASE_PORT'),
-          database: this.config.get<string>('DATABASE_NAME'),
-          username: this.config.get<string>('DATABASE_USER'),
-          password: this.config.get<string>('DATABASE_PASSWORD'),
+          url: this.config.get<string>('DATABASE_URL'),
         },
         slaves: [
           {
-            host: this.config.get<string>('SLAVE_DATABASE_HOST'),
-            port: this.config.get<number>('SLAVE_DATABASE_PORT'),
-            database: this.config.get<string>('SLAVE_DATABASE_NAME'),
-            username: this.config.get<string>('SLAVE_DATABASE_USER'),
-            password: this.config.get<string>('SLAVE_DATABASE_PASSWORD'),
+            url: this.config.get<string>('SLAVE_DATABASE_URL'),
           },
         ],
       },

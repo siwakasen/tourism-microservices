@@ -1,7 +1,16 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmOptionsFactory, TypeOrmModuleOptions } from '@nestjs/typeorm';
-import {  Bookings, BookingAdjustments, Payment, Refunds, Ratings, Expenses, Employee, Roles } from 'libs/entities';
+import {
+  Bookings,
+  BookingAdjustments,
+  Payment,
+  Refunds,
+  Ratings,
+  Expenses,
+  Employee,
+  Roles,
+} from 'libs/entities';
 
 @Injectable()
 export class TransactionTypeOrmConfigService implements TypeOrmOptionsFactory {
@@ -10,22 +19,17 @@ export class TransactionTypeOrmConfigService implements TypeOrmOptionsFactory {
 
   public createTypeOrmOptions(): TypeOrmModuleOptions {
     return {
-      name: 'primary', 
+      name: 'primary',
       type: 'postgres',
-      host: this.config.get<string>('DATABASE_HOST'),
-      port: this.config.get<number>('DATABASE_PORT'),
-      database: this.config.get<string>('DATABASE_NAME'),
-      username: this.config.get<string>('DATABASE_USER'),
-      password: this.config.get<string>('DATABASE_PASSWORD'),
+      url: this.config.get<string>('DATABASE_URL'),
       entities: [Bookings, BookingAdjustments, Payment, Refunds, Ratings],
       migrations: ['dist/migrations/*.{ts,js}'],
       migrationsTableName: 'typeorm_migrations',
       logger: 'advanced-console',
       logging: ['error'],
-      synchronize: this.config.get<boolean>('SYNCHRONIZE'), 
+      synchronize: this.config.get<boolean>('SYNCHRONIZE'),
     };
   }
-
 }
 
 // Separate service for secondary database
@@ -38,17 +42,13 @@ export class ExpensesTypeOrmConfigService implements TypeOrmOptionsFactory {
     return {
       name: 'secondary', // Connection name
       type: 'postgres',
-      host: this.config.get<string>('SECONDARY_DATABASE_HOST'),
-      port: this.config.get<number>('SECONDARY_DATABASE_PORT'),
-      database: this.config.get<string>('SECONDARY_DATABASE_NAME'),
-      username: this.config.get<string>('SECONDARY_DATABASE_USER'),
-      password: this.config.get<string>('SECONDARY_DATABASE_PASSWORD'),
+      url: this.config.get<string>('SECONDARY_DATABASE_URL'),
       entities: [Expenses], // Add entities for secondary database if needed
       migrations: ['dist/migrations/*.{ts,js}'],
       migrationsTableName: 'typeorm_migrations',
       logger: 'advanced-console',
       logging: ['error'],
-      synchronize: this.config.get<boolean>('SECONDARY_SYNCHRONIZE'), 
+      synchronize: this.config.get<boolean>('SECONDARY_SYNCHRONIZE'),
     };
   }
 }
@@ -62,17 +62,13 @@ export class EmployeeTypeOrmConfigService implements TypeOrmOptionsFactory {
     return {
       name: 'third',
       type: 'postgres',
-      host: this.config.get<string>('THIRD_DATABASE_HOST'),
-      port: this.config.get<number>('THIRD_DATABASE_PORT'),
-      database: this.config.get<string>('THIRD_DATABASE_NAME'),
-      username: this.config.get<string>('THIRD_DATABASE_USER'),
-      password: this.config.get<string>('THIRD_DATABASE_PASSWORD'),
+      url: this.config.get<string>('THIRD_DATABASE_URL'),
       entities: [Employee, Roles],
       migrations: ['dist/migrations/*.{ts,js}'],
       migrationsTableName: 'typeorm_migrations',
       logger: 'advanced-console',
       logging: ['error'],
-      synchronize: this.config.get<boolean>('THIRD_SYNCHRONIZE'), 
+      synchronize: this.config.get<boolean>('THIRD_SYNCHRONIZE'),
     };
   }
 }
