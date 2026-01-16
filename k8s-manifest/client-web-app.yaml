@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: client-web-app
+spec:
+  type: ClusterIP
+  selector:
+    app: client-web-app
+  ports:
+    - port: 3000
+      targetPort: 3000
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client-web-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: client-web-app
+  template:
+    metadata:
+      labels:
+        app: client-web-app
+    spec:
+      imagePullSecrets:
+        - name: registry-credentials
+      containers:
+        - name: client-web-app
+          image: 
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000

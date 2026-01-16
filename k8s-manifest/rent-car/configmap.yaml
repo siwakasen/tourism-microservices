@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rent-car-config
+data:
+  NODE_ENV: "production"
+  PORT: "3000"
+  CAR_GRPC_PORT: "21001"
+  REDIS_PORT: "6379"
+  EMP_AUTH_CLIENT: "employees-service.default.svc.cluster.local:21001"
+  BOOKINGS_CLIENT: "transaction-service.default.svc.cluster.local:21001"
+  REDIS_HOST: "redis.default.svc.cluster.local"
+  SYNCHRONIZE: "0"
+  JWT_EXPIRES: "1d"
+  DATABASE_SSL: "true"

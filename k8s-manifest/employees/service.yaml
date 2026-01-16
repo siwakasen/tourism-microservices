@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: employees-service
+  labels:
+    app: employees-service
+spec:
+  type: ClusterIP
+  selector:
+    app: employees-service
+  ports:
+    - port: 3000
+      targetPort: 3000
+      name: http
+    - port: 21001
+      targetPort: 21001
+      name: grpc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: employees-service
+  labels:
+    app: employees-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: employees-service
+  template:
+    metadata:
+      labels:
+        app: employees-service
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - node1
+                      - node2
+                      - node3
+                      - node4
+      imagePullSecrets:
+        - name: registry-credentials
+      containers:
+        - name: employees-service
+          image: 
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 3000
+            - name: grpc
+              containerPort: 21001
+          envFrom:
+            - configMapRef:
+                name: employees-config
+            - secretRef:
+                name: employees-secret
+          volumeMounts:
+            - name: travel-volume
+              mountPath: /app/dist/apps/employees-service/logs
+              subPath: logs
+      volumes:
+        - name: travel-volume
+          persistentVolumeClaim:
+            claimName: travel-volume

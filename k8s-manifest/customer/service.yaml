@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: customer-service
+  labels:
+    app: customer-service
+spec:
+  type: ClusterIP
+  selector:
+    app: customer-service
+  ports:
+    - port: 3000
+      targetPort: 3000
+      protocol: TCP
+      name: http
+    - port: 21001
+      targetPort: 21001
+      protocol: TCP
+      name: grpc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: customer-service
+  labels:
+    app: customer-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: customer-service
+  template:
+    metadata:
+      labels:
+        app: customer-service
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - node1
+                      - node2
+                      - node3
+                      - node4
+      imagePullSecrets:
+        - name: registry-credentials
+      containers:
+        - name: customer-service
+          image: 
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 3000
+            - name: grpc
+              containerPort: 21001
+          envFrom:
+            - configMapRef:
+                name: customer-config
+            - secretRef:
+                name: customer-secret
+          volumeMounts:
+            - name: travel-volume
+              mountPath: /app/dist/apps/customer-service/logs
+              subPath: logs
+            - name: travel-volume
+              mountPath: /app/dist/apps/customer-service/private
+              subPath: private
+      volumes:
+        - name: travel-volume
+          persistentVolumeClaim:
+            claimName: travel-volume

@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: expenses-service
+  labels:
+    app: expenses-service
+spec:
+  type: ClusterIP
+  selector:
+    app: expenses-service
+  ports:
+    - port: 3000
+      targetPort: 3000
+      protocol: TCP
+      name: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: expenses-service
+  labels:
+    app: expenses-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: expenses-service
+  template:
+    metadata:
+      labels:
+        app: expenses-service
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - node1
+                      - node2
+                      - node3
+                      - node4
+      imagePullSecrets:
+        - name: registry-credentials
+      containers:
+        - name: expenses-service
+          image: 
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: expenses-config
+            - secretRef:
+                name: expenses-secret
+          volumeMounts:
+            - name: travel-volume
+              mountPath: /app/dist/apps/expenses-service/logs
+              subPath: logs
+      volumes:
+        - name: travel-volume
+          persistentVolumeClaim:
+            claimName: travel-volume

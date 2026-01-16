@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: report-config
+data:
+  NODE_ENV: "production"
+  PORT: "3000"
+  CUS_AUTH_CLIENT: "customer-service.default.svc.cluster.local:21001"
+  EMP_AUTH_CLIENT: "employees-service.default.svc.cluster.local:21001"
+  TRAVEL_PACKAGE_CLIENT: "travel-packages-service.default.svc.cluster.local:21001"
+  CAR_CLIENT: "rent-car-service.default.svc.cluster.local:21001"
+  EXCHANGE_RATE_API: "https://open.er-api.com/v6/latest/USD"
+  SYNCHRONIZE: "0"
+  SECONDARY_SYNCHRONIZE: "0"
+  THIRD_SYNCHRONIZE: "0"
+  JWT_EXPIRES: "1d"
+  DATABASE_SSL: "true"

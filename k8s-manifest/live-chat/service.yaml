@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: live-chat-service
+  labels:
+    app: live-chat-service
+spec:
+  type: ClusterIP
+  selector:
+    app: live-chat-service
+  ports:
+    - port: 3000
+      targetPort: 3000
+      protocol: TCP
+      name: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: live-chat-service
+  labels:
+    app: live-chat-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: live-chat-service
+  template:
+    metadata:
+      labels:
+        app: live-chat-service
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - node1
+                      - node2
+                      - node3
+                      - node4
+      imagePullSecrets:
+        - name: registry-credentials
+      containers:
+        - name: live-chat-service
+          image: 
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: live-chat-config
+            - secretRef:
+                name: live-chat-secret
+          volumeMounts:
+            - name: travel-volume
+              mountPath: /app/dist/apps/live-chat-service/logs
+              subPath: logs
+      volumes:
+        - name: travel-volume
+          persistentVolumeClaim:
+            claimName: travel-volume

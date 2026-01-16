@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: rent-car-service
+  labels:
+    app: rent-car-service
+spec:
+  type: ClusterIP
+  selector:
+    app: rent-car-service
+  ports:
+    - port: 3000
+      targetPort: 3000
+      protocol: TCP
+      name: http
+    - port: 21001
+      targetPort: 21001
+      protocol: TCP
+      name: grpc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rent-car-service
+  labels:
+    app: rent-car-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rent-car-service
+  template:
+    metadata:
+      labels:
+        app: rent-car-service
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - node1
+                      - node2
+                      - node3
+                      - node4
+      imagePullSecrets:
+        - name: registry-credentials
+      containers:
+        - name: rent-car-service
+          image: 
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+            - containerPort: 21001
+          envFrom:
+            - configMapRef:
+                name: rent-car-config
+            - secretRef:
+                name: rent-car-secret
+          volumeMounts:
+            - name: travel-volume
+              mountPath: /app/dist/apps/rent-car-service/logs
+              subPath: logs
+            - name: travel-volume
+              mountPath: /app/dist/apps/rent-car-service/public
+              subPath: public
+      volumes:
+        - name: travel-volume
+          persistentVolumeClaim:
+            claimName: travel-volume
