@@ -1,4 +1,7 @@
-# V.1 Microservices Architecture
+# V.2 Microservices Architecture (Kubernetes)
+<img width="1068" height="804" alt="image" src="https://github.com/user-attachments/assets/0330cfb8-295c-4bd4-bc55-240911274c22" />
+
+# V.1 Microservices Architecture (Docker)
 <img width="498" height="412" alt="Microservices Architecture" src="https://github.com/user-attachments/assets/a49aa30a-b2a6-4a0f-bac0-a71b300edcc2" />
 
 This application follows the *Domain-Driven Design (DDD)* approach, where each service owns its own domain logic and database.  
