@@ -1,19 +1,4 @@
 
-
-# EXAMPLE WORKFLOW USE CASE:
-# Start with core services: docker compose --profile transaction --profile customer up --detach
-# Later add more: docker compose --profile employees up --detach
-# Scale existing: docker compose --profile transaction up --scale transaction-service=3 --detach
-# Add final service: docker compose --profile travel-packages up --detach
-# Down scale: docker compose --profile transaction down --scale transaction-service=1 --detach
-
-
-# TO buil
-#docker compose --profile customer --profile employees --profile expenses --profile rent-car --profile travel-packages --profile transaction build --no-cache
-
-# Start all services (if you want them all)
-# docker compose --profile customer --profile employees --profile expenses --profile rent-car --profile travel-packages --profile transaction up --detach
-
 services:
 
   # Customer Service
