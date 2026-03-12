@@ -53,9 +53,9 @@ async function bootstrap() {
     .addServer(`https://travel-packages-service.vulpbox.com`)
     .build();
   const document = SwaggerModule.createDocument(app, configSwagger);
-  if (config.get<string>('NODE_ENV') === 'development') {
-    SwaggerModule.setup('api-docs', app, document);
-  }
+  // if (config.get<string>('NODE_ENV') === 'development') {
+  SwaggerModule.setup('api-docs', app, document);
+  // }
 
   await app.listen(port, () => {
     console.log('[Travel Package Service]', `http://localhost:${port}`);

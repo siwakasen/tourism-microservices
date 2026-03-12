@@ -42,9 +42,9 @@ async function bootstrap() {
     .addServer(`https://rent-car-service.vulpbox.com`)
     .build();
   const document = SwaggerModule.createDocument(app, configSwagger);
-  if (config.get<string>('NODE_ENV') === 'development') {
-    SwaggerModule.setup('api-docs', app, document);
-  }
+  // if (config.get<string>('NODE_ENV') === 'development') {
+  SwaggerModule.setup('api-docs', app, document);
+  // }
 
   // GRPC
   const appGRPC = await NestFactory.createMicroservice<MicroserviceOptions>(

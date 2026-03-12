@@ -22,9 +22,9 @@ async function bootstrap() {
     .addServer(`https://live-chat-service.vulpbox.com`)
     .build();
   const document = SwaggerModule.createDocument(app, configSwagger);
-  if (config.get<string>('NODE_ENV') === 'development') {
-    SwaggerModule.setup('api-docs', app, document);
-  }
+  // if (config.get<string>('NODE_ENV') === 'development') {
+  SwaggerModule.setup('api-docs', app, document);
+  // }
 
   await app.listen(port, () => {
     console.log('[Live Chat Service]', `http://localhost:${port}`);
