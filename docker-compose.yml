@@ -29,8 +29,7 @@ services:
     networks:
       - travel-network
     restart: unless-stopped
-    deploy:
-      replicas: 1
+
 
   # Employees Service
   employees-service:
@@ -44,8 +43,7 @@ services:
     networks:
       - travel-network
     restart: unless-stopped
-    deploy:
-      replicas: 1
+
 
   # Expenses Service
   expenses-service:
@@ -59,8 +57,7 @@ services:
     networks:
       - travel-network
     restart: unless-stopped
-    deploy:
-      replicas: 1
+
 
   # Rent Car Service
   rent-car-service:
@@ -75,8 +72,7 @@ services:
     networks:
       - travel-network
     restart: unless-stopped
-    deploy:
-      replicas: 1
+
 
   # Travel Packages Service
   travel-packages-service:
@@ -91,8 +87,7 @@ services:
     networks:
       - travel-network
     restart: unless-stopped
-    deploy:
-      replicas: 1
+
 
   # Transaction Service
   transaction-service:
@@ -106,8 +101,6 @@ services:
     networks:
       - travel-network
     restart: unless-stopped
-    deploy:
-      replicas: 3
 
   # Report Service
   report-service:
@@ -121,8 +114,7 @@ services:
     networks:
       - travel-network
     restart: unless-stopped
-    deploy:
-      replicas: 1
+
   
   # Live Chat Service
   live-chat-service:
@@ -136,8 +128,7 @@ services:
     networks:
       - travel-network
     restart: unless-stopped
-    deploy:
-      replicas: 1
+
 
 networks:
   cloudflare-network:
