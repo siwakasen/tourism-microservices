@@ -10,7 +10,6 @@ import { LoggerMiddleware } from 'libs/helpers/middleware/logger.midleware';
 import { GrpcTravelPackagesModule } from './api/grpc-travel-packages/grpc-travel.module';
 
 const envFilePath: string = getEnvPath(`${__dirname}`);
-console.log('envFilePath [FOR DEV]:', getEnvPath(`${__dirname}`));
 const TravelPackagesLogger = new LoggerMiddleware({
   directory: 'dist/apps/travel-packages-service/logs/travel-packages-logs',
 });
