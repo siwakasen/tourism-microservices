@@ -18,8 +18,8 @@ const EmployeesLogger = new LoggerMiddleware({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      ignoreEnvFile: process.env.NODE_ENV === 'production',
-      envFilePath: process.env.NODE_ENV === 'production' ? [] : envFilePath,
+      ignoreEnvFile: false,
+      envFilePath: envFilePath
     }),
     TypeOrmModule.forRootAsync({ useClass: TypeOrmConfigService }),
     EmployeeModule,
