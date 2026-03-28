@@ -37,11 +37,12 @@ import { diskStorage } from 'multer';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import * as fs from 'fs';
+import { unlink } from 'fs/promises';
 
 @Controller('customers')
 @ApiBearerAuth()
 export class CustomerController {
-  constructor(private readonly customerService: CustomerService) {}
+  constructor(private readonly customerService: CustomerService) { }
 
   @Post('register')
   @ApiResponse({ status: 200, description: 'Customer registered successfully' })
@@ -94,8 +95,8 @@ export class CustomerController {
     @UploadedFiles() files: Express.Multer.File[],
   ) {
     if (files.length < 2) {
-        fs.unlinkSync(files[0].path);
-        console.log(`Deleted private image: ${files[0].path}`);
+      await unlink(files[0].path)
+      console.log(`Deleted private image: ${files[0].path}`);
       throw new HttpException('Please upload both the driver license and identity card', HttpStatus.BAD_REQUEST);
     }
     return this.customerService.uploadIdentityFile(files, customer.id);
@@ -173,5 +174,5 @@ export class CustomerController {
     }
     return this.customerService.getIdentityFile(customerId, filename, res);
   }
-  
+
 }

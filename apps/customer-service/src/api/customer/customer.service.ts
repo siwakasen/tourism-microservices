@@ -23,6 +23,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { unlink } from 'fs/promises';
 
 @Injectable()
 export class CustomerService implements OnModuleInit {
@@ -265,11 +266,12 @@ export class CustomerService implements OnModuleInit {
           './dist/apps/customer-service/private/identity-files',
           user.identity_file[1].toString()
         );
-        if (fs.existsSync(distPath) || fs.existsSync(distPath2)) {
-          fs.unlinkSync(distPath);
-          fs.unlinkSync(distPath2);
-          console.log(`Deleted private image: ${distPath} and ${distPath2}`);
-        }
+
+        await Promise.all([distPath, distPath2].map(file => {
+          unlink(file)
+          console.log(`Deleted private image: {file}`);
+
+        }))
       }
 
       user.identity_file = files.map((file) => file.filename);
@@ -279,12 +281,8 @@ export class CustomerService implements OnModuleInit {
         message: 'Driver license and identity card uploaded successfully',
       };
     } catch (error) {
-      if (files[0]) {
-        fs.unlinkSync(files[0].path);
-      }
-      if (files[1]) {
-        fs.unlinkSync(files[1].path);
-      }
+
+      await Promise.all(files.map(file => unlink(file.path)))
       await queryRunner.rollbackTransaction();
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     } finally {

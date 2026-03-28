@@ -8,6 +8,7 @@ import {
   CreateUpdateTravelPackageDto,
 } from './travel-packages.dto';
 import * as fs from 'fs';
+import { unlink } from 'fs/promises';
 import * as path from 'path';
 
 @Injectable()
@@ -16,7 +17,7 @@ export class TravelPackagesService {
     @InjectRepository(TravelPackages)
     private readonly repository: Repository<TravelPackages>,
     private readonly dataSource: DataSource
-  ) {}
+  ) { }
 
   public async getAllTravelPackages(paginationDto: PaginationDto) {
     try {
@@ -240,13 +241,13 @@ export class TravelPackagesService {
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
+
       if (files.length > 0) {
-        for (const file of files) {
-          if (file) {
-            fs.unlinkSync(file.path);
-          }
-        }
+        await Promise.all(
+          files.map(file => file && unlink(file.path))
+        );
       }
+
       if (error.message === 'Travel Package not found') {
         throw new HttpException(
           {
@@ -287,22 +288,24 @@ export class TravelPackagesService {
         './dist/apps/travel-packages-service/public/travel-images',
         travelPackage.images[0]
       );
-      if (fs.existsSync(distPath)) {
-        fs.unlinkSync(distPath);
-        console.log(`Deleted public image: ${distPath}`);
-      }
+
+      // delete old image (ignore if not exists)
+      await unlink(distPath).catch((err: any) => {
+        if (err.code !== 'ENOENT') throw err;
+      });
+
       travelPackage.images[0] = file.filename;
 
       await queryRunner.manager.save(travelPackage);
-
       await queryRunner.commitTransaction();
+
       return {
         data: travelPackage,
         message: 'Thumbnail updated successfully',
       };
     } catch (error) {
       if (file) {
-        fs.unlinkSync(file.path);
+        await unlink(file.path).catch(() => { });
       }
       await queryRunner.rollbackTransaction();
 
@@ -351,10 +354,15 @@ export class TravelPackagesService {
         './dist/apps/travel-packages-service/public/travel-images',
         image
       );
-      if (fs.existsSync(distPath)) {
-        fs.unlinkSync(distPath);
-        console.log(`Deleted public image: ${distPath}`);
-      }
+      await unlink(distPath)
+        .then(() => {
+          console.log(`Deleted public image: ${distPath}`);
+        })
+        .catch((err: any) => {
+          if (err.code !== 'ENOENT') {
+            throw err;
+          }
+        });
       travelPackage.images = travelPackage.images.filter(
         (img) => img !== image
       );
@@ -468,16 +476,21 @@ export class TravelPackagesService {
       }
 
       if (travelPackage.images) {
-        for (const image of travelPackage.images) {
-          const distPath = path.join(
-            './dist/apps/travel-packages-service/public/travel-images',
-            image
-          );
-          if (fs.existsSync(distPath)) {
-            fs.unlinkSync(distPath);
-            console.log(`Deleted public image: ${distPath}`);
-          }
-        }
+        await Promise.all(
+          travelPackage.images.map(async (image) => {
+            const distPath = path.join(
+              './dist/apps/travel-packages-service/public/travel-images',
+              image
+            );
+
+            try {
+              await unlink(distPath);
+              console.log(`Deleted public image: ${distPath}`);
+            } catch (err: any) {
+              if (err.code !== 'ENOENT') throw err;
+            }
+          })
+        );
       }
 
       await queryRunner.manager.softDelete(TravelPackages, id);

@@ -18,10 +18,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { ClientGrpc } from '@nestjs/microservices';
 import { BookingsServiceClient } from 'libs/entities/grpc-interfaces/bookings.interface';
+import { unlink } from 'fs/promises';
 
 @Injectable()
 export class CarsService implements OnModuleInit {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(private readonly dataSource: DataSource) { }
 
   @Inject('BOOKINGS_CLIENT')
   private clientBookings: ClientGrpc;
@@ -289,10 +290,10 @@ export class CarsService implements OnModuleInit {
           './dist/apps/rent-car-service/public/car-images',
           car.car_image
         );
-        if (fs.existsSync(distPath)) {
-          fs.unlinkSync(distPath);
+        await unlink(distPath).then(() => {
           console.log(`Deleted public image: ${distPath}`);
-        }
+
+        })
       }
       car.car_image = image.filename;
       await queryRunner.manager.save(car);
@@ -304,7 +305,7 @@ export class CarsService implements OnModuleInit {
       };
     } catch (error) {
       if (image) {
-        fs.unlinkSync(image.path);
+        await unlink(image.path)
       }
       await queryRunner.rollbackTransaction();
       if (error.message === 'Car not found') {
@@ -390,16 +391,18 @@ export class CarsService implements OnModuleInit {
         throw new Error('Car not found');
       }
 
+
       if (car.car_image) {
         const distPath = path.join(
           './dist/apps/rent-car-service/public/car-images',
           car.car_image
         );
-        if (fs.existsSync(distPath)) {
-          fs.unlinkSync(distPath);
+        await unlink(distPath).then(() => {
           console.log(`Deleted public image: ${distPath}`);
-        }
+
+        })
       }
+
 
       await queryRunner.manager.softDelete(Cars, id);
       await queryRunner.commitTransaction();
