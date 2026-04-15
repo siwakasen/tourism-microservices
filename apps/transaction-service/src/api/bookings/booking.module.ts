@@ -10,7 +10,7 @@ import { ClientGrpc, ClientsModule, Transport } from '@nestjs/microservices';
 import { AuthHelper } from '@app/helpers/auth/user/auth.helper';
 import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
 import { PaymentService } from '../payments/payment.service';
-import { AuthRedisService } from '../payments/redis.service';
+import { RedisService } from '../payments/redis.service';
 
 @Module({
   imports: [
@@ -93,7 +93,7 @@ import { AuthRedisService } from '../payments/redis.service';
   providers: [
     BookingService,
     PaymentService,
-    AuthRedisService,
+    RedisService,
     JwtStrategy,
     {
       provide: AuthHelper,

@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 
 @Injectable()
-export class AuthRedisService {
+export class RedisService {
   private readonly redisClient;
 
   constructor(private readonly configService: ConfigService) {
@@ -15,7 +15,7 @@ export class AuthRedisService {
   async setValue(
     key: string,
     value: string,
-    ttlInSeconds: number,
+    ttlInSeconds: number
   ): Promise<void> {
     await this.redisClient.set(key, value);
     await this.redisClient.expire(key, ttlInSeconds);

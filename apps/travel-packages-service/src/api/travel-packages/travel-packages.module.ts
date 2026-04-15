@@ -9,6 +9,7 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { AuthHelper } from '@app/helpers/auth/user/auth.helper';
 import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
+import { RedisService } from './redis.service';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
 
     // authentication module
     PassportModule.register({ defaultStrategy: 'user', property: 'user' }),
-    
+
     // jwt module
     JwtModule.registerAsync({
       inject: [ConfigService],
@@ -50,6 +51,7 @@ import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
   providers: [
     TravelPackagesService,
     JwtStrategy,
+    RedisService,
     {
       provide: AuthHelper,
       useFactory: (jwt: JwtService, clientEmp: ClientGrpc) => {
@@ -57,7 +59,7 @@ import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
         return new AuthHelper(jwt, clientEmp, undefined);
       },
       inject: [JwtService, 'EMP_AUTH_CLIENT'],
-    }
+    },
   ],
 })
 export class TravelPackagesModule {}

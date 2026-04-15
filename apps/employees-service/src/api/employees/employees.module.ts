@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmployeeService } from './employees.service';
 import { EmployeeController } from './employees.controller';
-import { AuthRedisService } from './redis.service';
+import { RedisService } from './redis.service';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config/dist/config.service';
@@ -32,7 +32,7 @@ import { Employee, EmployeeToken, Roles } from 'libs/entities';
           transport: Transport.GRPC,
           options: {
             package: 'authemp',
-            protoPath: 'contract/auth-employee-api.proto', 
+            protoPath: 'contract/auth-employee-api.proto',
             url: config.get<string>('EMP_AUTH_CLIENT'),
             loader: {
               keepCase: true,
@@ -63,7 +63,7 @@ import { Employee, EmployeeToken, Roles } from 'libs/entities';
   controllers: [EmployeeController],
   providers: [
     EmployeeService,
-    AuthRedisService,
+    RedisService,
     MailService,
     JwtStrategy,
     {
@@ -72,14 +72,14 @@ import { Employee, EmployeeToken, Roles } from 'libs/entities';
         return new AuthHelper(jwt, clientEmp);
       },
       inject: [JwtService, 'EMP_AUTH_CLIENT'],
-    }
+    },
   ],
   exports: [
     EmployeeService,
     AuthHelper,
     MailService,
     JwtStrategy,
-    AuthRedisService,
+    RedisService,
   ], // Export as needed
 })
 export class EmployeeModule {}

@@ -7,22 +7,26 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, In, Not } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { Cars } from 'libs/entities';
 import {
   PaginationDto,
   CreateUpdateCarsDto,
   AvailableCarsDto,
 } from './cars.dto';
-import * as fs from 'fs';
 import * as path from 'path';
 import { ClientGrpc } from '@nestjs/microservices';
 import { BookingsServiceClient } from 'libs/entities/grpc-interfaces/bookings.interface';
 import { unlink } from 'fs/promises';
+import { RedisService } from './redis.service';
+import { response } from 'express';
 
 @Injectable()
 export class CarsService implements OnModuleInit {
-  constructor(private readonly dataSource: DataSource) { }
+  constructor(
+    private readonly dataSource: DataSource,
+    private readonly redisClient: RedisService
+  ) {}
 
   @Inject('BOOKINGS_CLIENT')
   private clientBookings: ClientGrpc;
@@ -42,6 +46,15 @@ export class CarsService implements OnModuleInit {
   public async getAllCars(paginationDto: PaginationDto) {
     try {
       const { page = 1, limit = 10, search = '' } = paginationDto;
+      const cachedKey = `cars:${page}:limit=${limit}:search=${search}`;
+      const cachedData = await this.redisClient.getValue<{
+        data: Cars[];
+        meta: any;
+      }>(cachedKey);
+
+      if (cachedData) {
+        return cachedData;
+      }
       const queryBuilder = this.repository
         .createQueryBuilder('cars')
         .orderBy('cars.created_at', 'DESC');
@@ -71,7 +84,7 @@ export class CarsService implements OnModuleInit {
       const totalPages = Math.ceil(total / limit);
       const hasNextPage = page < totalPages;
 
-      return {
+      const response = {
         data: result,
         meta: {
           totalItems: total,
@@ -82,6 +95,9 @@ export class CarsService implements OnModuleInit {
           hasPrevPage: page > 1,
         },
       };
+
+      await this.redisClient.setValue(cachedKey, response);
+      return response;
     } catch (error) {
       throw new HttpException(
         {
@@ -183,6 +199,13 @@ export class CarsService implements OnModuleInit {
 
   public async getCarById(id: number) {
     try {
+      let cachedCar: Cars = await this.redisClient.getValue(`car-${id}`);
+      if (cachedCar) {
+        return {
+          data: cachedCar,
+          message: 'Successfully get data car by id',
+        };
+      }
       const queryBuilder = this.repository.createQueryBuilder('cars');
 
       const car = await queryBuilder.where('cars.id = :id', { id }).getOne();
@@ -190,6 +213,8 @@ export class CarsService implements OnModuleInit {
       if (!car) {
         throw new Error('Car not found');
       }
+
+      this.redisClient.setValue(`car-${id}`, car);
 
       return {
         data: car,
@@ -292,8 +317,7 @@ export class CarsService implements OnModuleInit {
         );
         await unlink(distPath).then(() => {
           console.log(`Deleted public image: ${distPath}`);
-
-        })
+        });
       }
       car.car_image = image.filename;
       await queryRunner.manager.save(car);
@@ -305,7 +329,7 @@ export class CarsService implements OnModuleInit {
       };
     } catch (error) {
       if (image) {
-        await unlink(image.path)
+        await unlink(image.path);
       }
       await queryRunner.rollbackTransaction();
       if (error.message === 'Car not found') {
@@ -391,7 +415,6 @@ export class CarsService implements OnModuleInit {
         throw new Error('Car not found');
       }
 
-
       if (car.car_image) {
         const distPath = path.join(
           './dist/apps/rent-car-service/public/car-images',
@@ -399,10 +422,8 @@ export class CarsService implements OnModuleInit {
         );
         await unlink(distPath).then(() => {
           console.log(`Deleted public image: ${distPath}`);
-
-        })
+        });
       }
-
 
       await queryRunner.manager.softDelete(Cars, id);
       await queryRunner.commitTransaction();

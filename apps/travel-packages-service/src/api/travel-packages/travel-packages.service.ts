@@ -7,26 +7,38 @@ import {
   PaginationDto,
   CreateUpdateTravelPackageDto,
 } from './travel-packages.dto';
-import * as fs from 'fs';
 import { unlink } from 'fs/promises';
 import * as path from 'path';
+import { RedisService } from './redis.service';
 
 @Injectable()
 export class TravelPackagesService {
   constructor(
     @InjectRepository(TravelPackages)
     private readonly repository: Repository<TravelPackages>,
-    private readonly dataSource: DataSource
-  ) { }
+    private readonly dataSource: DataSource,
+    private readonly redisService: RedisService
+  ) {}
 
   public async getAllTravelPackages(paginationDto: PaginationDto) {
     try {
       const { page = 1, limit = 10, search = '' } = paginationDto;
+
+      const cacheKey = `travel-packages:page=${page}:limit=${limit}:search=${search}`;
+
+      const cachedData = await this.redisService.getValue<{
+        data: TravelPackages[];
+        meta: any;
+      }>(cacheKey);
+
+      if (cachedData) {
+        return cachedData;
+      }
+
       const queryBuilder = this.repository
         .createQueryBuilder('travel_packages')
         .orderBy('travel_packages.created_at', 'DESC');
 
-      // Mengelompokkan kondisi pencarian
       const conditions = [];
       const parameters: Record<string, any> = {};
 
@@ -43,7 +55,6 @@ export class TravelPackagesService {
         parameters['search'] = `%${search}%`;
       }
 
-      // Menggabungkan semua kondisi jika ada
       if (conditions.length) {
         queryBuilder.where(conditions.join(' OR '), parameters);
       }
@@ -56,7 +67,7 @@ export class TravelPackagesService {
       const totalPages = Math.ceil(total / limit);
       const hasNextPage = page < totalPages;
 
-      return {
+      const response = {
         data: result,
         meta: {
           totalItems: total,
@@ -67,6 +78,10 @@ export class TravelPackagesService {
           hasPrevPage: page > 1,
         },
       };
+
+      await this.redisService.setValue(cacheKey, response);
+
+      return response;
     } catch (error) {
       throw new HttpException(
         {
@@ -120,6 +135,14 @@ export class TravelPackagesService {
 
   public async getTravelPackageById(id: number) {
     try {
+      let cachedTravelPackage: TravelPackages =
+        await this.redisService.getValue(`travel-package-${id}`);
+      if (cachedTravelPackage) {
+        return {
+          data: cachedTravelPackage,
+          message: 'Successfully get data travel package by id',
+        };
+      }
       const travelPackage: TravelPackages = await this.repository.findOneBy({
         id,
       });
@@ -127,6 +150,8 @@ export class TravelPackagesService {
       if (!travelPackage) {
         throw new Error('Travel Package not found');
       }
+
+      this.redisService.setValue(`travel-package-${id}`, travelPackage);
 
       return {
         data: travelPackage,
@@ -243,9 +268,7 @@ export class TravelPackagesService {
       await queryRunner.rollbackTransaction();
 
       if (files.length > 0) {
-        await Promise.all(
-          files.map(file => file && unlink(file.path))
-        );
+        await Promise.all(files.map((file) => file && unlink(file.path)));
       }
 
       if (error.message === 'Travel Package not found') {
@@ -305,7 +328,7 @@ export class TravelPackagesService {
       };
     } catch (error) {
       if (file) {
-        await unlink(file.path).catch(() => { });
+        await unlink(file.path).catch(() => {});
       }
       await queryRunner.rollbackTransaction();
 

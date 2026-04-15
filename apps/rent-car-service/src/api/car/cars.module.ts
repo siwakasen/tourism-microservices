@@ -10,6 +10,7 @@ import { ClientGrpc, ClientsModule, Transport } from '@nestjs/microservices';
 
 import { AuthHelper } from '@app/helpers/auth/user/auth.helper';
 import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
+import { RedisService } from './redis.service';
 
 @Module({
   imports: [
@@ -55,15 +56,20 @@ import { JwtStrategy } from '@app/helpers/auth/user/auth.strategy';
           },
         }),
       },
-    ])
+    ]),
   ],
   controllers: [CarsController],
-  providers: [CarsService, JwtStrategy, {
-    provide: AuthHelper,
-    useFactory: (jwt: JwtService, clientEmp: ClientGrpc) => {
-      return new AuthHelper(jwt, clientEmp);
+  providers: [
+    CarsService,
+    JwtStrategy,
+    RedisService,
+    {
+      provide: AuthHelper,
+      useFactory: (jwt: JwtService, clientEmp: ClientGrpc) => {
+        return new AuthHelper(jwt, clientEmp);
+      },
+      inject: [JwtService, 'EMP_AUTH_CLIENT'],
     },
-    inject: [JwtService, 'EMP_AUTH_CLIENT'],
-  }],
+  ],
 })
 export class CarsModule {}

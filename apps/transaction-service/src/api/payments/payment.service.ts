@@ -17,7 +17,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { generateTokenAccess } from '../../common/helper/paypal-access-token.helper';
 import { convertUSDToIDR } from '../../common/helper/currency.helper';
-import { AuthRedisService } from './redis.service';
+import { RedisService } from './redis.service';
 @Injectable()
 export class PaymentService {
   constructor(
@@ -36,7 +36,7 @@ export class PaymentService {
     @InjectRepository(Payment)
     private readonly paymentRepository: Repository<Payment>,
 
-    private readonly redisService: AuthRedisService
+    private readonly redisService: RedisService
   ) {}
 
   public async createTransactionMidtrans(
